@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta property="og:title" content="Amor a Distancia">
+<meta property="og:description" content="Hay personas que están lejos de nuestros ojos... pero jamás de nuestro corazón.">
+<title>Amor a Distancia</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Montserrat:wght@200;300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+:root{--bg:#050510;--fg:#ede6f5;--muted:#7a7090;--accent:#ff6b9d;--accent2:#4facfe;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.1);--glass:rgba(255,255,255,0.04)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--fg);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:0;display:none}
+/* Contenedor vertical */
+#app{position:relative;width:100%;max-width:480px;margin:0 auto;min-height:100vh;overflow:hidden}
+/* Canvas espacial */
+#space-canvas{position:fixed;top:0;left:50%;transform:translateX(-50%);width:480px;height:100%;z-index:0;pointer-events:none}
+@media(max-width:480px){#space-canvas{width:100%}}
+/* Pantalla de inicio */
+#start-screen{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;transition:opacity 1.5s ease}
+#start-screen.hidden{opacity:0;pointer-events:none}
+.start-pulse{width:60px;height:60px;border-radius:50%;border:1px solid rgba(255,107,157,0.5);position:relative;animation:spulse 3s ease-in-out infinite}
+.start-pulse::before,.start-pulse::after{content:'';position:absolute;border-radius:50%;border:1px solid rgba(255,107,157,0.25);animation:spulse 3s ease-in-out infinite}
+.start-pulse::before{inset:-12px;animation-delay:-1s}
+.start-pulse::after{inset:-24px;border-color:rgba(255,107,157,0.12);animation-delay:-2s}
+@keyframes spulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.15);opacity:1}}
+.start-text{margin-top:24px;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);font-weight:300}
+/* Intro */
+#intro{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:2rem}
+#intro.hidden{opacity:0;pointer-events:none;transition:opacity 2s ease}
+#intro-text{font-family:'Playfair Display',serif;font-size:1.35rem;line-height:2.2;text-align:center;color:var(--fg);max-width:340px}
+#intro-cursor{display:inline-block;width:2px;height:1.2em;background:var(--accent);margin-left:2px;vertical-align:text-bottom;animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+/* Secciones */
+main{position:relative;z-index:1}
+section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;position:relative}
+/* Hero */
+#hero{text-align:center}
+.names-display{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:2rem;opacity:0}
+.name-tag{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;letter-spacing:2px}
+.name-heart{color:var(--accent);font-size:1.4rem;animation:heartbeat 1.8s ease-in-out infinite}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.25)}28%{transform:scale(1)}42%{transform:scale(1.2)}}
+.city-badge{display:flex;align-items:center;gap:8px;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);opacity:0}
+.city-badge i{color:var(--accent);font-size:.6rem}
+.city-line{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--muted),transparent)}
+/* Cita */
+#quote{padding:4rem 1.5rem}
+.quote-text{font-family:'Playfair Display',serif;font-style:italic;font-size:1.15rem;line-height:2;text-align:center;max-width:320px;opacity:0}
+.quote-text .word{display:inline-block;opacity:0;transform:translateY(10px)}
+/* Contador */
+#counter{text-align:center}
+.counter-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--muted);margin-bottom:2rem;letter-spacing:2px;opacity:0}
+.counter-grid{display:flex;align-items:center;gap:6px;opacity:0}
+.counter-item{display:flex;flex-direction:column;align-items:center;min-width:56px}
+.counter-value{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.counter-label{font-size:.55rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.counter-sep{width:1px;height:40px;background:linear-gradient(to bottom,transparent,var(--muted),transparent);flex-shrink:0}
+/* Galería */
+#gallery{padding:4rem 1.5rem}
+.section-label{font-size:.6rem;letter-spacing:5px;text-transform:uppercase;color:var(--muted);margin-bottom:2rem;opacity:0}
+.gallery-stack{display:flex;flex-direction:column;gap:20px;width:100%;max-width:320px}
+.photo-card{background:var(--card);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;overflow:hidden;opacity:0;transform:translateY(40px);transition:transform .4s ease}
+.photo-card:active{transform:scale(0.97)!important}
+.photo-card img{width:100%;height:220px;object-fit:cover;display:block}
+.photo-caption{padding:14px 18px;font-family:'Dancing Script',cursive;font-size:1rem;color:var(--fg);text-align:center}
+/* Mensajes */
+#messages{padding:4rem 1.5rem}
+.messages-stack{display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px}
+.letter-card{background:var(--card);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid var(--border);border-radius:16px;padding:16px 20px;cursor:pointer;opacity:0;transform:translateY(30px);position:relative;overflow:hidden;transition:border-color .3s}
+.letter-card.open{border-color:rgba(255,107,157,0.3)}
+.letter-header{display:flex;align-items:center;gap:10px}
+.letter-icon{color:var(--accent);font-size:.85rem}
+.letter-num{font-size:.6rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.letter-body{max-height:0;overflow:hidden;transition:max-height .6s ease,margin .3s ease,opacity .4s ease;opacity:0;margin-top:0}
+.letter-card.open .letter-body{max-height:200px;opacity:1;margin-top:12px}
+.letter-body p{font-size:.85rem;line-height:1.8;color:rgba(237,230,245,0.8)}
+/* Luna */
+#moon-section{text-align:center;padding:4rem 1.5rem}
+.moon{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f5f0e8,#d4cfc0 50%,#a89e8c);box-shadow:0 0 60px rgba(245,240,232,0.25),0 0 120px rgba(245,240,232,0.1),inset -15px -10px 30px rgba(0,0,0,0.3);margin-bottom:2.5rem;opacity:0;position:relative}
+.moon-crater{position:absolute;border-radius:50%;background:rgba(0,0,0,0.08)}
+.moon-crater:nth-child(1){width:25px;height:25px;top:30%;left:20%}
+.moon-crater:nth-child(2){width:18px;height:18px;top:55%;left:55%}
+.moon-crater:nth-child(3){width:12px;height:12px;top:25%;left:60%}
+.moon-crater:nth-child(4){width:20px;height:20px;top:65%;left:30%}
+.moon-text{max-width:300px;line-height:2.2;font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem}
+.moon-text .word{display:inline-block;opacity:0;transform:translateY(8px)}
+/* Promesa */
+#promise{padding:4rem 1.2rem}
+.letter-paper{background:linear-gradient(145deg,#f5f0e8,#ebe5d8);border-radius:14px;padding:2rem 1.6rem;color:#2a2420;max-width:320px;width:100%;position:relative;box-shadow:0 25px 80px rgba(0,0,0,0.6);opacity:0;transform:translateY(40px)}
+.letter-paper::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 28px,rgba(0,0,0,0.04) 29px);border-radius:14px;pointer-events:none}
+.hw-line{font-family:'Dancing Script',cursive;font-size:1rem;line-height:2;overflow:hidden;white-space:nowrap;width:0;transition:none}
+.hw-line.done{overflow:visible;white-space:normal;width:auto}
+.signature{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:24px;overflow:hidden;white-space:nowrap;width:0;opacity:0}
+.signature.show{overflow:visible;white-space:normal;width:auto;opacity:1;transition:opacity 1s ease}
+.sig-name{font-family:'Dancing Script',cursive;font-size:1.4rem;font-weight:700;color:#3a2a20}
+.sig-heart{color:var(--accent);font-size:1.1rem}
+/* Final */
+#finale{min-height:120vh;text-align:center;padding:6rem 1.5rem}
+.finale-text{font-family:'Playfair Display',serif;font-size:1.15rem;line-height:2.4;max-width:300px;opacity:0}
+.finale-text .line{display:block;opacity:0;transform:translateY(15px)}
+.finale-big{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:1.5rem;opacity:0;transform:scale(0.8)}
+/* CTA */
+#cta{min-height:60vh;padding-bottom:4rem}
+.cta-btn{background:linear-gradient(135deg,var(--accent),#e0447a);color:#fff;border:none;padding:16px 40px;border-radius:50px;font-family:'Montserrat',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;opacity:0;transform:translateY(20px);transition:transform .2s,box-shadow .3s}
+.cta-btn:active{transform:scale(0.95)!important}
+.cta-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.2),transparent);opacity:0;transition:opacity .3s}
+.cta-btn:hover::before{opacity:1}
+.cta-btn:hover{box-shadow:0 8px 40px rgba(255,107,157,0.4)}
+.share-options{display:flex;flex-direction:column;gap:10px;margin-top:16px;width:100%;max-width:280px;opacity:0}
+.share-opt{background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:12px;padding:14px 20px;color:var(--fg);font-family:'Montserrat',sans-serif;font-size:.75rem;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .2s,border-color .2s}
+.share-opt:active{background:rgba(255,255,255,0.08)}
+.share-opt i{color:var(--accent);width:20px;text-align:center}
+/* Botón música */
+#music-btn{position:fixed;top:16px;right:16px;z-index:7000;width:40px;height:40px;border-radius:50%;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);color:var(--fg);font-size:.8rem;cursor:pointer;display:none;align-items:center;justify-content:center;transition:background .2s}
+#music-btn:active{background:rgba(255,255,255,0.1)}
+/* Toast */
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(255,255,255,0.12);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:30px;padding:10px 24px;font-size:.75rem;color:var(--fg);z-index:10000;opacity:0;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);transition:all .4s ease}
+/* Accesibilidad */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- Canvas espacial fijo -->
+<canvas id="space-canvas"></canvas>
+
+<!-- Pantalla de inicio -->
+<div id="start-screen">
+    <div class="start-pulse"></div>
+    <p class="start-text">Toca para sentir</p>
+</div>
+<!-- Intro typewriter -->
+<div id="intro" style="display:none">
+    <div id="intro-text"></div>
+    <span id="intro-cursor"></span>
+</div>
+
+<!-- Botón música -->
+<button id="music-btn" aria-label="Silenciar música"><i class="fas fa-volume-up"></i></button>
+
+<!-- Contenido principal -->
+<main>
+    <!-- Hero: Nombres -->
+    <section id="hero">
+        <div class="names-display">
+            <span class="name-tag" id="name1"></span>
+            <span class="name-heart"><i class="fas fa-heart"></i></span>
+            <span class="name-tag" id="name2"></span>
+        </div>
+        <div class="city-badge">
+            <span id="city1"></span>
+            <span class="city-line"></span>
+            <i class="fas fa-plane"></i>
+            <span class="city-line"></span>
+            <span id="city2"></span>
+        </div>
+    </section>
+
+    <!-- Primera cita -->
+    <section id="quote">
+        <p class="quote-text" id="quote1-text"></p>
+    </section>
+
+    <!-- Contador -->
+    <section id="counter">
+        <p class="counter-title">Tiempo amándote a distancia</p>
+        <div class="counter-grid">
+            <div class="counter-item"><span class="counter-value" id="c-y">0</span><span class="counter-label">Años</span></div>
+            <div class="counter-sep"></div>
+            <div class="counter-item"><span class="counter-value" id="c-m">0</span><span class="counter-label">Meses</span></div>
+            <div class="counter-sep"></div>
+            <div class="counter-item"><span class="counter-value" id="c-d">0</span><span class="counter-label">Días</span></div>
+            <div class="counter-sep"></div>
+            <div class="counter-item"><span class="counter-value" id="c-h">00</span><span class="counter-label">Horas</span></div>
+            <div class="counter-sep"></div>
+            <div class="counter-item"><span class="counter-value" id="c-min">00</span><span class="counter-label">Minutos</span></div>
+        </div>
+    </section>
+
+    <!-- Galería -->
+    <section id="gallery">
+        <p class="section-label">Recuerdos que me acompañan</p>
+        <div class="gallery-stack" id="gallery-stack"></div>
+    </section>
+
+    <!-- Mensajes -->
+    <section id="messages">
+        <p class="section-label">Cartas del alma</p>
+        <div class="messages-stack" id="messages-stack"></div>
+    </section>
+
+    <!-- Escena lunar -->
+    <section id="moon-section">
+        <div class="moon" id="moon">
+            <div class="moon-crater"></div>
+            <div class="moon-crater"></div>
+            <div class="moon-crater"></div>
+            <div class="moon-crater"></div>
+        </div>
+        <div class="moon-text" id="moon-text"></div>
+    </section>
+
+    <!-- Promesa / carta manuscrita -->
+    <section id="promise">
+        <p class="section-label" style="margin-bottom:1.5rem">Mi promesa para ti</p>
+        <div class="letter-paper" id="letter-paper">
+            <div id="hw-lines"></div>
+            <div class="signature" id="signature">
+                <span class="sig-name" id="sig-name1"></span>
+                <span class="sig-heart"><i class="fas fa-heart"></i></span>
+                <span class="sig-name" id="sig-name2"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final cinematográfico -->
+    <section id="finale">
+        <div class="finale-text" id="finale-text">
+            <span class="line">Algun dia la distancia sera solo un recuerdo.</span>
+            <span class="line" style="margin-top:8px">Te amo.</span>
+            <span class="line" style="margin-top:8px">Nos volveremos a encontrar.</span>
+        </div>
+        <div class="finale-big" id="finale-big"></div>
+    </section>
+
+    <!-- CTA viral -->
+    <section id="cta">
+        <button class="cta-btn" id="cta-main">Enviar a quien extrañas</button>
+        <div class="share-options" id="share-opts">
+            <button class="share-opt" id="share-whatsapp"><i class="fab fa-whatsapp"></i>Compartir por WhatsApp</button>
+            <button class="share-opt" id="share-link"><i class="fas fa-link"></i>Copiar enlace</button>
+            <button class="share-opt" id="share-native"><i class="fas fa-share-nodes"></i>Compartir con...</button>
+        </div>
+    </section>
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================================
+   CONFIGURACIÓN — Edita aquí todo lo personalizable
+   ============================================ */
+const CONFIG = {
+    nombre1: "TU-NOMBRE",
+    nombre2: "SU-NOMBRE",
+    fechaInicio: "2024-01-15",
+    mensajeFinal: "Te amo más allá de las estrellas.",
+    ciudadOrigen: "Lima",
+    ciudadDestino: "Bogotá",
+    musica: "",
+    carta: [
+        "Desde que la distancia nos separó,",
+        "cada amanecer es una carta que escribo",
+        "con el corazón, esperando el día",
+        "en que pueda entregártela en persona.",
+        "No hay kilómetros que puedan borrar",
+        "lo que siento por ti.",
+        "Eres mi pensamiento constante,",
+        "mi razón para sonreír a pesar de todo.",
+        "Prometo esperarte, amarte cada día más,",
+        "y caminar hacia ti sin importar el camino."
+    ],
+    fotos: [
+        { url: "https://picsum.photos/seed/amordist1/400/500", frase: "Nuestro primer día juntos" },
+        { url: "https://picsum.photos/seed/amordist2/400/500", frase: "La sonrisa que me robó el corazón" },
+        { url: "https://picsum.photos/seed/amordist3/400/500", frase: "Donde todo comenzó" },
+        { url: "https://picsum.photos/seed/amordist4/400/500", frase: "Prometí no dejarte ir" }
+    ],
+    mensajes: [
+        "Cada segundo sin verte es una eternidad, pero saber que existes hace que valga la pena esperar.",
+        "No importa la distancia, mi corazón siempre encuentra el camino hacia ti.",
+        "Si pudiera, doblaría el mapa del mundo solo para estar a tu lado.",
+        "La distancia me enseña lo mucho que te necesito cada día que pasa."
+    ]
+};
+
+/* ============================================
+   VARIABLES GLOBALES
+   ============================================ */
+let audioCtx, masterGain, musicPlaying = true;
+const canvas = document.getElementById('space-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [], nebulae = [], twinkleStars = [];
+let star1 = {}, star2 = {};
+let scrollProg = 0, finaleProg = 0;
+let heartParticles = [], rainParticles = [];
+let flashOpacity = 0, flashTriggered = false;
+let heartVisible = false;
+let animFrame;
+
+/* ============================================
+   AUTO SCROLL CINEMATOGRÁFICO
+   ============================================ */
+let autoMode = false;
+let autoScrollTimer = null;
+let currentSection = 0;
+let sections = [];
+let interactionTimeout = null;
+
+const SECTION_DURATIONS = {
+    hero: 6000,
+    quote: 5000,
+    counter: 5000,
+    gallery: 10000,
+    messages: 12000,
+    "moon-section": 9000,
+    promise: 12000,
+    finale: 18000,
+    cta: 10000
+};
+
+/* ============================================
+   ESCENA ESPACIAL (Canvas)
+   ============================================ */
+function resizeCanvas() {
+    const app = document.getElementById('app');
+    W = canvas.width = Math.min(480, app.offsetWidth);
+    H = canvas.height = window.innerHeight;
+    initScene();
+}
+
+function initScene() {
+    // Estrellas de fondo
+    stars = [];
+    for (let i = 0; i < 400; i++) {
+        stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.2 + 0.2,
+            a: Math.random() * 0.6 + 0.2,
+            speed: Math.random() * 0.15 + 0.02,
+            layer: Math.random()
+        });
+    }
+    // Estrellas que parpadean
+    twinkleStars = [];
+    for (let i = 0; i < 30; i++) {
+        twinkleStars.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.8 + 0.8,
+            phase: Math.random() * Math.PI * 2,
+            speed: Math.random() * 2 + 1
+        });
+    }
+    // Nebulosa
+    nebulae = [
+        { x: W * 0.2, y: H * 0.3, r: 200, color: [15, 20, 70] },
+        { x: W * 0.8, y: H * 0.6, r: 180, color: [50, 15, 60] },
+        { x: W * 0.5, y: H * 0.15, r: 150, color: [60, 15, 35] },
+        { x: W * 0.6, y: H * 0.85, r: 160, color: [10, 30, 60] }
+    ];
+    // Estrellas principales
+    const sep = 1 - finaleProg * 0.95;
+    star1 = { x: W * 0.5 - W * 0.28 * sep, y: H * 0.45, baseR: 8, phase: 0 };
+    star2 = { x: W * 0.5 + W * 0.28 * sep, y: H * 0.45, baseR: 8, phase: Math.PI };
+}
+
+function drawBackground() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#030308');
+    g.addColorStop(0.5, '#050510');
+    g.addColorStop(1, '#080515');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+}
+
+function drawNebulae(time) {
+    nebulae.forEach((n, i) => {
+        const ox = Math.sin(time * 0.1 + i) * 20;
+        const oy = Math.cos(time * 0.08 + i * 2) * 15;
+        const g = ctx.createRadialGradient(n.x + ox, n.y + oy, 0, n.x + ox, n.y + oy, Math.max(1, n.r));
+        const [r, gr, b] = n.color;
+        g.addColorStop(0, `rgba(${r},${gr},${b},0.25)`);
+        g.addColorStop(0.6, `rgba(${r},${gr},${b},0.08)`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+    });
+}
+
+function drawStars(time) {
+    stars.forEach(s => {
+        const parallax = s.layer * 0.5 + 0.5;
+        const yy = (s.y - scrollProg * s.speed * parallax * 300) % H;
+        const fy = yy < 0 ? yy + H : yy;
+        ctx.beginPath();
+        ctx.arc(s.x, fy, Math.max(0.1, s.r), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(220,215,240,${s.a})`;
+        ctx.fill();
+    });
+    // Parpadeo
+    twinkleStars.forEach(s => {
+        const a = 0.3 + 0.7 * Math.abs(Math.sin(time * s.speed + s.phase));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, Math.max(0.1, s.r), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,250,240,${a})`;
+        ctx.fill();
+        // Resplandor sutil
+        if (a > 0.7) {
+            const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, Math.max(1, s.r * 4));
+            g.addColorStop(0, `rgba(255,250,240,${(a - 0.7) * 0.5})`);
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(s.x - s.r * 4, s.y - s.r * 4, s.r * 8, s.r * 8);
+        }
+    });
+}
+
+function drawMainStar(x, y, baseR, phase, color, time) {
+    const pulse = 1 + 0.2 * Math.sin(time * 1.5 + phase);
+    const r = Math.max(1, baseR * pulse);
+    // Resplandor exterior
+    const g1 = ctx.createRadialGradient(x, y, 0, x, y, Math.max(1, r * 5));
+    g1.addColorStop(0, color.replace('1)', '0.15)'));
+    g1.addColorStop(0.5, color.replace('1)', '0.04)'));
+    g1.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(x - r * 5, y - r * 5, r * 10, r * 10);
+    // Resplandor medio
+    const g2 = ctx.createRadialGradient(x, y, 0, x, y, Math.max(1, r * 2));
+    g2.addColorStop(0, '#ffffff');
+    g2.addColorStop(0.4, color);
+    g2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g2;
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(0.5, r * 2), 0, Math.PI * 2);
+    ctx.fill();
+    // Núcleo
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(0.3, r * 0.35), 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function drawConnection(time) {
+    if (finaleProg > 0.95) return;
+    const sx = star1.x, sy = star1.y, ex = star2.x, ey = star2.y;
+    const dist = Math.hypot(ex - sx, ey - sy);
+    if (dist < 5) return;
+    const grad = ctx.createLinearGradient(sx, sy, ex, ey);
+    grad.addColorStop(0, 'rgba(79,172,254,0.7)');
+    grad.addColorStop(0.5, 'rgba(255,107,157,0.4)');
+    grad.addColorStop(1, 'rgba(255,107,157,0.7)');
+    const passes = [[10, 0.08], [5, 0.25], [2, 0.6], [0.8, 1]];
+    passes.forEach(([lw, al]) => {
+        ctx.beginPath();
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = lw;
+        ctx.globalAlpha = al;
+        const segs = 60;
+        for (let i = 0; i <= segs; i++) {
+            const t = i / segs;
+            const px = sx + (ex - sx) * t;
+            const py = sy + (ey - sy) * t;
+            const wave = Math.sin(t * Math.PI * 5 + time * 2.5) * 12 * Math.sin(t * Math.PI);
+            if (i === 0) ctx.moveTo(px, py + wave);
+            else ctx.lineTo(px, py + wave);
+        }
+        ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+    // Partículas viajando por la conexión
+    for (let i = 0; i < 5; i++) {
+        const t = ((time * 0.3 + i * 0.2) % 1);
+        const px = sx + (ex - sx) * t;
+        const py = sy + (ey - sy) * t + Math.sin(t * Math.PI * 5 + time * 2.5) * 12 * Math.sin(t * Math.PI);
+        const gr = ctx.createRadialGradient(px, py, 0, px, py, 6);
+        gr.addColorStop(0, 'rgba(255,255,255,0.8)');
+        gr.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gr;
+        ctx.fillRect(px - 6, py - 6, 12, 12);
+    }
+}
+
+function drawHeart(time) {
+    if (!heartVisible) return;
+    const scale = Math.min(W, H) * 0.013;
+    const cx = W / 2, cy = H * 0.42;
+    heartParticles.forEach(p => {
+        p.x += (p.tx - p.x) * 0.04;
+        p.y += (p.ty - p.y) * 0.04;
+        p.a = Math.min(1, p.a + 0.01);
+        const pulse = 1 + 0.05 * Math.sin(time * 2);
+        const dx = (p.x - cx) * pulse, dy = (p.y - cy) * pulse;
+        const fx = cx + dx, fy = cy + dy;
+        ctx.beginPath();
+        ctx.arc(fx, fy, Math.max(0.3, p.size), 0, Math.PI * 2);
+        ctx.fillStyle = p.color === 'pink' ? `rgba(255,107,157,${p.a})` : `rgba(79,172,254,${p.a})`;
+        ctx.fill();
+        // Resplandor
+        const g = ctx.createRadialGradient(fx, fy, 0, fx, fy, Math.max(1, p.size * 3));
+        g.addColorStop(0, p.color === 'pink' ? `rgba(255,107,157,${p.a * 0.3})` : `rgba(79,172,254,${p.a * 0.3})`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(fx - p.size * 3, fy - p.size * 3, p.size * 6, p.size * 6);
+    });
+}
+
+function drawRain(time) {
+    if (!heartVisible) return;
+    rainParticles.forEach(p => {
+        p.y += p.speed;
+        p.x += Math.sin(time + p.phase) * 0.3;
+        if (p.y > H + 10) { p.y = -10; p.x = Math.random() * W; }
+        const a = 0.3 + 0.4 * Math.abs(Math.sin(time * p.speed + p.phase));
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x + 0.5, p.y + p.len);
+        ctx.strokeStyle = `rgba(255,250,240,${a})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+    });
+}
+
+function drawVignette() {
+    const g = ctx.createRadialGradient(W / 2, H / 2, Math.max(1, W * 0.3), W / 2, H / 2, Math.max(2, W * 0.9));
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(0,0,0,0.6)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+}
+
+function render() {
+    const time = performance.now() * 0.001;
+    // Actualizar posiciones estrellas según finale
+    const sep = 1 - finaleProg * 0.95;
+    star1.x = W * 0.5 - W * 0.28 * sep;
+    star2.x = W * 0.5 + W * 0.28 * sep;
+    const starAlpha = finaleProg > 0.9 ? Math.max(0, 1 - (finaleProg - 0.9) * 10) : 1;
+
+    ctx.clearRect(0, 0, W, H);
+    drawBackground();
+    drawNebulae(time);
+    drawStars(time);
+
+    if (starAlpha > 0) {
+        ctx.globalAlpha = starAlpha;
+        drawConnection(time);
+        drawMainStar(star1.x, star1.y, star1.baseR, star1.phase, 'rgba(79,172,254,1)', time);
+        drawMainStar(star2.x, star2.y, star2.baseR, star2.phase, 'rgba(255,107,157,1)', time);
+        ctx.globalAlpha = 1;
+    }
+
+    // Flash al unirse
+    if (finaleProg > 0.92 && !flashTriggered) {
+        flashTriggered = true;
+        flashOpacity = 0.8;
+        heartVisible = true;
+        generateHeartParticles();
+        generateRain();
+    }
+    if (flashOpacity > 0) {
+        ctx.fillStyle = `rgba(255,255,255,${flashOpacity})`;
+        ctx.fillRect(0, 0, W, H);
+        flashOpacity -= 0.015;
+    }
+
+    drawHeart(time);
+    drawRain(time);
+    drawVignette();
+    animFrame = requestAnimationFrame(render);
+}
+
+function generateHeartParticles() {
+    heartParticles = [];
+    const scale = Math.min(W, H) * 0.013;
+    const cx = W / 2, cy = H * 0.42;
+    for (let i = 0; i < 250; i++) {
+        const t = (i / 250) * Math.PI * 2;
+        const hx = 16 * Math.pow(Math.sin(t), 3);
+        const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+        // Rellenar interior también
+        const fill = Math.random();
+        heartParticles.push({
+            tx: cx + hx * scale * (0.3 + fill * 0.7),
+            ty: cy + hy * scale * (0.3 + fill * 0.7),
+            x: cx, y: cy,
+            size: 0.8 + Math.random() * 1.8,
+            a: 0,
+            color: Math.random() > 0.5 ? 'pink' : 'blue'
+        });
+    }
+}
+
+function generateRain() {
+    rainParticles = [];
+    for (let i = 0; i < 60; i++) {
+        rainParticles.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            speed: 1 + Math.random() * 3,
+            len: 5 + Math.random() * 15,
+            phase: Math.random() * Math.PI * 2
+        });
+    }
+}
+
+/* ============================================
+   MÚSICA AMBIENTE (Web Audio API)
+   ============================================ */
+function initAudio() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.04;
+    masterGain.connect(audioCtx.destination);
+    // Acorde Am suave con osciladores sinusoidales
+    const freqs = [220, 261.63, 329.63, 440];
+    freqs.forEach(f => {
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        const g = audioCtx.createGain();
+        g.gain.value = 0.2;
+        // LFO para variación suave de volumen
+        const lfo = audioCtx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.08 + Math.random() * 0.15;
+        const lfoG = audioCtx.createGain();
+        lfoG.gain.value = 0.08;
+        lfo.connect(lfoG);
+        lfoG.connect(g.gain);
+        lfo.start();
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start();
+    });
+    // Si hay URL de música configurada, usar audio element
+    if (CONFIG.musica) {
+        masterGain.gain.value = 0;
+        const audio = new Audio(CONFIG.musica);
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.play().catch(() => {});
+        window._bgAudio = audio;
+    }
+}
+
+function toggleMusic() {
+    const btn = document.getElementById('music-btn');
+    if (CONFIG.musica && window._bgAudio) {
+        if (window._bgAudio.paused) {
+            window._bgAudio.play();
+            btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        } else {
+            window._bgAudio.pause();
+            btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        }
+    } else if (masterGain) {
+        if (musicPlaying) {
+            masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+            btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        } else {
+            masterGain.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.5);
+            btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        }
+        musicPlaying = !musicPlaying;
+    }
+}
+
+/* ============================================
+   TYPEWRITER (Intro)
+   ============================================ */
+async function typeWriter(el, text, speed = 45) {
+    for (let i = 0; i < text.length; i++) {
+        el.textContent += text[i];
+        await new Promise(r => setTimeout(r, speed));
+    }
+}
+
+async function runIntro() {
+    const intro = document.getElementById('intro');
+    const textEl = document.getElementById('intro-text');
+    const cursor = document.getElementById('intro-cursor');
+    intro.style.display = 'flex';
+    await new Promise(r => setTimeout(r, 800));
+    await typeWriter(textEl, 'Hay personas que están lejos de nuestros ojos...');
+    await new Promise(r => setTimeout(r, 2000));
+    textEl.innerHTML += '<br>';
+    await typeWriter(textEl, '...pero jamás de nuestro corazón.');
+    cursor.style.display = 'none';
+    await new Promise(r => setTimeout(r, 2500));
+    intro.classList.add('hidden');
+    await new Promise(r => setTimeout(r, 2000));
+    intro.style.display = 'none';
+    startMainExperience();
+}
+
+/* ============================================
+   EXPERIENCIA PRINCIPAL
+   ============================================ */
+function startMainExperience() {
+    document.getElementById('music-btn').style.display = 'flex';
+    initScrollAnimations();
+    startCounter();
+
+    setupAutoScroll();
+}
+
+/* ============================================
+   CONTADOR DE TIEMPO
+   ============================================ */
+function startCounter() {
+    function update() {
+        const now = new Date();
+        const start = new Date(CONFIG.fechaInicio);
+        let diff = now - start;
+        if (diff < 0) diff = 0;
+        const totalDays = diff / (1000 * 60 * 60 * 24);
+        const years = Math.floor(totalDays / 365.25);
+        const remDays = totalDays - years * 365.25;
+        const months = Math.floor(remDays / 30.44);
+        const days = Math.floor(remDays - months * 30.44);
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById('c-y').textContent = years;
+        document.getElementById('c-m').textContent = months;
+        document.getElementById('c-d').textContent = days;
+        document.getElementById('c-h').textContent = String(hours).padStart(2, '0');
+        document.getElementById('c-min').textContent = String(minutes).padStart(2, '0');
+    }
+    update();
+    setInterval(update, 10000);
+}
+
+/* ============================================
+   GENERAR HTML DINÁMICO
+   ============================================ */
+function buildDynamicContent() {
+    // Nombres
+    document.getElementById('name1').textContent = CONFIG.nombre1;
+    document.getElementById('name2').textContent = CONFIG.nombre2;
+    document.getElementById('city1').textContent = CONFIG.ciudadOrigen;
+    document.getElementById('city2').textContent = CONFIG.ciudadDestino;
+    // Firma
+    document.getElementById('sig-name1').textContent = CONFIG.nombre1;
+    document.getElementById('sig-name2').textContent = CONFIG.nombre2;
+    // Galería
+    const galleryStack = document.getElementById('gallery-stack');
+    CONFIG.fotos.forEach(f => {
+        galleryStack.innerHTML += `<div class="photo-card"><img src="${f.url}" alt="Recuerdo" loading="lazy"><p class="photo-caption">${f.frase}</p></div>`;
+    });
+    // Mensajes
+    const msgStack = document.getElementById('messages-stack');
+    CONFIG.mensajes.forEach((m, i) => {
+        msgStack.innerHTML += `<div class="letter-card" data-idx="${i}"><div class="letter-header"><i class="fas fa-envelope letter-icon"></i><span class="letter-num">Carta ${i + 1}</span></div><div class="letter-body"><p>${m}</p></div></div>`;
+    });
+    // Carta manuscrita
+    const hwLines = document.getElementById('hw-lines');
+    CONFIG.carta.forEach(l => {
+        hwLines.innerHTML += `<div class="hw-line">${l}</div>`;
+    });
+    // Cita palabra por palabra
+    const qt = 'La distancia puede separar dos cuerpos... pero jamás dos almas que se aman.';
+    const qtEl = document.getElementById('quote1-text');
+    qt.split(' ').forEach(w => {
+        qtEl.innerHTML += `<span class="word">${w} </span>`;
+    });
+    // Texto lunar palabra por palabra
+    const mt1 = 'Cada noche miro el mismo cielo...';
+    const mt2 = 'esperando el día en que ya no exista distancia entre nosotros.';
+    const moonEl = document.getElementById('moon-text');
+    [...mt1.split(' '), '... ', ...mt2.split(' ')].forEach(w => {
+        moonEl.innerHTML += `<span class="word">${w} </span>`;
+    });
+    // Final
+    document.getElementById('finale-big').textContent = `${CONFIG.nombre1} & ${CONFIG.nombre2}`;
+    // CTA
+    document.getElementById('cta-main').addEventListener('click', () => {
+        const opts = document.getElementById('share-opts');
+        if (opts.style.opacity === '1') {
+            gsap.to(opts, { opacity: 0, height: 0, duration: 0.3 });
+        } else {
+            opts.style.height = 'auto';
+            gsap.to(opts, { opacity: 1, duration: 0.4 });
+        }
+    });
+    // Eventos de compartir
+    document.getElementById('share-whatsapp').addEventListener('click', shareWhatsApp);
+    document.getElementById('share-link').addEventListener('click', copyLink);
+    document.getElementById('share-native').addEventListener('click', shareNative);
+    // Cartas interactivas
+    document.querySelectorAll('.letter-card').forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('open');
+        });
+    });
+}
+
+/* ============================================
+   COMPARTIR
+   ============================================ */
+function shareWhatsApp() {
+    const text = encodeURIComponent(`${CONFIG.nombre1} \u2764 ${CONFIG.nombre2}\n${CONFIG.mensajeFinal}\n${window.location.href}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => showToast('Enlace copiado')).catch(() => showToast('No se pudo copiar'));
+}
+async function shareNative() {
+    if (navigator.share) {
+        try { await navigator.share({ title: 'Amor a Distancia', text: `${CONFIG.nombre1} \u2764 ${CONFIG.nombre2}`, url: window.location.href }); }
+        catch (e) { copyLink(); }
+    } else { copyLink(); }
+}
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ============================================
+   ANIMACIONES SCROLL (GSAP ScrollTrigger)
+   ============================================ */
+function initScrollAnimations() {
+    gsap.registerPlugin(ScrollTrigger);
+    // Nombres
+    gsap.to('.names-display', { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out', scrollTrigger: { trigger: '#hero', start: 'top 60%' } });
+    gsap.from('.names-display', { y: 30 });
+    gsap.to('.city-badge', { opacity: 1, duration: 1, delay: 0.4, scrollTrigger: { trigger: '#hero', start: 'top 60%' } });
+    // Cita palabra por palabra
+    gsap.to('#quote1-text .word', { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out', scrollTrigger: { trigger: '#quote', start: 'top 70%' } });
+    // Contador
+    gsap.to('.counter-title', { opacity: 1, duration: 0.8, scrollTrigger: { trigger: '#counter', start: 'top 70%' } });
+    gsap.to('.counter-grid', { opacity: 1, duration: 1, delay: 0.3, scrollTrigger: { trigger: '#counter', start: 'top 70%' } });
+    // Galería
+    gsap.to('.section-label', { opacity: 1, stagger: 0.3, duration: 0.6, scrollTrigger: { trigger: '#gallery .section-label', start: 'top 80%' } });
+    gsap.utils.toArray('.photo-card').forEach((card, i) => {
+        gsap.to(card, { opacity: 1, y: 0, duration: 0.8, delay: i * 0.1, ease: 'power2.out', scrollTrigger: { trigger: card, start: 'top 85%' } });
+    });
+    // Mensajes
+    gsap.utils.toArray('.letter-card').forEach((card, i) => {
+        gsap.to(card, { opacity: 1, y: 0, duration: 0.6, delay: i * 0.1, scrollTrigger: { trigger: card, start: 'top 85%' } });
+    });
+    // Luna
+    gsap.to('#moon', { opacity: 1, scale: 1, duration: 1.5, ease: 'power2.out', scrollTrigger: { trigger: '#moon-section', start: 'top 60%' } });
+    gsap.from('#moon', { scale: 0.7 });
+    gsap.to('#moon-text .word', { opacity: 1, y: 0, stagger: 0.06, duration: 0.4, scrollTrigger: { trigger: '#moon-text', start: 'top 75%' } });
+    // Carta manuscrita
+    gsap.to('#letter-paper', { opacity: 1, y: 0, duration: 1, ease: 'power2.out', scrollTrigger: { trigger: '#promise', start: 'top 65%' } });
+    // Animación de escritura a mano
+    ScrollTrigger.create({
+        trigger: '#letter-paper',
+        start: 'top 60%',
+        onEnter: () => animateHandwriting(),
+        once: true
+    });
+    // Final
+    gsap.utils.toArray('.finale-text .line').forEach((line, i) => {
+        gsap.to(line, { opacity: 1, y: 0, duration: 0.8, delay: i * 0.6, scrollTrigger: { trigger: '#finale', start: 'top 50%' } });
+    });
+    gsap.to('.finale-big', { opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out', scrollTrigger: { trigger: '#finale', start: 'top 30%' } });
+    gsap.from('.finale-big', { scale: 0.7 });
+    // CTA
+    gsap.to('.cta-btn', { opacity: 1, y: 0, duration: 0.8, scrollTrigger: { trigger: '#cta', start: 'top 80%' } });
+    // Progreso del final para el canvas
+    ScrollTrigger.create({
+        trigger: '#finale',
+        start: 'top bottom',
+        end: 'center center',
+        scrub: 1,
+        onUpdate: self => { finaleProg = self.progress; }
+    });
+    // Scroll general para parallax
+    ScrollTrigger.create({
+        trigger: 'main',
+        start: 'top top',
+        end: 'bottom bottom',
+        onUpdate: self => { scrollProg = self.progress; }
+    });
+}
+
+/* ============================================
+   ANIMACIÓN ESCRITURA A MANO
+   ============================================ */
+async function animateHandwriting() {
+    const lines = document.querySelectorAll('.hw-line');
+    for (const line of lines) {
+        line.style.transition = `width ${line.textContent.length * 0.06}s linear`;
+        line.style.width = '100%';
+        await new Promise(r => setTimeout(r, line.textContent.length * 60 + 200));
+        line.classList.add('done');
+    }
+    await new Promise(r => setTimeout(r, 500));
+    const sig = document.getElementById('signature');
+    sig.classList.add('show');
+}
+
+/* ============================================
+   AUTO SCROLL INTELIGENTE
+   ============================================ */
+
+function goToSection(index) {
+
+    if (!sections.length) return;
+
+    if (index < 0 || index >= sections.length)
+        return;
+
+    currentSection = index;
+
+    sections[index].scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+function nextSection() {
+
+    if (!autoMode) return;
+
+    if (currentSection >= sections.length - 1)
+        return;
+
+    goToSection(currentSection + 1);
+}
+
+function scheduleNextSection(section) {
+
+    if (!autoMode) return;
+
+    clearTimeout(autoScrollTimer);
+
+    const delay =
+        SECTION_DURATIONS[section.id] || 8000;
+
+    autoScrollTimer = setTimeout(() => {
+
+        if (!autoMode) return;
+
+        nextSection();
+
+    }, delay);
+}
+
+function pauseAutoMode() {
+
+    autoMode = false;
+
+    clearTimeout(autoScrollTimer);
+
+    clearTimeout(interactionTimeout);
+
+    interactionTimeout = setTimeout(() => {
+
+        autoMode = true;
+
+        const current =
+            sections[currentSection];
+
+        if (current)
+            scheduleNextSection(current);
+
+    }, 10000);
+}
+
+function setupAutoScroll() {
+
+    sections = [
+        ...document.querySelectorAll('section')
+    ];
+
+    if (!sections.length)
+        return;
+
+    const observer =
+        new IntersectionObserver(
+            entries => {
+
+                entries.forEach(entry => {
+
+                    if (!entry.isIntersecting)
+                        return;
+
+                    const index =
+                        sections.indexOf(entry.target);
+
+                    if (index !== -1)
+                        currentSection = index;
+
+                    scheduleNextSection(entry.target);
+
+                });
+
+            },
+            {
+                threshold: 0.6
+            }
+        );
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+
+    window.addEventListener(
+        'wheel',
+        pauseAutoMode,
+        { passive: true }
+    );
+
+    window.addEventListener(
+        'touchstart',
+        pauseAutoMode,
+        { passive: true }
+    );
+
+    window.addEventListener(
+        'mousedown',
+        pauseAutoMode
+    );
+
+    window.addEventListener(
+        'keydown',
+        pauseAutoMode
+    );
+}
+
+/* ============================================
+   INICIALIZACIÓN
+   ============================================ */
+function init() {
+    buildDynamicContent();
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    render();
+    // Pantalla de inicio
+    document.getElementById('start-screen').addEventListener('click', () => {
+        const ss = document.getElementById('start-screen');
+        ss.classList.add('hidden');
+        setTimeout(() => { ss.style.display = 'none'; }, 1500);
+        initAudio();
+        runIntro();
+    });
+    // Botón música
+    document.getElementById('music-btn').addEventListener('click', toggleMusic);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

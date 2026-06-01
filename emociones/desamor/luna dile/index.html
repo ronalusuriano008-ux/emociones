@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Lo Que Nunca Te Dije</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+/* === VARIABLES DE DISEÑO === */
+:root {
+    --bg:#080808;--fg:#e8dfd4;--muted:#6b5e52;--accent:#c9a96e;
+    --accent-rose:#a06060;--accent-sage:#6b9b6b;--accent-dawn:#d4853a;
+    --card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+    --font-d:'Cormorant Garamond',serif;--font-b:'DM Sans',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:#000;color:var(--fg);font-family:var(--font-b);}
+/* === CAPA DE FONDO FIJA === */
+#bg-layer{position:fixed;inset:0;z-index:0;transition:background 2s ease;}
+/* === VIÑETA CINEMÁTICA === */
+#vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%);}
+/* === GRANO DE PELÍCULA === */
+#grain{position:fixed;inset:-50%;width:200%;height:200%;z-index:9998;pointer-events:none;opacity:0.035;
+    background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    animation:grain .4s steps(1) infinite;}
+@keyframes grain{0%,100%{transform:translate(0)}25%{transform:translate(-3%,-3%)}50%{transform:translate(3%,3%)}75%{transform:translate(-3%,3%)}}
+/* === CANVAS DE PARTÍCULAS === */
+#fx{position:fixed;inset:0;z-index:2;pointer-events:none;}
+/* === CONTENEDOR PRINCIPAL === */
+#experience{position:relative;z-index:3;height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+#experience::-webkit-scrollbar{display:none;}
+/* === ESCENAS === */
+.scene{height:100dvh;min-height:100dvh;scroll-snap-align:start;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;}
+.scene-text{font-family:var(--font-d);font-weight:300;font-size:clamp(1.15rem,4vw,1.6rem);line-height:1.7;
+    text-align:center;max-width:320px;color:var(--fg);opacity:0;letter-spacing:0.01em;}
+.scene-text.italic{font-style:italic;color:rgba(232,223,212,0.85);}
+.scene-sub{font-family:var(--font-b);font-size:0.7rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-top:1rem;opacity:0;}
+/* === ESCENA: APERTURA === */
+#s-opening{background:transparent;}
+#tap-hint{font-family:var(--font-b);font-size:0.72rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;
+    animation:hint-pulse 2.5s ease-in-out infinite;cursor:pointer;margin-top:2rem;}
+@keyframes hint-pulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+#opening-text{font-family:var(--font-d);font-weight:300;font-size:clamp(1.2rem,4.2vw,1.7rem);line-height:1.8;
+    text-align:center;max-width:300px;min-height:4em;color:var(--fg);}
+#opening-text .cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;
+    animation:blink .8s step-end infinite;vertical-align:text-bottom;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+/* === ESCENA: LLUVIA === */
+#s-rain::before{content:'';position:absolute;inset:-30px;
+    background:url('https://picsum.photos/seed/nightcity99/400/900.jpg') center/cover;
+    filter:blur(18px) brightness(0.15);opacity:0.5;z-index:-1;}
+.bokeh{position:absolute;border-radius:50%;pointer-events:none;
+    animation:bokeh-float var(--dur) ease-in-out infinite alternate;animation-delay:var(--del);}
+@keyframes bokeh-float{0%{transform:translate(0,0) scale(1);opacity:var(--o1)}100%{transform:translate(var(--dx),var(--dy)) scale(var(--sc));opacity:var(--o2)}}
+/* === ESCENA: RECUERDOS === */
+.memories-wrap{display:flex;flex-direction:column;align-items:center;gap:1.2rem;width:100%;}
+.mem-card{width:min(240px,70vw);height:180px;border-radius:14px;overflow:hidden;position:relative;
+    box-shadow:0 10px 40px rgba(0,0,0,0.5);opacity:0;transform:translateY(40px) scale(0.95);
+    transition:opacity 1.5s ease,transform 1.5s ease;}
+.mem-card img{width:100%;height:100%;object-fit:cover;filter:saturate(0.6) brightness(0.7) contrast(1.1);}
+.mem-card .mem-overlay{position:absolute;inset:0;
+    background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 60%);
+    display:flex;align-items:flex-end;padding:1rem;}
+.mem-card .mem-text{font-family:var(--font-d);font-style:italic;font-size:0.85rem;color:rgba(232,223,212,0.9);line-height:1.5;}
+/* === ESCENA: LÍNEA TEMPORAL === */
+.timeline{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;max-width:280px;}
+.tl-item{display:flex;flex-direction:column;align-items:center;opacity:0;transform:translateY(20px);}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);border:2px solid var(--muted);
+    transition:all 0.6s ease;flex-shrink:0;}
+.tl-dot.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 20px rgba(201,169,110,0.4);}
+.tl-line{width:2px;height:2.5rem;background:var(--border);flex-shrink:0;}
+.tl-label{font-family:var(--font-d);font-size:0.95rem;color:var(--muted);margin-top:0.5rem;margin-bottom:0.5rem;
+    transition:color 0.6s ease;letter-spacing:0.03em;}
+.tl-label.active{color:var(--fg);}
+.tl-final .tl-dot{width:14px;height:14px;background:var(--accent-sage);border-color:var(--accent-sage);
+    box-shadow:0 0 30px rgba(107,155,107,0.6),0 0 60px rgba(107,155,107,0.2);}
+.tl-final .tl-label{color:var(--accent-sage);font-weight:600;font-size:1.1rem;}
+/* === ESCENA: CARTAS === */
+.letters-wrap{display:flex;flex-direction:column;align-items:center;gap:1.5rem;width:100%;}
+.envelope{width:min(180px,55vw);height:120px;position:relative;cursor:pointer;perspective:800px;
+    opacity:0;transform:translateY(30px);transition:opacity 0.8s,transform 0.8s;}
+.env-back{position:absolute;inset:0;background:linear-gradient(145deg,#c9a96e,#9a7838);border-radius:6px;}
+.env-front{position:absolute;bottom:0;left:0;right:0;height:58%;background:linear-gradient(145deg,#b89858,#8a6828);
+    border-radius:0 0 6px 6px;z-index:2;}
+.env-flap{position:absolute;top:0;left:0;right:0;height:55%;
+    background:linear-gradient(145deg,#d4b87a,#b89850);
+    clip-path:polygon(0 0,50% 100%,100% 0);transform-origin:top center;
+    transition:transform 0.7s cubic-bezier(.4,0,.2,1);z-index:3;}
+.envelope.open .env-flap{transform:rotateX(180deg);}
+.env-letter{position:absolute;inset:12%;background:linear-gradient(to bottom,#f5f0e6,#ede5d8);
+    border-radius:3px;display:flex;align-items:center;justify-content:center;padding:10px;
+    transform:translateY(0);transition:transform 0.5s 0.25s cubic-bezier(.4,0,.2,1);z-index:1;overflow:hidden;}
+.envelope.open .env-letter{transform:translateY(-90%);}
+.env-letter p{font-family:var(--font-d);font-size:0.68rem;color:#3a2a1a;text-align:center;line-height:1.5;font-style:italic;}
+.env-hint{font-family:var(--font-b);font-size:0.65rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-top:1.5rem;opacity:0;}
+/* === ESCENA: RELOJ === */
+#clock-svg{width:min(180px,50vw);height:min(180px,50vw);opacity:0;transform:scale(0.8);}
+.clock-face{fill:none;stroke:var(--muted);stroke-width:1.5;}
+.clock-mark{stroke:var(--muted);stroke-width:1.5;stroke-linecap:round;}
+.clock-hand{stroke-linecap:round;transform-origin:center;}
+.clock-hour{stroke:var(--fg);stroke-width:3;}
+.clock-min{stroke:var(--fg);stroke-width:2;}
+.clock-sec{stroke:var(--accent);stroke-width:1;}
+.clock-center{fill:var(--accent);}
+/* === ESCENA: ÁRBOL === */
+#tree-svg{width:min(200px,55vw);height:min(280px,75vw);opacity:0;}
+.tree-trunk{fill:none;stroke:#4a3525;stroke-linecap:round;}
+.tree-branch{fill:none;stroke:#4a3525;stroke-linecap:round;}
+.tree-leaf{opacity:0;}
+.fog-layer{position:absolute;width:250%;height:25%;opacity:0.04;
+    background:linear-gradient(90deg,transparent,rgba(200,200,210,0.3),transparent,rgba(200,200,210,0.2),transparent);
+    animation:fog-drift var(--fd) linear infinite;}
+@keyframes fog-drift{0%{transform:translateX(0)}100%{transform:translateX(-60%)}}
+/* === ESCENA: SANACIÓN === */
+#healing-tree-svg{width:min(200px,55vw);height:min(280px,75vw);opacity:0;}
+/* === ESCENA: MENSAJE === */
+.msg-line{opacity:0;transform:translateY(15px);}
+/* === ESCENA: FINAL === */
+#silhouette{opacity:0;}
+.sunrise-glow{position:absolute;bottom:10%;left:50%;transform:translateX(-50%);
+    width:300px;height:300px;border-radius:50%;
+    background:radial-gradient(circle,rgba(212,133,58,0.15),transparent 70%);
+    opacity:0;pointer-events:none;}
+/* === ESCENA: CTA === */
+.cta-title{font-family:var(--font-d);font-size:clamp(1.1rem,3.5vw,1.4rem);font-weight:300;
+    text-align:center;margin-bottom:2rem;opacity:0;color:var(--fg);line-height:1.6;}
+.cta-btn{display:flex;align-items:center;gap:0.7rem;padding:0.85rem 1.6rem;border-radius:50px;
+    border:1px solid var(--border);background:var(--card);backdrop-filter:blur(10px);
+    color:var(--fg);font-family:var(--font-b);font-size:0.8rem;cursor:pointer;
+    transition:all 0.3s ease;opacity:0;transform:translateY(15px);text-decoration:none;min-width:200px;justify-content:center;}
+.cta-btn:hover,.cta-btn:focus-visible{background:rgba(201,169,110,0.15);border-color:var(--accent);color:var(--accent);
+    transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,169,110,0.1);}
+.cta-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.cta-btn i{font-size:1rem;width:20px;text-align:center;}
+.cta-wrap{display:flex;flex-direction:column;gap:0.8rem;align-items:center;}
+/* === TOAST === */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);
+    background:rgba(201,169,110,0.2);backdrop-filter:blur(12px);border:1px solid rgba(201,169,110,0.3);
+    color:var(--accent);padding:0.7rem 1.5rem;border-radius:50px;font-family:var(--font-b);
+    font-size:0.75rem;letter-spacing:0.05em;opacity:0;transition:all 0.4s ease;z-index:10000;pointer-events:none;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* === REDUCIR MOVIMIENTO === */
+@media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.2s!important;}
+    #grain{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- Capas fijas -->
+<div id="bg-layer" style="background:#000000;"></div>
+<div id="vignette"></div>
+<canvas id="fx"></canvas>
+<div id="grain"></div>
+
+<!-- Contenedor de experiencia -->
+<main id="experience">
+
+    <!-- 1. APERTURA -->
+    <section id="s-opening" class="scene" data-bg="#000000" data-particles="none" data-rain="0">
+        <div id="opening-text"><span class="cursor"></span></div>
+        <div id="tap-hint">Toca para comenzar</div>
+    </section>
+
+    <!-- 2. LLUVIA -->
+    <section id="s-rain" class="scene" data-bg="#0a0d14" data-particles="rain" data-rain="0.06">
+        <div class="bokeh" style="--size:90px;--x:12%;--y:18%;--blur:22px;--color:rgba(201,169,110,0.25);--dur:8s;--del:0s;--dx:15px;--dy:-20px;--sc:1.3;--o1:0.5;--o2:1;"></div>
+        <div class="bokeh" style="--size:130px;--x:65%;--y:12%;--blur:35px;--color:rgba(255,200,150,0.18);--dur:10s;--del:1s;--dx:-10px;--dy:15px;--sc:1.2;--o1:0.4;--o2:0.9;"></div>
+        <div class="bokeh" style="--size:70px;--x:80%;--y:55%;--blur:18px;--color:rgba(201,169,110,0.2);--dur:7s;--del:0.5s;--dx:20px;--dy:10px;--sc:1.4;--o1:0.3;--o2:0.8;"></div>
+        <div class="bokeh" style="--size:100px;--x:25%;--y:65%;--blur:28px;--color:rgba(255,180,130,0.15);--dur:11s;--del:2s;--dx:-15px;--dy:-10px;--sc:1.1;--o1:0.4;--o2:0.7;"></div>
+        <div class="bokeh" style="--size:55px;--x:50%;--y:35%;--blur:15px;--color:rgba(200,160,100,0.3);--dur:6s;--del:0.8s;--dx:10px;--dy:-15px;--sc:1.5;--o1:0.5;--o2:1;"></div>
+        <div class="bokeh" style="--size:110px;--x:5%;--y:80%;--blur:30px;--color:rgba(180,140,90,0.12);--dur:9s;--del:1.5s;--dx:12px;--dy:-8px;--sc:1.2;--o1:0.3;--o2:0.6;"></div>
+        <div class="bokeh" style="--size:75px;--x:88%;--y:30%;--blur:20px;--color:rgba(220,170,110,0.22);--dur:8.5s;--del:0.3s;--dx:-8px;--dy:18px;--sc:1.3;--o1:0.4;--o2:0.9;"></div>
+        <div class="bokeh" style="--size:60px;--x:40%;--y:78%;--blur:16px;--color:rgba(160,120,80,0.18);--dur:7.5s;--del:2.5s;--dx:14px;--dy:-12px;--sc:1.4;--o1:0.3;--o2:0.7;"></div>
+        <p class="scene-text" style="font-size:clamp(0.8rem,2.8vw,1rem);color:var(--muted);margin-top:auto;margin-bottom:3rem;">
+            Hay noches que guardan lo que el dia no se atreve a sentir.
+        </p>
+    </section>
+
+    <!-- 3. RECUERDOS -->
+    <section id="s-memories" class="scene" data-bg="#0d0a08" data-particles="rain" data-rain="0.04">
+        <div class="memories-wrap" id="memories-container"></div>
+    </section>
+
+    <!-- 4. LÍNEA TEMPORAL -->
+    <section id="s-timeline" class="scene" data-bg="#0d0a08" data-particles="rain" data-rain="0.02">
+        <div class="timeline" id="timeline-container"></div>
+    </section>
+
+    <!-- 5. CARTAS NO ENVIADAS -->
+    <section id="s-letters" class="scene" data-bg="#0a0d14" data-particles="rain" data-rain="0.03">
+        <div class="letters-wrap" id="letters-container"></div>
+        <p class="env-hint" id="env-hint">Toca un sobre para leer</p>
+    </section>
+
+    <!-- 6. RELOJ -->
+    <section id="s-clock" class="scene" data-bg="#050505" data-particles="none" data-rain="0.02">
+        <svg id="clock-svg" viewBox="0 0 200 200">
+            <circle class="clock-face" cx="100" cy="100" r="90"/>
+            <g id="clock-marks"></g>
+            <line class="clock-hand clock-hour" id="clock-h" x1="100" y1="100" x2="100" y2="50"/>
+            <line class="clock-hand clock-min" id="clock-m" x1="100" y1="100" x2="100" y2="30"/>
+            <line class="clock-hand clock-sec" id="clock-s" x1="100" y1="110" x2="100" y2="25"/>
+            <circle class="clock-center" cx="100" cy="100" r="4"/>
+        </svg>
+        <p class="scene-text italic" id="clock-text-1" style="margin-top:2rem;">El tiempo no borra a las personas.</p>
+        <p class="scene-text italic" id="clock-text-2" style="margin-top:1rem;">Solo nos ensena a vivir sin ellas.</p>
+    </section>
+
+    <!-- 7. ÁRBOL SECO -->
+    <section id="s-tree" class="scene" data-bg="#0f0f0f" data-particles="petals" data-rain="0.01">
+        <div class="fog-layer" style="top:30%;--fd:25s;"></div>
+        <div class="fog-layer" style="top:55%;--fd:35s;opacity:0.03;"></div>
+        <div class="fog-layer" style="top:75%;--fd:30s;opacity:0.025;"></div>
+        <svg id="tree-svg" viewBox="0 0 300 400" aria-hidden="true">
+            <path class="tree-trunk" d="M140,400 C138,360 134,310 130,270 C128,250 126,230 128,215 C130,200 136,190 142,180 C147,172 150,163 150,152 C150,142 148,134 145,126" stroke-width="14"/>
+            <path class="tree-trunk" d="M160,400 C162,360 166,310 170,270 C172,250 174,230 172,215 C170,200 164,190 158,180 C153,172 150,163 150,152 C150,142 152,134 155,126" stroke-width="14"/>
+            <path class="tree-branch" d="M143,205 C118,185 85,168 55,158" stroke-width="8"/>
+            <path class="tree-branch" d="M157,205 C182,185 215,168 245,158" stroke-width="8"/>
+            <path class="tree-branch" d="M140,175 C112,148 78,128 48,118" stroke-width="6"/>
+            <path class="tree-branch" d="M160,175 C188,148 222,128 252,118" stroke-width="6"/>
+            <path class="tree-branch" d="M144,148 C124,118 98,92 78,72" stroke-width="4"/>
+            <path class="tree-branch" d="M156,148 C176,118 202,92 222,72" stroke-width="4"/>
+            <path class="tree-branch" d="M148,132 C142,108 138,82 142,55" stroke-width="3"/>
+            <path class="tree-branch" d="M55,158 C40,148 25,142 15,138" stroke-width="3"/>
+            <path class="tree-branch" d="M245,158 C260,148 275,142 285,138" stroke-width="3"/>
+            <path class="tree-branch" d="M48,118 C33,108 22,98 12,92" stroke-width="2.5"/>
+            <path class="tree-branch" d="M252,118 C267,108 278,98 288,92" stroke-width="2.5"/>
+            <path class="tree-branch" d="M78,72 C63,58 52,46 42,38" stroke-width="2"/>
+            <path class="tree-branch" d="M222,72 C237,58 248,46 258,38" stroke-width="2"/>
+            <path class="tree-branch" d="M142,55 C138,40 140,28 145,18" stroke-width="1.5"/>
+            <path class="tree-branch" d="M55,158 C48,170 38,178 28,182" stroke-width="2"/>
+            <path class="tree-branch" d="M245,158 C252,170 262,178 272,182" stroke-width="2"/>
+        </svg>
+        <p class="scene-text italic" id="tree-text-1" style="margin-top:1.5rem;">Dolió perderte.</p>
+        <p class="scene-text italic" id="tree-text-2" style="margin-top:0.8rem;">Pero también dolía perderme a mí intentando retenerte.</p>
+    </section>
+
+    <!-- 8. SANACIÓN -->
+    <section id="s-healing" class="scene" data-bg="#151a10" data-particles="rise" data-rain="0">
+        <svg id="healing-tree-svg" viewBox="0 0 300 400" aria-hidden="true">
+            <path class="tree-trunk" d="M140,400 C138,360 134,310 130,270 C128,250 126,230 128,215 C130,200 136,190 142,180 C147,172 150,163 150,152 C150,142 148,134 145,126" stroke-width="14"/>
+            <path class="tree-trunk" d="M160,400 C162,360 166,310 170,270 C172,250 174,230 172,215 C170,200 164,190 158,180 C153,172 150,163 150,152 C150,142 152,134 155,126" stroke-width="14"/>
+            <path class="tree-branch" d="M143,205 C118,185 85,168 55,158" stroke-width="8"/>
+            <path class="tree-branch" d="M157,205 C182,185 215,168 245,158" stroke-width="8"/>
+            <path class="tree-branch" d="M140,175 C112,148 78,128 48,118" stroke-width="6"/>
+            <path class="tree-branch" d="M160,175 C188,148 222,128 252,118" stroke-width="6"/>
+            <path class="tree-branch" d="M144,148 C124,118 98,92 78,72" stroke-width="4"/>
+            <path class="tree-branch" d="M156,148 C176,118 202,92 222,72" stroke-width="4"/>
+            <path class="tree-branch" d="M148,132 C142,108 138,82 142,55" stroke-width="3"/>
+            <path class="tree-branch" d="M55,158 C40,148 25,142 15,138" stroke-width="3"/>
+            <path class="tree-branch" d="M245,158 C260,148 275,142 285,138" stroke-width="3"/>
+            <path class="tree-branch" d="M48,118 C33,108 22,98 12,92" stroke-width="2.5"/>
+            <path class="tree-branch" d="M252,118 C267,108 278,98 288,92" stroke-width="2.5"/>
+            <path class="tree-branch" d="M78,72 C63,58 52,46 42,38" stroke-width="2"/>
+            <path class="tree-branch" d="M222,72 C237,58 248,46 258,38" stroke-width="2"/>
+            <path class="tree-branch" d="M142,55 C138,40 140,28 145,18" stroke-width="1.5"/>
+            <path class="tree-branch" d="M55,158 C48,170 38,178 28,182" stroke-width="2"/>
+            <path class="tree-branch" d="M245,158 C252,170 262,178 272,182" stroke-width="2"/>
+            <!-- Hojas -->
+            <g id="healing-leaves">
+                <circle class="tree-leaf" cx="55" cy="155" r="16" fill="#4a7a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="40" cy="148" r="12" fill="#5a8a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="245" cy="155" r="16" fill="#4a7a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="260" cy="148" r="12" fill="#5a8a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="48" cy="115" r="14" fill="#5a9a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="32" cy="108" r="10" fill="#4a8a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="252" cy="115" r="14" fill="#5a9a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="268" cy="108" r="10" fill="#4a8a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="78" cy="70" r="12" fill="#4a8a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="65" cy="62" r="9" fill="#5aaa5a" opacity="0"/>
+                <circle class="tree-leaf" cx="222" cy="70" r="12" fill="#4a8a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="235" cy="62" r="9" fill="#5aaa5a" opacity="0"/>
+                <circle class="tree-leaf" cx="143" cy="50" r="14" fill="#5a9a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="145" cy="18" r="10" fill="#4a7a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="15" cy="136" r="8" fill="#5a8a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="285" cy="136" r="8" fill="#5a8a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="12" cy="90" r="9" fill="#4a9a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="288" cy="90" r="9" fill="#4a9a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="42" cy="36" r="8" fill="#5aaa5a" opacity="0"/>
+                <circle class="tree-leaf" cx="258" cy="36" r="8" fill="#5aaa5a" opacity="0"/>
+                <circle class="tree-leaf" cx="28" cy="180" r="10" fill="#4a7a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="272" cy="180" r="10" fill="#4a7a4a" opacity="0"/>
+                <!-- Hojas de relleno -->
+                <circle class="tree-leaf" cx="100" cy="140" r="18" fill="#4a7a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="200" cy="140" r="18" fill="#4a7a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="150" cy="110" r="20" fill="#5a8a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="120" cy="90" r="15" fill="#4a9a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="180" cy="90" r="15" fill="#4a9a4a" opacity="0"/>
+                <circle class="tree-leaf" cx="90" cy="165" r="14" fill="#5a9a5a" opacity="0"/>
+                <circle class="tree-leaf" cx="210" cy="165" r="14" fill="#5a9a5a" opacity="0"/>
+            </g>
+        </svg>
+        <p class="scene-text" id="healing-text" style="margin-top:1.5rem;font-size:clamp(0.95rem,3.2vw,1.2rem);color:var(--accent-sage);">
+            Poco a poco, volví a respirar.
+        </p>
+    </section>
+
+    <!-- 9. MENSAJE PRINCIPAL -->
+    <section id="s-message" class="scene" data-bg="#0d0a08" data-particles="none" data-rain="0">
+        <p class="scene-text msg-line" id="msg-1">No todo lo que termina fracasa.</p>
+        <p class="scene-text msg-line italic" id="msg-2" style="margin-top:1.2rem;">Algunas historias terminan porque ya cumplieron su propósito.</p>
+    </section>
+
+    <!-- 10. FINAL CINEMATOGRÁFICO -->
+    <section id="s-finale" class="scene" data-bg="#1a1510" data-particles="rise" data-rain="0">
+        <div class="sunrise-glow" id="sunrise-glow"></div>
+        <svg id="silhouette" viewBox="0 0 60 130" style="width:min(60px,18vw);height:min(130px,38vw);position:absolute;bottom:18%;left:50%;margin-left:-30px;color:#0a0a0a;" aria-hidden="true">
+            <circle cx="30" cy="10" r="8" fill="currentColor"/>
+            <path d="M30,18 L30,65 M30,28 L16,48 M30,28 L44,46 M30,50 L18,72 M30,50 L42,70 M30,65 L20,100 M30,65 L40,98 M20,100 L16,115 M40,98 L44,113" stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.8rem;margin-bottom:20%;">
+            <p class="scene-text italic" id="fin-1">Gracias por los recuerdos.</p>
+            <p class="scene-text italic" id="fin-2">Perdón por los errores.</p>
+            <p class="scene-text" id="fin-3" style="color:var(--accent);font-weight:400;">Y gracias por ensenarme a volver a elegirme.</p>
+        </div>
+        <p class="scene-sub" id="fin-4" style="position:absolute;bottom:6%;">Algunas personas llegan para quedarse. Otras para ensenarnos a seguir adelante.</p>
+    </section>
+
+    <!-- 11. CTA -->
+    <section id="s-cta" class="scene" data-bg="#1a1510" data-particles="rise" data-rain="0">
+        <p class="cta-title" id="cta-title">Enviar a quien necesite leer esto</p>
+        <div class="cta-wrap" id="cta-wrap">
+            <a class="cta-btn" id="btn-whatsapp" href="#" aria-label="Compartir por WhatsApp">
+                <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
+            </a>
+            <button class="cta-btn" id="btn-copy" aria-label="Copiar enlace">
+                <i class="far fa-copy"></i><span>Copiar enlace</span>
+            </button>
+            <button class="cta-btn" id="btn-share" aria-label="Compartir">
+                <i class="fas fa-share-nodes"></i><span>Compartir</span>
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<!-- Toast -->
+<div id="toast">Enlace copiado</div>
+
+<script>
+/* ==========================================================
+   CONFIGURACIÓN EDITABLE — Modifica estos valores a tu gusto
+   ========================================================== */
+const CONFIG = {
+    nombre: "",
+    mensajeInicial: "Hay despedidas que ocurren mucho antes del adiós.",
+    mensajeInicial2: "Y silencios que dicen más que mil palabras.",
+    mensajeFinal: "Y gracias por enseñarme a volver a elegirme.",
+    fechaRuptura: "",
+
+    /* Frases sobre las fotos de recuerdos */
+    fotos: [
+        { src: "https://picsum.photos/seed/momentx1/400/500.jpg", texto: "Aquí todavía éramos nosotros." },
+        { src: "https://picsum.photos/seed/momentx2/400/500.jpg", texto: "Pensé que sería para siempre." },
+        { src: "https://picsum.photos/seed/momentx3/400/500.jpg", texto: "Nunca imaginé que sería la última vez." }
+    ],
+
+    /* Cartas no enviadas */
+    cartas: [
+        "A veces todavía quiero contarte cómo estuvo mi día.\nPero ya no sé si mi lugar sigue siendo contigo.",
+        "Guardo mensajes que ya no debería leer.\nPero no soy fuerte suficiente para borrarlos.",
+        "Ojalá pudiera decirte todo lo que callé.\nTal vez así entenderías por qué se me quebró la voz."
+    ],
+
+    /* Etapas de la línea temporal */
+    recuerdos: [
+        "Nos conocimos",
+        "Nos enamoramos",
+        "Construimos recuerdos",
+        "Nos alejamos",
+        "Nos perdimos"
+    ],
+
+    /* Texto final de sanación */
+    sanacion: "Sanamos"
+};
+
+/* ==========================================================
+   SISTEMA DE PARTÍCULAS (Canvas 2D)
+   ========================================================== */
+const fxCanvas = document.getElementById('fx');
+const fxCtx = fxCanvas.getContext('2d');
+let particles = [];
+let currentMode = 'none';
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function resizeFx() {
+    fxCanvas.width = window.innerWidth;
+    fxCanvas.height = window.innerHeight;
+}
+resizeFx();
+window.addEventListener('resize', resizeFx);
+
+/* Crea partículas según el modo */
+function spawnParticles(mode) {
+    particles = [];
+    if (reducedMotion) return;
+    const w = fxCanvas.width, h = fxCanvas.height;
+    if (mode === 'rain') {
+        const count = Math.min(120, Math.floor(w * 0.15));
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * w * 1.2 - w * 0.1,
+                y: Math.random() * h,
+                len: 12 + Math.random() * 20,
+                speed: 6 + Math.random() * 8,
+                opacity: 0.08 + Math.random() * 0.15,
+                wind: -0.5
+            });
+        }
+    } else if (mode === 'petals') {
+        const count = Math.min(35, Math.floor(w * 0.06));
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                size: 3 + Math.random() * 5,
+                speedY: 0.4 + Math.random() * 0.8,
+                speedX: -0.3 + Math.random() * 0.6,
+                rot: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.03,
+                opacity: 0.2 + Math.random() * 0.4,
+                sway: Math.random() * Math.PI * 2,
+                swaySpeed: 0.01 + Math.random() * 0.02,
+                swayAmp: 0.5 + Math.random() * 1
+            });
+        }
+    } else if (mode === 'rise') {
+        const count = Math.min(60, Math.floor(w * 0.1));
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: h + Math.random() * h * 0.5,
+                size: 1 + Math.random() * 3,
+                speed: 0.3 + Math.random() * 0.8,
+                opacity: 0.15 + Math.random() * 0.4,
+                drift: (Math.random() - 0.5) * 0.3,
+                pulse: Math.random() * Math.PI * 2,
+                pulseSpeed: 0.02 + Math.random() * 0.03
+            });
+        }
+    }
+}
+
+function updateParticles() {
+    fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+    const w = fxCanvas.width, h = fxCanvas.height;
+
+    if (currentMode === 'rain') {
+        for (const p of particles) {
+            fxCtx.beginPath();
+            fxCtx.moveTo(p.x, p.y);
+            fxCtx.lineTo(p.x + p.wind * 2, p.y + p.len);
+            fxCtx.strokeStyle = `rgba(180,200,220,${p.opacity})`;
+            fxCtx.lineWidth = 1;
+            fxCtx.stroke();
+            p.y += p.speed;
+            p.x += p.wind;
+            if (p.y > h + p.len) { p.y = -p.len; p.x = Math.random() * w * 1.2 - w * 0.1; }
+        }
+    } else if (currentMode === 'petals') {
+        for (const p of particles) {
+            p.sway += p.swaySpeed;
+            p.x += p.speedX + Math.sin(p.sway) * p.swayAmp;
+            p.y += p.speedY;
+            p.rot += p.rotSpeed;
+            fxCtx.save();
+            fxCtx.translate(p.x, p.y);
+            fxCtx.rotate(p.rot);
+            fxCtx.beginPath();
+            /* Forma de pétalo */
+            fxCtx.ellipse(0, 0, p.size, p.size * 0.5, 0, 0, Math.PI * 2);
+            fxCtx.fillStyle = `rgba(180,120,130,${p.opacity})`;
+            fxCtx.fill();
+            fxCtx.restore();
+            if (p.y > h + 20) { p.y = -20; p.x = Math.random() * w; }
+            if (p.x < -20) p.x = w + 20;
+            if (p.x > w + 20) p.x = -20;
+        }
+    } else if (currentMode === 'rise') {
+        for (const p of particles) {
+            p.pulse += p.pulseSpeed;
+            const o = p.opacity * (0.6 + 0.4 * Math.sin(p.pulse));
+            const r = Math.max(0.5, p.size * (0.8 + 0.2 * Math.sin(p.pulse)));
+            fxCtx.beginPath();
+            fxCtx.arc(p.x, p.y, r, 0, Math.PI * 2);
+            fxCtx.fillStyle = `rgba(212,169,110,${o})`;
+            fxCtx.fill();
+            /* Resplandor suave */
+            fxCtx.beginPath();
+            fxCtx.arc(p.x, p.y, r * 3, 0, Math.PI * 2);
+            fxCtx.fillStyle = `rgba(212,169,110,${o * 0.15})`;
+            fxCtx.fill();
+            p.y -= p.speed;
+            p.x += p.drift;
+            if (p.y < -20) { p.y = h + 20; p.x = Math.random() * w; }
+        }
+    }
+    requestAnimationFrame(updateParticles);
+}
+updateParticles();
+
+function setParticleMode(mode) {
+    if (mode === currentMode) return;
+    currentMode = mode;
+    spawnParticles(mode);
+}
+
+/* ==========================================================
+   AUDIO — Lluvia generada con Web Audio API
+   ========================================================== */
+let audioCtx, rainGainNode, rainStarted = false;
+
+function initAudio() {
+    if (rainStarted) return;
+    rainStarted = true;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const bufLen = 2 * audioCtx.sampleRate;
+    const buffer = audioCtx.createBuffer(2, bufLen, audioCtx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+        const data = buffer.getChannelData(ch);
+        for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+    }
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.5;
+
+    const hp = audioCtx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 350;
+
+    rainGainNode = audioCtx.createGain();
+    rainGainNode.gain.value = 0;
+
+    src.connect(bp); bp.connect(hp); hp.connect(rainGainNode); rainGainNode.connect(audioCtx.destination);
+    src.start();
+}
+
+function setRainVolume(v) {
+    if (!rainGainNode) return;
+    const t = audioCtx.currentTime;
+    rainGainNode.gain.cancelScheduledValues(t);
+    rainGainNode.gain.linearRampToValueAtTime(Math.max(0, v), t + 1.5);
+}
+
+/* ==========================================================
+   UTILIDADES
+   ========================================================== */
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function typeText(el, text, speed = 65) {
+    return new Promise(resolve => {
+        /* Conservar cursor si existe */
+        const cursor = el.querySelector('.cursor');
+        el.textContent = '';
+        if (cursor) el.appendChild(cursor);
+        let i = 0;
+        const iv = setInterval(() => {
+            if (i < text.length) {
+                el.insertBefore(document.createTextNode(text[i]), cursor || null);
+                i++;
+            } else {
+                clearInterval(iv);
+                resolve();
+            }
+        }, speed);
+    });
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ==========================================================
+   GENERAR CONTENIDO DINÁMICO
+   ========================================================== */
+function buildMemories() {
+    const c = document.getElementById('memories-container');
+    CONFIG.fotos.forEach((f, i) => {
+        const card = document.createElement('div');
+        card.className = 'mem-card';
+        card.style.transitionDelay = `${i * 0.2}s`;
+        card.innerHTML = `<img src="${f.src}" alt="Recuerdo" loading="lazy"><div class="mem-overlay"><p class="mem-text">"${f.texto}"</p></div>`;
+        c.appendChild(card);
+    });
+}
+
+function buildTimeline() {
+    const c = document.getElementById('timeline-container');
+    const all = [...CONFIG.recuerdos, CONFIG.sanacion];
+    all.forEach((label, i) => {
+        const isFinal = i === all.length - 1;
+        const item = document.createElement('div');
+        item.className = 'tl-item' + (isFinal ? ' tl-final' : '');
+        item.innerHTML = `<div class="tl-dot"></div><div class="tl-line" style="display:${isFinal ? 'none' : 'block'}"></div><span class="tl-label">${label}</span>`;
+        c.appendChild(item);
+    });
+}
+
+function buildLetters() {
+    const c = document.getElementById('letters-container');
+    CONFIG.cartas.forEach((msg, i) => {
+        const env = document.createElement('div');
+        env.className = 'envelope';
+        env.style.transitionDelay = `${i * 0.15}s`;
+        env.setAttribute('role', 'button');
+        env.setAttribute('aria-label', `Abrir carta ${i + 1}`);
+        env.setAttribute('tabindex', '0');
+        env.innerHTML = `<div class="env-back"></div><div class="env-letter"><p>${msg.replace(/\n/g, '<br>')}</p></div><div class="env-front"></div><div class="env-flap"></div>`;
+        env.addEventListener('click', () => toggleLetter(env));
+        env.addEventListener('keydown', e => { if (e.key === 'Enter') toggleLetter(env); });
+        c.appendChild(env);
+    });
+}
+
+function toggleLetter(env) {
+    const wasOpen = env.classList.contains('open');
+    /* Cerrar todas */
+    document.querySelectorAll('.envelope').forEach(e => e.classList.remove('open'));
+    if (!wasOpen) env.classList.add('open');
+}
+
+function buildClockMarks() {
+    const g = document.getElementById('clock-marks');
+    for (let i = 0; i < 12; i++) {
+        const angle = (i * 30) * Math.PI / 180;
+        const r1 = i % 3 === 0 ? 75 : 80;
+        const r2 = 86;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', 100 + r1 * Math.sin(angle));
+        line.setAttribute('y1', 100 - r1 * Math.cos(angle));
+        line.setAttribute('x2', 100 + r2 * Math.sin(angle));
+        line.setAttribute('y2', 100 - r2 * Math.cos(angle));
+        line.setAttribute('class', 'clock-mark');
+        if (i % 3 === 0) line.setAttribute('stroke-width', '2.5');
+        g.appendChild(line);
+    }
+}
+
+/* ==========================================================
+   ANIMACIONES POR ESCENA
+   ========================================================== */
+const animated = new Set();
+let currentSceneId = null;
+
+function playScene(sceneEl) {
+    const id = sceneEl.id;
+    if (animated.has(id)) return;
+    animated.add(id);
+
+    switch (id) {
+        case 's-memories': animMemories(); break;
+        case 's-timeline': animTimeline(); break;
+        case 's-letters': animLetters(); break;
+        case 's-clock': animClock(); break;
+        case 's-tree': animTree(); break;
+        case 's-healing': animHealing(); break;
+        case 's-message': animMessage(); break;
+        case 's-finale': animFinale(); break;
+        case 's-cta': animCTA(); break;
+    }
+}
+
+/* Recuerdos */
+function animMemories() {
+    const cards = document.querySelectorAll('.mem-card');
+    gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 1.2, stagger: 0.4, ease: 'power3.out',
+        onComplete: () => {
+            /* Desvanecer después de un momento */
+            gsap.to(cards, { opacity: 0.15, scale: 0.97, filter: 'blur(4px) saturate(0.2)', duration: 3, delay: 1.5, stagger: 0.3, ease: 'power2.inOut' });
+        }
+    });
+}
+
+/* Línea temporal */
+function animTimeline() {
+    const items = document.querySelectorAll('.tl-item');
+    gsap.to(items, { opacity: 1, y: 0, duration: 0.8, stagger: 0.5, ease: 'power2.out',
+        onStart: function() {
+            items.forEach((item, i) => {
+                setTimeout(() => {
+                    item.querySelector('.tl-dot').classList.add('active');
+                    item.querySelector('.tl-label').classList.add('active');
+                }, i * 500 + 300);
+            });
+        }
+    });
+}
+
+/* Cartas */
+function animLetters() {
+    const envs = document.querySelectorAll('.envelope');
+    gsap.to(envs, { opacity: 1, y: 0, duration: 0.8, stagger: 0.2, ease: 'power2.out' });
+    gsap.to('#env-hint', { opacity: 0.6, duration: 0.6, delay: 1 });
+}
+
+/* Reloj */
+function animClock() {
+    const svg = document.getElementById('clock-svg');
+    gsap.to(svg, { opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out' });
+
+    /* Girar agujas rápido */
+    const h = document.getElementById('clock-h');
+    const m = document.getElementById('clock-m');
+    const s = document.getElementById('clock-s');
+
+    gsap.to(s, { rotation: 3600, transformOrigin: '100px 100px', duration: 4, ease: 'none' });
+    gsap.to(m, { rotation: 720, transformOrigin: '100px 100px', duration: 4, ease: 'power2.inOut' });
+    gsap.to(h, { rotation: 60, transformOrigin: '100px 100px', duration: 4, ease: 'power2.inOut' });
+
+    /* Texto tras el giro */
+    gsap.to('#clock-text-1', { opacity: 1, y: 0, duration: 1, delay: 4.5, ease: 'power2.out' });
+    gsap.to('#clock-text-2', { opacity: 1, y: 0, duration: 1, delay: 6, ease: 'power2.out' });
+}
+
+/* Árbol seco */
+function animTree() {
+    const svg = document.getElementById('tree-svg');
+    gsap.to(svg, { opacity: 1, duration: 1.5, ease: 'power2.out' });
+    gsap.to('#tree-text-1', { opacity: 1, y: 0, duration: 1.2, delay: 1.5, ease: 'power2.out' });
+    gsap.to('#tree-text-2', { opacity: 1, y: 0, duration: 1.2, delay: 3.5, ease: 'power2.out' });
+}
+
+/* Sanación */
+function animHealing() {
+    const svg = document.getElementById('healing-tree-svg');
+    gsap.to(svg, { opacity: 1, duration: 1, ease: 'power2.out' });
+
+    /* Las hojas aparecen con stagger */
+    const leaves = document.querySelectorAll('#healing-leaves .tree-leaf');
+    gsap.to(leaves, { attr: { opacity: 0.7 }, duration: 0.8, stagger: 0.06, delay: 0.5, ease: 'power2.out' });
+
+    /* Fondo se aclara más */
+    gsap.to('#bg-layer', { background: '#1a2515', duration: 3, delay: 1, ease: 'power2.out' });
+
+    gsap.to('#healing-text', { opacity: 1, y: 0, duration: 1.2, delay: 2.5, ease: 'power2.out' });
+}
+
+/* Mensaje principal */
+function animMessage() {
+    gsap.to('#msg-1', { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' });
+    gsap.to('#msg-2', { opacity: 1, y: 0, duration: 1.2, delay: 2, ease: 'power2.out' });
+}
+
+/* Final cinematográfico */
+function animFinale() {
+    /* Amanecer gradual */
+    gsap.to('#bg-layer', {
+        background: 'linear-gradient(to bottom, #1a1510, #2a1a0a, #4a2a10, #7a4a18, #c47830)',
+        duration: 5, ease: 'power2.out'
+    });
+
+    /* Resplandor */
+    gsap.to('#sunrise-glow', { opacity: 1, scale: 1.5, duration: 4, ease: 'power2.out' });
+
+    /* Silueta caminando */
+    const sil = document.getElementById('silhouette');
+    gsap.to(sil, { opacity: 1, duration: 1.5, delay: 1, ease: 'power2.out' });
+    gsap.to(sil, { x: 120, duration: 12, delay: 2, ease: 'none' });
+
+    /* Textos */
+    gsap.to('#fin-1', { opacity: 1, y: 0, duration: 1, delay: 2, ease: 'power2.out' });
+    gsap.to('#fin-2', { opacity: 1, y: 0, duration: 1, delay: 4.5, ease: 'power2.out' });
+    gsap.to('#fin-3', { opacity: 1, y: 0, duration: 1.2, delay: 7, ease: 'power2.out' });
+    gsap.to('#fin-4', { opacity: 0.5, duration: 1, delay: 9.5, ease: 'power2.out' });
+}
+
+/* CTA */
+function animCTA() {
+    gsap.to('#cta-title', { opacity: 1, duration: 1, ease: 'power2.out' });
+    gsap.to('.cta-btn', { opacity: 1, y: 0, duration: 0.8, stagger: 0.15, delay: 0.5, ease: 'power2.out' });
+}
+
+/* ==========================================================
+   OBSERVADOR DE ESCENAS
+   ========================================================== */
+const sceneObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const scene = entry.target;
+        const id = scene.id;
+        currentSceneId = id;
+
+        /* Actualizar partículas y fondo */
+        setParticleMode(scene.dataset.particles || 'none');
+        document.getElementById('bg-layer').style.background = scene.dataset.bg || '#000';
+        setRainVolume(parseFloat(scene.dataset.rain || 0));
+
+        /* Reproducir animación de la escena */
+        playScene(scene);
+    });
+}, { threshold: 0.45 });
+
+/* ==========================================================
+   APERTURA — Secuencia inicial
+   ========================================================== */
+let openingPlayed = false;
+
+async function playOpening() {
+    if (openingPlayed) return;
+    openingPlayed = true;
+
+    initAudio();
+    setRainVolume(0.04);
+
+    const hint = document.getElementById('tap-hint');
+    gsap.to(hint, { opacity: 0, duration: 0.5 });
+
+    const el = document.getElementById('opening-text');
+
+    await typeText(el, CONFIG.mensajeInicial, 60);
+    await wait(2200);
+
+    /* Borrar y escribir segunda frase */
+    const cursor = el.querySelector('.cursor');
+    gsap.to(el, { opacity: 0, duration: 0.8, onComplete: async () => {
+        el.textContent = '';
+        if (cursor) el.appendChild(cursor);
+        gsap.to(el, { opacity: 1, duration: 0.5 });
+        await typeText(el, CONFIG.mensajeInicial2, 60);
+        await wait(2500);
+        /* Fundido y avanzar */
+        gsap.to('#s-opening', { opacity: 0, duration: 1.5, ease: 'power2.inOut',
+            onComplete: () => {
+                document.getElementById('experience').scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+            }
+        });
+    }});
+}
+
+/* ==========================================================
+   COMPARTIR
+   ========================================================== */
+function setupCTA() {
+    const url = window.location.href;
+    const text = 'Lo Que Nunca Te Dije — Una experiencia que quizás necesites sentir.';
+
+    document.getElementById('btn-whatsapp').href =
+        `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+
+    document.getElementById('btn-copy').addEventListener('click', () => {
+        navigator.clipboard.writeText(url).then(() => showToast('Enlace copiado')).catch(() => showToast('No se pudo copiar'));
+    });
+
+    const shareBtn = document.getElementById('btn-share');
+    if (navigator.share) {
+        shareBtn.addEventListener('click', () => {
+            navigator.share({ title: 'Lo Que Nunca Te Dije', text: text, url: url }).catch(() => {});
+        });
+    } else {
+        shareBtn.style.display = 'none';
+    }
+}
+
+/* ==========================================================
+   INICIALIZACIÓN
+   ========================================================== */
+function init() {
+    /* Construir contenido dinámico */
+    buildMemories();
+    buildTimeline();
+    buildLetters();
+    buildClockMarks();
+
+    /* Observar todas las escenas */
+    document.querySelectorAll('.scene').forEach(s => sceneObserver.observe(s));
+
+    /* Evento de apertura */
+    document.getElementById('s-opening').addEventListener('click', playOpening);
+    document.getElementById('s-opening').addEventListener('touchend', (e) => { e.preventDefault(); playOpening(); });
+
+    /* CTA */
+    setupCTA();
+
+    /* Inicializar partículas en modo vacío */
+    spawnParticles('none');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
