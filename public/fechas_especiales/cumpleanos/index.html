@@ -207,22 +207,46 @@ class AudioEngine {
 
 const audio = new AudioEngine();
 
-// ═══════════════════════════════════════════
-// UTILIDAD: TEXTO A PARTÍCULAS
-// ═══════════════════════════════════════════
+//utlidad convertir texto a posiciones para partículas
+
 function textToPositions(text, fontSize = 120, density = 2) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
+
+  const lines = text.split('\n');
+
   ctx.font = `bold ${fontSize}px 'Cormorant Garamond', serif`;
-  const m = ctx.measureText(text);
-  canvas.width = Math.ceil(m.width) + 40;
-  canvas.height = fontSize * 1.5;
+
+  const maxWidth = Math.max(
+    ...lines.map(line => ctx.measureText(line).width)
+  );
+
+  const lineHeight = fontSize * 1.25;
+
+  canvas.width = Math.ceil(maxWidth) + 40;
+  canvas.height = Math.ceil(lines.length * lineHeight) + 40;
+
   ctx.font = `bold ${fontSize}px 'Cormorant Garamond', serif`;
   ctx.fillStyle = '#fff';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, 20, canvas.height / 2);
+  ctx.textAlign = 'center';
 
-  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  lines.forEach((line, i) => {
+    const y =
+      20 +
+      lineHeight / 2 +
+      i * lineHeight;
+
+    ctx.fillText(line, canvas.width / 2, y);
+  });
+
+  const data = ctx.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  ).data;
+
   const positions = [];
   const step = Math.max(1, Math.round(density));
 
@@ -237,9 +261,9 @@ function textToPositions(text, fontSize = 120, density = 2) {
       }
     }
   }
+
   return new Float32Array(positions);
 }
-
 // ═══════════════════════════════════════════
 // UTILIDAD: CREAR PARTÍCULAS
 // ═══════════════════════════════════════════
@@ -638,7 +662,8 @@ function createScene1() {
   updates.push((t) => { cosmicDust.material.uniforms.uTime.value = t; });
 
   // ── PARTÍCULAS QUE FORMARÁN LA FECHA ──
-  const dateText = '09 / 07 / 2000';
+
+  const dateText = 'Feliz Cumpleaños\n09 / 07 / 2000';
   const targetPositions = textToPositions(dateText, 90, 1.6);
   const particleCount = targetPositions.length / 3;
 
@@ -1486,15 +1511,36 @@ function createScene2() {
     cCtx.stroke();
   });
 
-  // Texto "HOMERO" con efecto de brillo
-  cCtx.font = 'bold 120px Cormorant Garamond, serif';
-  cCtx.textAlign = 'center';
-  cCtx.textBaseline = 'middle';
-  cCtx.shadowColor = '#ffd700';
-  cCtx.shadowBlur = 30;
-  cCtx.fillStyle = '#c9a84c';
-  cCtx.fillText('HOMERO', 512, 200);
-  cCtx.shadowBlur = 0;
+  // Texto con efecto de brillo
+cCtx.font = 'bold 120px Cormorant Garamond, serif';
+cCtx.textAlign = 'center';
+cCtx.textBaseline = 'middle';
+cCtx.shadowColor = '#ffd700';
+cCtx.shadowBlur = 30;
+cCtx.fillStyle = '#c9a84c';
+
+const lines = ['HOMERO', '09-07-2000'];
+const lineHeight = 100;
+
+// Centrar el bloque de texto respecto a y = 200
+const startY = 200 - ((lines.length - 1) * lineHeight) / 2;
+
+lines.forEach((line, i) => {
+  cCtx.fillText(
+    line,
+    512,
+    startY + i * lineHeight
+  );
+});
+
+
+// Frase inferior
+cCtx.font = 'italic 26px Great Vibes, cursive';
+cCtx.fillStyle = '#ffd700';
+cCtx.fillText('Que todos tus sueños brillen hoy', 512, 380);
+
+
+cCtx.shadowBlur = 0;
   
   // Símbolo de corazón bajo el nombre
   cCtx.font = '60px serif';
