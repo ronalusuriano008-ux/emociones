@@ -1,0 +1,11 @@
+[
+  { "id": "amor", "nombre": "Amor", "emoji": "❤️", "c1": "#FF3CAC", "c2": "#FF7A18", "desc": "La fuerza que mueve todo" },
+  { "id": "amistad", "nombre": "Amistad", "emoji": "🤝", "c1": "#00E5FF", "c2": "#0EA5E9", "desc": "El vínculo esencial" },
+  { "id": "tristeza", "nombre": "Tristeza", "emoji": "🌧️", "c1": "#7C3AED", "c2": "#8B5CF6", "desc": "El eco de lo que importó" },
+  { "id": "esperanza", "nombre": "Esperanza", "emoji": "✨", "c1": "#FF7A18", "c2": "#F97316", "desc": "La luz que no se apaga" },
+  { "id": "motivacion", "nombre": "Motivación", "emoji": "🔥", "c1": "#F97316", "c2": "#FF3CAC", "desc": "Tu mejor versión" },
+  { "id": "gratitud", "nombre": "Gratitud", "emoji": "🙏", "c1": "#0EA5E9", "c2": "#00E5FF", "desc": "Reconocimiento del alma" },
+  { "id": "paz", "nombre": "Paz", "emoji": "🕊️", "c1": "#8B5CF6", "c2": "#00E5FF", "desc": "El silencio que habla" },
+  { "id": "suenos", "nombre": "Sueños", "emoji": "🌙", "c1": "#EC4899", "c2": "#7C3AED", "desc": "El mundo en ti" },
+  { "id": "admiracion", "nombre": "Admiración", "emoji": "⭐", "c1": "#00E5FF", "c2": "#8B5CF6", "desc": "Reflejo de grandeza" }
+]

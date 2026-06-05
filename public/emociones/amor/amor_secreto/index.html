@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Amor Secreto — Dedicatoria Cinematográfica</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rose: #FF6B9D;
+  --magenta: #C850C0;
+  --purple: #6A0DAD;
+  --night: #0A0A2E;
+  --deep: #050515;
+  --white: #FFF8FA;
+  --glow: rgba(255,107,157,0.6);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--deep);font-family:'Lora',serif;color:var(--white)}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:1}
+
+/* Viñeta cinematográfica */
+#vignette{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 50%,rgba(5,5,21,0.7) 100%)}
+
+/* Barras cinematográficas */
+.letterbox{position:fixed;left:0;right:0;height:6vh;background:#000;z-index:3;pointer-events:none}
+.letterbox.top{top:0}
+.letterbox.bottom{bottom:0}
+
+/* Pantalla de inicio */
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--deep);transition:opacity 1.5s ease}
+#splash.hide{opacity:0;pointer-events:none}
+#splash h1{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(2rem,6vw,3.5rem);
+  color:var(--rose);letter-spacing:0.15em;margin-bottom:0.3em;
+  text-shadow:0 0 30px rgba(255,107,157,0.4),0 0 60px rgba(200,80,192,0.2)}
+#splash p{font-size:clamp(0.85rem,2.5vw,1.1rem);color:rgba(255,248,250,0.5);margin-bottom:2em;
+  font-style:italic;text-align:center;max-width:80vw}
+.glass-input{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,107,157,0.2);border-radius:16px;padding:1em 1.5em;width:min(320px,80vw);
+  color:var(--white);font-family:'Lora',serif;font-size:1rem;outline:none;text-align:center;
+  transition:border-color 0.4s,box-shadow 0.4s}
+.glass-input::placeholder{color:rgba(255,248,250,0.3)}
+.glass-input:focus{border-color:var(--rose);box-shadow:0 0 20px rgba(255,107,157,0.15)}
+.start-btn{margin-top:1.5em;background:linear-gradient(135deg,var(--rose),var(--magenta));
+  border:none;border-radius:50px;padding:0.9em 2.5em;color:#fff;font-family:'Cinzel',serif;
+  font-size:clamp(0.85rem,2.5vw,1rem);font-weight:600;letter-spacing:0.1em;cursor:pointer;
+  box-shadow:0 4px 30px rgba(255,107,157,0.3);transition:transform 0.3s,box-shadow 0.3s;
+  animation:pulse-btn 2.5s ease-in-out infinite}
+.start-btn:active{transform:scale(0.96)}
+@keyframes pulse-btn{0%,100%{box-shadow:0 4px 30px rgba(255,107,157,0.3)}50%{box-shadow:0 4px 50px rgba(255,107,157,0.5)}}
+
+/* Escenas */
+.scene{position:fixed;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;transition:opacity 1.2s ease;padding:8vh 5vw}
+.scene.active{opacity:1;pointer-events:auto}
+.scene-line{font-family:'Cinzel',serif;font-weight:400;text-align:center;opacity:0;
+  transform:translateY(25px);transition:opacity 1.4s ease,transform 1.4s ease;
+  text-shadow:0 0 40px rgba(255,107,157,0.3);line-height:1.6}
+.scene-line.visible{opacity:1;transform:translateY(0)}
+.scene-line.big{font-size:clamp(1.4rem,5vw,2.8rem);font-weight:700;color:var(--white)}
+.scene-line.medium{font-size:clamp(1rem,3.5vw,1.6rem);color:rgba(255,248,250,0.85)}
+.scene-line.small{font-size:clamp(0.85rem,2.5vw,1.1rem);color:rgba(255,248,250,0.6);font-style:italic}
+.scene-line.name{font-family:'Cinzel',serif;font-weight:900;
+  font-size:clamp(2rem,8vw,4.5rem);color:var(--rose);
+  text-shadow:0 0 40px rgba(255,107,157,0.5),0 0 80px rgba(200,80,192,0.3);
+  letter-spacing:0.08em;margin-top:0.3em}
+
+/* Continuar */
+#continue{position:fixed;bottom:8vh;left:50%;transform:translateX(-50%);z-index:10;
+  font-family:'Lora',serif;font-size:0.75rem;color:rgba(255,248,250,0.35);
+  letter-spacing:0.15em;text-transform:uppercase;opacity:0;transition:opacity 0.8s;
+  animation:breathe 2.5s ease-in-out infinite}
+#continue.show{opacity:1}
+@keyframes breathe{0%,100%{opacity:0.35}50%{opacity:0.6}}
+
+/* Progreso */
+#progress{position:fixed;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--rose),var(--magenta));
+  z-index:11;transition:width 1s ease;width:0}
+
+/* Audio toggle */
+#audio-toggle{position:fixed;top:8vh;right:4vw;z-index:12;width:36px;height:36px;
+  border-radius:50%;background:rgba(255,255,255,0.06);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,107,157,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:opacity 0.5s;opacity:0}
+#audio-toggle.show{opacity:1}
+#audio-toggle svg{width:16px;height:16px;fill:rgba(255,248,250,0.5)}
+
+/* Replay */
+#replay{position:fixed;bottom:12vh;left:50%;transform:translateX(-50%);z-index:10;
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,107,157,0.25);
+  border-radius:50px;padding:0.7em 2em;color:var(--white);font-family:'Cinzel',serif;
+  font-size:0.8rem;letter-spacing:0.1em;cursor:pointer;opacity:0;transition:opacity 1s,transform 0.3s;
+  pointer-events:none}
+#replay.show{opacity:1;pointer-events:auto}
+#replay:active{transform:translateX(-50%) scale(0.95)}
+
+/* Flash */
+#flash{position:fixed;inset:0;z-index:5;background:#fff;opacity:0;pointer-events:none;
+  transition:opacity 0.15s ease}
+#flash.fire{opacity:0.7;transition:none}
+
+/* Responsive */
+@media(max-width:480px){
+  .letterbox{height:4vh}
+  .scene{padding:6vh 6vw}
+}
+@media(prefers-reduced-motion:reduce){
+  .scene-line{transition:opacity 0.5s ease !important;transform:none !important}
+  #continue{animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<!-- Pantalla de inicio -->
+<div id="splash">
+  <h1>Amor Secreto</h1>
+  <p>Una dedicatoria cinematográfica para quien habita en silencio tu corazón</p>
+  <input class="glass-input" id="nameInput" type="text" placeholder="Escribe su nombre..." maxlength="24" autocomplete="off">
+  <button class="start-btn" id="startBtn">Comenzar la experiencia</button>
+</div>
+
+<!-- Canvas de efectos -->
+<canvas id="fx"></canvas>
+
+<!-- Overlays cinematográficos -->
+<div id="vignette"></div>
+<div class="letterbox top"></div>
+<div class="letterbox bottom"></div>
+<div id="flash"></div>
+
+<!-- Escenas -->
+<div class="scene" id="s0">
+  <div class="scene-line small" data-delay="800">A veces...</div>
+  <div class="scene-line medium" data-delay="2800">El corazón guarda secretos...</div>
+</div>
+
+<div class="scene" id="s1">
+  <div class="scene-line medium" data-delay="600">No sé cuándo empezó...</div>
+  <div class="scene-line small" data-delay="2600">Pero desde aquel día...</div>
+</div>
+
+<div class="scene" id="s2">
+  <div class="scene-line medium" data-delay="500">Hay alguien...</div>
+  <div class="scene-line big" data-delay="2200">Que ocupa mis pensamientos</div>
+  <div class="scene-line small" data-delay="4200">Sin saberlo.</div>
+</div>
+
+<div class="scene" id="s3">
+  <div class="scene-line medium" data-delay="500">Cada sonrisa tuya...</div>
+  <div class="scene-line big" data-delay="2500">Se quedó viviendo en mi mente.</div>
+</div>
+
+<div class="scene" id="s4">
+  <div class="scene-line medium" data-delay="600">Y aunque nunca te lo dije...</div>
+  <div class="scene-line big" data-delay="2800">Mi corazón ya conocía tu nombre.</div>
+</div>
+
+<div class="scene" id="s5">
+  <div class="scene-line medium" data-delay="500">Tal vez nunca lo supiste...</div>
+  <div class="scene-line big" data-delay="2500">Pero te he querido en silencio.</div>
+</div>
+
+<div class="scene" id="s6">
+  <div class="scene-line medium" data-delay="500">Mi amor secreto...</div>
+  <div class="scene-line big" data-delay="2000">Siempre fuiste tú.</div>
+  <div class="scene-line name" data-delay="4000" id="nameDisplay"></div>
+</div>
+
+<!-- UI -->
+<div id="continue">Toca para continuar</div>
+<div id="progress"></div>
+<button id="audio-toggle" aria-label="Alternar audio">
+  <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.5v7a4.47 4.47 0 002.5-3.5zM14 3.23v2.06a6.99 6.99 0 010 13.42v2.06A9 9 0 0014 3.23z"/></svg>
+</button>
+<button id="replay">Repetir experiencia</button>
+
+<script>
+// ========================================
+// CONFIGURACIÓN GLOBAL
+// ========================================
+const CFG = {
+  maxParticles: 250,
+  sceneDuration: 6500,
+  transitionTime: 1200,
+  colors: {
+    rose: '#FF6B9D', magenta: '#C850C0', purple: '#6A0DAD',
+    night: '#0A0A2E', deep: '#050515', white: '#FFF8FA',
+    warmWhite: '#FFE4EC', gold: '#FFD700'
+  }
+};
+
+// ========================================
+// MOTOR DE AUDIO — Web Audio API
+// ========================================
+const Audio = {
+  ctx: null, master: null, muted: false, padNodes: [], initialized: false,
+
+  init() {
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.25;
+      this.master.connect(this.ctx.destination);
+      this.initialized = true;
+    } catch(e) { console.warn('Audio no disponible'); }
+  },
+
+  // Pad ambiental: dos osciladores desafinados + filtro paso bajo
+  startPad() {
+    if (!this.initialized || this.padNodes.length) return;
+    const now = this.ctx.currentTime;
+    const freqs = [130.81, 164.81, 196.00]; // C3, E3, G3
+    freqs.forEach((f, i) => {
+      const osc = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+      osc.type = 'sine'; osc.frequency.value = f;
+      osc2.type = 'sine'; osc2.frequency.value = f + 1.5;
+      filter.type = 'lowpass'; filter.frequency.value = 400 + i * 100;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.06, now + 3);
+      osc.connect(filter); osc2.connect(filter);
+      filter.connect(gain); gain.connect(this.master);
+      osc.start(); osc2.start();
+      this.padNodes.push({osc, osc2, gain, filter});
+    });
+  },
+
+  // Nota tipo piano con envolvente
+  playNote(freq, delay = 0, dur = 3) {
+    if (!this.initialized || this.muted) return;
+    const now = this.ctx.currentTime + delay;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = freq;
+    // Armónico suave
+    const osc2 = this.ctx.createOscillator();
+    osc2.type = 'sine'; osc2.frequency.value = freq * 2;
+    const g2 = this.ctx.createGain();
+    g2.gain.setValueAtTime(0, now);
+    g2.gain.linearRampToValueAtTime(0.015, now + 0.05);
+    g2.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.6);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.15, now + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    osc.connect(gain); osc2.connect(g2);
+    gain.connect(this.master); g2.connect(this.master);
+    osc.start(now); osc.stop(now + dur);
+    osc2.start(now); osc2.stop(now + dur);
+  },
+
+  // Progresión emocional por escena
+  playSceneNotes(scene) {
+    if (!this.initialized || this.muted) return;
+    const progressions = {
+      0: [261.63, 329.63],         // C4, E4
+      1: [293.66, 349.23],         // D4, F4
+      2: [329.63, 392.00, 493.88], // E4, G4, B4
+      3: [349.23, 440.00],         // F4, A4
+      4: [293.66, 392.00],         // D4, G4
+      5: [261.63, 329.63, 523.25], // C4, E4, C5
+      6: [261.63, 329.63, 392.00, 523.25] // C4, E4, G4, C5
+    };
+    const notes = progressions[scene] || [];
+    notes.forEach((n, i) => this.playNote(n, i * 0.6, 4));
+  },
+
+  toggleMute() {
+    this.muted = !this.muted;
+    if (this.master) this.master.gain.value = this.muted ? 0 : 0.25;
+  }
+};
+
+// ========================================
+// CANVAS Y PARTÍCULAS
+// ========================================
+const canvas = document.getElementById('fx');
+const ctx = canvas.getContext('2d');
+let W, H, dpr;
+
+function resizeCanvas() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Pool de partículas
+const particles = [];
+class Particle {
+  constructor() { this.alive = false; this.reset(); }
+  reset() {
+    this.x = 0; this.y = 0; this.vx = 0; this.vy = 0;
+    this.size = 2; this.alpha = 1; this.life = 1; this.decay = 0.005;
+    this.color = CFG.colors.white; this.type = 'circle';
+    this.rotation = 0; this.rotSpeed = 0; this.wobble = 0; this.wobbleSpeed = 0;
+    this.gravity = 0; this.drag = 0.99; this.alive = false;
+  }
+  spawn(cfg) {
+    this.reset();
+    Object.assign(this, cfg);
+    this.alive = true;
+  }
+  update(dt) {
+    if (!this.alive) return;
+    const s = dt / 16;
+    this.vy += this.gravity * s;
+    this.vx *= this.drag; this.vy *= this.drag;
+    this.x += this.vx * s; this.y += this.vy * s;
+    this.rotation += this.rotSpeed * s;
+    if (this.wobbleSpeed) this.wobble += this.wobbleSpeed * s;
+    this.life -= this.decay * s;
+    this.alpha = Math.max(0, this.life);
+    if (this.life <= 0) this.alive = false;
+  }
+  draw(c) {
+    if (!this.alive || this.alpha < 0.01) return;
+    c.save();
+    c.globalAlpha = this.alpha;
+    c.translate(this.x, this.y);
+    c.rotate(this.rotation);
+    if (this.type === 'circle') {
+      c.beginPath();
+      c.arc(0, 0, Math.max(0.5, this.size), 0, Math.PI * 2);
+      c.fillStyle = this.color;
+      c.fill();
+    } else if (this.type === 'glow') {
+      const r = Math.max(1, this.size);
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, r);
+      g.addColorStop(0, this.color);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = g;
+      c.fillRect(-r, -r, r * 2, r * 2);
+    } else if (this.type === 'rain') {
+      c.strokeStyle = this.color;
+      c.lineWidth = this.size;
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.lineTo(this.vx * 0.3, this.vy * 0.3);
+      c.stroke();
+    } else if (this.type === 'petal') {
+      c.fillStyle = this.color;
+      c.beginPath();
+      c.ellipse(0, 0, Math.max(1, this.size), Math.max(0.5, this.size * 0.5), 0, 0, Math.PI * 2);
+      c.fill();
+    } else if (this.type === 'bokeh') {
+      const r = Math.max(1, this.size);
+      const g = c.createRadialGradient(0, 0, r * 0.2, 0, 0, r);
+      g.addColorStop(0, this.color);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(0, 0, r, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
+  }
+}
+// Crear pool
+for (let i = 0; i < CFG.maxParticles; i++) particles.push(new Particle());
+
+function spawn(cfg) {
+  for (const p of particles) {
+    if (!p.alive) { p.spawn(cfg); return p; }
+  }
+  return null;
+}
+function spawnMultiple(count, cfgFn) {
+  for (let i = 0; i < count; i++) {
+    const p = spawn(cfgFn(i));
+    if (!p) break;
+  }
+}
+
+// ========================================
+// DATOS PRECOMPUTADOS
+// ========================================
+
+// Galaxia espiral
+const galaxyPts = [];
+for (let i = 0; i < 180; i++) {
+  const arm = i % 3;
+  const baseAngle = arm * (Math.PI * 2 / 3);
+  const dist = (i / 180) * Math.min(W, H) * 0.35;
+  const angle = baseAngle + dist * 0.025;
+  const jx = (Math.random() - 0.5) * 12;
+  const jy = (Math.random() - 0.5) * 12;
+  galaxyPts.push({ angle, dist, jx, jy, size: Math.random() * 1.5 + 0.5,
+    alpha: Math.random() * 0.5 + 0.3 });
+}
+
+// Corazón paramétrico
+function heartPoint(t, scale) {
+  const x = 16 * Math.pow(Math.sin(t), 3);
+  const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+  return { x: x * scale, y: y * scale };
+}
+const heartPts = [];
+for (let t = 0; t < Math.PI * 2; t += 0.08) {
+  heartPts.push(heartPoint(t, 1));
+}
+
+// Constelación para escena final
+const constellationPts = [];
+const constellationLines = [];
+for (let t = 0; t < Math.PI * 2; t += 0.25) {
+  constellationPts.push(heartPoint(t, 6));
+}
+// Líneas conectando puntos cercanos
+for (let i = 0; i < constellationPts.length; i++) {
+  const next = (i + 1) % constellationPts.length;
+  constellationLines.push([i, next]);
+  if (i % 3 === 0 && i + 3 < constellationPts.length) {
+    constellationLines.push([i, i + 3]);
+  }
+}
+
+// ========================================
+// RENDERIZADO POR ESCENA
+// ========================================
+let currentScene = -1;
+let sceneTime = 0;
+let transitioning = false;
+let transAlpha = 0;
+let globalTime = 0;
+let recipientName = 'alguien especial';
+
+const sceneRenderers = {
+
+  // Escena 0: Nacimiento de estrella
+  0(c, t, dt) {
+    // Fondo oscuro con gradiente sutil
+    const bg = c.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.6);
+    bg.addColorStop(0, '#0d0d30');
+    bg.addColorStop(1, '#050515');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Estrella central con brillo pulsante
+    const pulse = 0.6 + Math.sin(t * 0.002) * 0.4;
+    const starR = 3 + pulse * 2;
+
+    // Halo exterior
+    const halo = c.createRadialGradient(W/2, H/2, 0, W/2, H/2, 120 * pulse);
+    halo.addColorStop(0, 'rgba(255,200,220,0.3)');
+    halo.addColorStop(0.5, 'rgba(255,107,157,0.08)');
+    halo.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = halo;
+    c.fillRect(W/2 - 150, H/2 - 150, 300, 300);
+
+    // Lens flare horizontal
+    c.save();
+    c.globalAlpha = 0.15 * pulse;
+    const flare = c.createLinearGradient(W/2 - 200, H/2, W/2 + 200, H/2);
+    flare.addColorStop(0, 'rgba(0,0,0,0)');
+    flare.addColorStop(0.5, 'rgba(255,200,220,0.8)');
+    flare.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = flare;
+    c.fillRect(W/2 - 200, H/2 - 1.5, 400, 3);
+    c.restore();
+
+    // Núcleo de la estrella
+    c.beginPath();
+    c.arc(W/2, H/2, Math.max(0.5, starR), 0, Math.PI * 2);
+    c.fillStyle = '#fff';
+    c.fill();
+
+    // Emitir partículas desde la estrella
+    if (Math.random() < 0.3) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 0.8 + 0.2;
+      spawn({
+        x: W/2, y: H/2,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        size: Math.random() * 2 + 1, decay: 0.008,
+        color: `rgba(255,${150 + Math.random()*100|0},${180 + Math.random()*75|0},1)`,
+        type: 'glow', gravity: 0, drag: 0.995
+      });
+    }
+
+    // Estrellas de fondo
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    for (let i = 0; i < 60; i++) {
+      const sx = ((i * 137.5) % W);
+      const sy = ((i * 73.3 + 50) % H);
+      const twinkle = 0.3 + Math.sin(t * 0.003 + i) * 0.3;
+      c.globalAlpha = twinkle;
+      c.fillRect(sx, sy, 1, 1);
+    }
+    c.globalAlpha = 1;
+  },
+
+  // Escena 1: Encuentro bajo la luna
+  1(c, t, dt) {
+    // Cielo nocturno
+    const bg = c.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#0a0a2e');
+    bg.addColorStop(0.6, '#1a1040');
+    bg.addColorStop(1, '#2a1545');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Luna
+    const moonX = W * 0.7, moonY = H * 0.25, moonR = Math.min(W, H) * 0.08;
+    const moonGlow = c.createRadialGradient(moonX, moonY, moonR * 0.3, moonX, moonY, moonR * 3);
+    moonGlow.addColorStop(0, 'rgba(255,230,210,0.25)');
+    moonGlow.addColorStop(0.5, 'rgba(200,180,255,0.05)');
+    moonGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = moonGlow;
+    c.fillRect(moonX - moonR*3, moonY - moonR*3, moonR*6, moonR*6);
+
+    c.beginPath();
+    c.arc(moonX, moonY, Math.max(1, moonR), 0, Math.PI * 2);
+    c.fillStyle = 'rgba(255,240,230,0.9)';
+    c.fill();
+
+    // Luces bokeh de ciudad
+    if (Math.random() < 0.15) {
+      spawn({
+        x: Math.random() * W, y: H * 0.5 + Math.random() * H * 0.4,
+        vx: (Math.random() - 0.5) * 0.1, vy: -Math.random() * 0.05,
+        size: Math.random() * 15 + 5, decay: 0.003,
+        color: `rgba(${200 + Math.random()*55|0},${150 + Math.random()*80|0},${100 + Math.random()*50|0},0.15)`,
+        type: 'bokeh', gravity: 0, drag: 1
+      });
+    }
+
+    // Lluvia ligera
+    if (Math.random() < 0.4) {
+      spawn({
+        x: Math.random() * W, y: -10,
+        vx: -0.5, vy: 6 + Math.random() * 4,
+        size: 0.8, decay: 0.012,
+        color: 'rgba(180,200,255,0.25)', type: 'rain',
+        gravity: 0.05, drag: 0.99
+      });
+    }
+  },
+
+  // Escena 2: Galaxia y corazón
+  2(c, t, dt) {
+    // Espacio profundo
+    const bg = c.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.7);
+    bg.addColorStop(0, '#120828');
+    bg.addColorStop(0.5, '#0a0618');
+    bg.addColorStop(1, '#050510');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Galaxia espiral rotando
+    const rot = t * 0.00015;
+    c.save();
+    c.translate(W/2, H/2);
+    c.rotate(rot);
+    galaxyPts.forEach(pt => {
+      const x = Math.cos(pt.angle) * pt.dist + pt.jx;
+      const y = Math.sin(pt.angle) * pt.dist * 0.65 + pt.jy;
+      c.globalAlpha = pt.alpha;
+      c.fillStyle = '#c8b0ff';
+      c.fillRect(x - 0.5, y - 0.5, pt.size, pt.size);
+    });
+    c.restore();
+    c.globalAlpha = 1;
+
+    // Corazón de partículas
+    const heartScale = Math.min(W, H) * 0.012;
+    const heartCx = W/2, heartCy = H/2;
+    const heartPulse = 1 + Math.sin(t * 0.003) * 0.05;
+    if (Math.random() < 0.5) {
+      const idx = Math.floor(Math.random() * heartPts.length);
+      const hp = heartPts[idx];
+      spawn({
+        x: heartCx + hp.x * heartScale * heartPulse,
+        y: heartCy + hp.y * heartScale * heartPulse,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3 - 0.2,
+        size: Math.random() * 3 + 1.5, decay: 0.006,
+        color: `rgba(255,${80 + Math.random()*60|0},${130 + Math.random()*50|0},1)`,
+        type: 'glow', gravity: -0.005, drag: 0.998
+      });
+    }
+
+    // Nebulosa de fondo
+    c.save();
+    c.globalAlpha = 0.06;
+    const neb = c.createRadialGradient(W*0.3, H*0.4, 0, W*0.3, H*0.4, 200);
+    neb.addColorStop(0, '#ff6b9d');
+    neb.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = neb;
+    c.fillRect(0, 0, W, H);
+    const neb2 = c.createRadialGradient(W*0.7, H*0.6, 0, W*0.7, H*0.6, 180);
+    neb2.addColorStop(0, '#c850c0');
+    neb2.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = neb2;
+    c.fillRect(0, 0, W, H);
+    c.restore();
+  },
+
+  // Escena 3: Recuerdos flotantes
+  3(c, t, dt) {
+    // Gradiente suave
+    const bg = c.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#150a28');
+    bg.addColorStop(0.5, '#1a0e30');
+    bg.addColorStop(1, '#0f0820');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Polaroids flotantes (rectángulos con borde)
+    const photoCount = 5;
+    for (let i = 0; i < photoCount; i++) {
+      const phase = t * 0.0004 + i * 1.3;
+      const fx = W * (0.15 + (i / photoCount) * 0.7);
+      const fy = H * 0.5 + Math.sin(phase) * 30;
+      const frot = Math.sin(phase + 1) * 0.08;
+      const pw = Math.min(W * 0.14, 80), ph = pw * 1.2;
+
+      c.save();
+      c.translate(fx, fy);
+      c.rotate(frot);
+      c.globalAlpha = 0.35 + Math.sin(phase + 2) * 0.1;
+
+      // Sombra
+      c.shadowColor = 'rgba(255,107,157,0.15)';
+      c.shadowBlur = 20;
+      c.shadowOffsetY = 5;
+
+      // Marco blanco
+      c.fillStyle = 'rgba(255,255,255,0.08)';
+      c.fillRect(-pw/2 - 4, -ph/2 - 4, pw + 8, ph + 8);
+
+      // "Foto" con gradiente
+      const pg = c.createLinearGradient(-pw/2, -ph/2, pw/2, ph/2);
+      pg.addColorStop(0, 'rgba(255,107,157,0.12)');
+      pg.addColorStop(1, 'rgba(200,80,192,0.08)');
+      c.fillStyle = pg;
+      c.fillRect(-pw/2, -ph/2, pw, ph);
+
+      c.shadowColor = 'transparent';
+      c.restore();
+    }
+    c.globalAlpha = 1;
+
+    // Destellos
+    if (Math.random() < 0.2) {
+      spawn({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: 0, vy: -0.2,
+        size: Math.random() * 4 + 2, decay: 0.015,
+        color: 'rgba(255,230,200,0.8)', type: 'glow',
+        gravity: -0.01, drag: 0.99
+      });
+    }
+  },
+
+  // Escena 4: Lluvia en la ventana
+  4(c, t, dt) {
+    // Noche lluviosa
+    const bg = c.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#080818');
+    bg.addColorStop(1, '#0a0a22');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Luces de ciudad desenfocadas
+    for (let i = 0; i < 8; i++) {
+      const lx = ((i * 137 + 50) % W);
+      const ly = H * 0.6 + ((i * 73) % (H * 0.3));
+      const lr = 30 + (i % 3) * 20;
+      c.save();
+      c.globalAlpha = 0.08;
+      const lg = c.createRadialGradient(lx, ly, 0, lx, ly, lr);
+      const hue = [255,200,180,220][i % 4];
+      lg.addColorStop(0, `rgba(${hue},${180 + i*10},100,1)`);
+      lg.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = lg;
+      c.fillRect(lx - lr, ly - lr, lr*2, lr*2);
+      c.restore();
+    }
+
+    // Lluvia intensa
+    if (Math.random() < 0.6) {
+      spawn({
+        x: Math.random() * W * 1.2 - W * 0.1, y: -10,
+        vx: -1, vy: 8 + Math.random() * 5,
+        size: 0.7, decay: 0.01,
+        color: 'rgba(150,170,220,0.3)', type: 'rain',
+        gravity: 0.08, drag: 0.99
+      });
+    }
+
+    // Gotas en la ventana (estáticas, decorativas)
+    c.fillStyle = 'rgba(180,200,255,0.06)';
+    for (let i = 0; i < 20; i++) {
+      const dx = ((i * 97.3 + 33) % W);
+      const dy = ((i * 61.7 + 120) % H);
+      const dr = 2 + (i % 4);
+      c.beginPath();
+      c.arc(dx, dy, Math.max(0.5, dr), 0, Math.PI * 2);
+      c.fill();
+    }
+
+    // Empañado sutil
+    c.save();
+    c.globalAlpha = 0.04;
+    const fog = c.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.5);
+    fog.addColorStop(0, 'rgba(200,210,240,1)');
+    fog.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = fog;
+    c.fillRect(0, 0, W, H);
+    c.restore();
+  },
+
+  // Escena 5: Confesión — tormenta de pétalos
+  5(c, t, dt) {
+    // Fondo dramático
+    const bg = c.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.7);
+    bg.addColorStop(0, '#1a0828');
+    bg.addColorStop(0.4, '#120520');
+    bg.addColorStop(1, '#08030f');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Nebulosa romántica
+    c.save();
+    c.globalAlpha = 0.1;
+    const n1 = c.createRadialGradient(W*0.3, H*0.3, 0, W*0.3, H*0.3, 250);
+    n1.addColorStop(0, '#ff6b9d'); n1.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = n1; c.fillRect(0, 0, W, H);
+    const n2 = c.createRadialGradient(W*0.7, H*0.6, 0, W*0.7, H*0.6, 200);
+    n2.addColorStop(0, '#c850c0'); n2.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = n2; c.fillRect(0, 0, W, H);
+    const n3 = c.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, 300);
+    n3.addColorStop(0, '#6a0dad'); n3.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = n3; c.fillRect(0, 0, W, H);
+    c.restore();
+
+    // Pétalos cayendo
+    if (Math.random() < 0.5) {
+      const petalColors = [
+        'rgba(255,107,157,0.7)', 'rgba(255,150,180,0.6)',
+        'rgba(200,80,192,0.5)', 'rgba(255,180,200,0.6)',
+        'rgba(220,120,180,0.5)'
+      ];
+      spawn({
+        x: Math.random() * W * 1.2 - W * 0.1, y: -20,
+        vx: (Math.random() - 0.5) * 1.5, vy: 1 + Math.random() * 2,
+        size: Math.random() * 6 + 3, decay: 0.003,
+        color: petalColors[Math.random() * petalColors.length | 0],
+        type: 'petal', gravity: 0.02, drag: 0.995,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.05,
+        wobbleSpeed: Math.random() * 0.03 + 0.01
+      });
+    }
+
+    // Partículas brillantes
+    if (Math.random() < 0.3) {
+      spawn({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.5, vy: -Math.random() * 0.5,
+        size: Math.random() * 3 + 1, decay: 0.008,
+        color: 'rgba(255,220,240,0.9)', type: 'glow',
+        gravity: -0.01, drag: 0.99
+      });
+    }
+  },
+
+  // Escena 6: Cielo estrellado + constelación corazón
+  6(c, t, dt) {
+    // Cielo profundo
+    const bg = c.createRadialGradient(W/2, H*0.4, 0, W/2, H*0.4, Math.max(W,H)*0.8);
+    bg.addColorStop(0, '#0d0d30');
+    bg.addColorStop(0.5, '#080820');
+    bg.addColorStop(1, '#030310');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    // Estrellas de fondo
+    for (let i = 0; i < 100; i++) {
+      const sx = ((i * 137.5 + 23) % W);
+      const sy = ((i * 73.3 + 17) % (H * 0.8));
+      const twinkle = 0.2 + Math.sin(t * 0.002 + i * 0.7) * 0.3;
+      c.globalAlpha = twinkle;
+      c.fillStyle = '#fff';
+      c.fillRect(sx, sy, 1.2, 1.2);
+    }
+    c.globalAlpha = 1;
+
+    // Constelación en forma de corazón
+    const hCx = W / 2, hCy = H * 0.45;
+    const revealProgress = Math.min(1, (t - sceneTime) / 4000);
+    const ptsToShow = Math.floor(constellationPts.length * revealProgress);
+    const linesToShow = Math.floor(constellationLines.length * revealProgress);
+
+    // Líneas de constelación
+    c.save();
+    c.strokeStyle = 'rgba(255,200,220,0.25)';
+    c.lineWidth = 1;
+    c.beginPath();
+    for (let i = 0; i < linesToShow; i++) {
+      const [a, b] = constellationLines[i];
+      if (a < ptsToShow && b < ptsToShow) {
+        const pa = constellationPts[a], pb = constellationPts[b];
+        c.moveTo(hCx + pa.x, hCy + pa.y);
+        c.lineTo(hCx + pb.x, hCy + pb.y);
+      }
+    }
+    c.stroke();
+    c.restore();
+
+    // Puntos de constelación
+    for (let i = 0; i < ptsToShow; i++) {
+      const p = constellationPts[i];
+      const bright = 0.5 + Math.sin(t * 0.003 + i) * 0.3;
+      c.globalAlpha = bright;
+      c.fillStyle = '#fff';
+      c.beginPath();
+      c.arc(hCx + p.x, hCy + p.y, 2, 0, Math.PI * 2);
+      c.fill();
+      // Glow
+      const g = c.createRadialGradient(hCx + p.x, hCy + p.y, 0, hCx + p.x, hCy + p.y, 8);
+      g.addColorStop(0, 'rgba(255,200,220,0.3)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = g;
+      c.fillRect(hCx + p.x - 8, hCy + p.y - 8, 16, 16);
+    }
+    c.globalAlpha = 1;
+
+    // Partículas ascendentes
+    if (Math.random() < 0.15) {
+      spawn({
+        x: W * 0.3 + Math.random() * W * 0.4, y: H + 10,
+        vx: (Math.random() - 0.5) * 0.3, vy: -0.5 - Math.random() * 0.5,
+        size: Math.random() * 2 + 1, decay: 0.004,
+        color: 'rgba(255,200,220,0.6)', type: 'glow',
+        gravity: -0.005, drag: 0.998
+      });
+    }
+  }
+};
+
+// ========================================
+// GESTOR DE ESCENAS
+// ========================================
+const scenes = document.querySelectorAll('.scene');
+const continueEl = document.getElementById('continue');
+const progressEl = document.getElementById('progress');
+const flashEl = document.getElementById('flash');
+const replayEl = document.getElementById('replay');
+const totalScenes = 7;
+let canAdvance = false;
+let sceneTextTimeouts = [];
+
+function clearSceneTextTimeouts() {
+  sceneTextTimeouts.forEach(id => clearTimeout(id));
+  sceneTextTimeouts = [];
+}
+
+function showSceneTexts(sceneIdx) {
+  clearSceneTextTimeouts();
+  const scene = scenes[sceneIdx];
+  if (!scene) return;
+  const lines = scene.querySelectorAll('.scene-line');
+  lines.forEach(line => {
+    line.classList.remove('visible');
+    const delay = parseInt(line.dataset.delay) || 0;
+    const tid = setTimeout(() => line.classList.add('visible'), delay);
+    sceneTextTimeouts.push(tid);
+  });
+}
+
+function enterScene(idx) {
+  if (idx < 0 || idx >= totalScenes) return;
+
+  // Limpiar partículas
+  particles.forEach(p => p.alive = false);
+
+  // Desactivar escena anterior
+  scenes.forEach(s => s.classList.remove('active'));
+  continueEl.classList.remove('show');
+  replayEl.classList.remove('show');
+  canAdvance = false;
+
+  currentScene = idx;
+  sceneTime = performance.now();
+
+  // Transición: fundido a negro y de negro
+  transitioning = true;
+  transAlpha = 1;
+
+  setTimeout(() => {
+    // Activar nueva escena
+    scenes[idx].classList.add('active');
+    showSceneTexts(idx);
+
+    // Audio
+    Audio.playSceneNotes(idx);
+
+    // Fade in
+    transAlpha = 1;
+    const fadeIn = setInterval(() => {
+      transAlpha -= 0.03;
+      if (transAlpha <= 0) { transAlpha = 0; transitioning = false; clearInterval(fadeIn); }
+    }, 16);
+
+    // Permitir avanzar después de un mínimo
+    setTimeout(() => {
+      canAdvance = true;
+      if (idx < totalScenes - 1) continueEl.classList.add('show');
+    }, 3000);
+
+    // Auto-avance si es la última escena, mostrar replay
+    if (idx === totalScenes - 1) {
+      setTimeout(() => replayEl.classList.add('show'), 6000);
+    }
+  }, CFG.transitionTime);
+
+  // Barra de progreso
+  progressEl.style.width = ((idx + 1) / totalScenes * 100) + '%';
+}
+
+function advanceScene() {
+  if (!canAdvance || transitioning) return;
+  if (currentScene < totalScenes - 1) {
+    // Flash sutil en escenas emocionales
+    if (currentScene === 4 || currentScene === 5) {
+      flashEl.classList.add('fire');
+      setTimeout(() => { flashEl.classList.remove('fire'); flashEl.style.opacity = 0; }, 100);
+    }
+    enterScene(currentScene + 1);
+  }
+}
+
+// ========================================
+// BUCLE PRINCIPAL
+// ========================================
+let lastTime = 0;
+
+function mainLoop(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  const dt = Math.min(timestamp - lastTime, 50);
+  lastTime = timestamp;
+  globalTime = timestamp;
+
+  // Limpiar canvas
+  ctx.clearRect(0, 0, W, H);
+
+  // Renderizar escena actual
+  if (currentScene >= 0 && sceneRenderers[currentScene]) {
+    sceneRenderers[currentScene](ctx, timestamp, dt);
+  }
+
+  // Actualizar y dibujar partículas
+  particles.forEach(p => {
+    if (p.alive) {
+      if (p.wobbleSpeed) p.vx += Math.sin(p.wobble) * 0.02;
+      p.update(dt);
+      p.draw(ctx);
+    }
+  });
+
+  // Overlay de transición
+  if (transAlpha > 0) {
+    ctx.fillStyle = `rgba(5,5,21,${transAlpha})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  requestAnimationFrame(mainLoop);
+}
+
+// ========================================
+// PARTÍCULAS DE FONDO PARA SPLASH
+// ========================================
+let splashActive = true;
+function splashLoop(timestamp) {
+  if (!splashActive) return;
+  ctx.clearRect(0, 0, W, H);
+  // Fondo oscuro
+  ctx.fillStyle = '#050515';
+  ctx.fillRect(0, 0, W, H);
+
+  // Partículas flotantes suaves
+  for (let i = 0; i < 40; i++) {
+    const x = ((i * 137.5 + timestamp * 0.005) % (W + 40)) - 20;
+    const y = ((i * 73.3 + Math.sin(timestamp * 0.001 + i) * 20 + 50) % H);
+    const alpha = 0.15 + Math.sin(timestamp * 0.002 + i * 0.5) * 0.1;
+    ctx.globalAlpha = alpha;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 4);
+    g.addColorStop(0, 'rgba(255,107,157,0.6)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - 4, y - 4, 8, 8);
+  }
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(splashLoop);
+}
+
+// ========================================
+// INICIALIZACIÓN Y EVENTOS
+// ========================================
+const splashEl = document.getElementById('splash');
+const nameInput = document.getElementById('nameInput');
+const startBtn = document.getElementById('startBtn');
+const nameDisplay = document.getElementById('nameDisplay');
+const audioToggle = document.getElementById('audio-toggle');
+
+// Splash loop
+requestAnimationFrame(splashLoop);
+
+// Botón de inicio
+startBtn.addEventListener('click', beginExperience);
+nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') beginExperience(); });
+
+function beginExperience() {
+  const name = nameInput.value.trim();
+  recipientName = name || 'alguien especial';
+  nameDisplay.textContent = recipientName;
+
+  // Inicializar audio
+  Audio.init();
+  if (Audio.initialized) Audio.startPad();
+
+  // Transición del splash
+  splashActive = false;
+  splashEl.classList.add('hide');
+  audioToggle.classList.add('show');
+
+  setTimeout(() => {
+    splashEl.style.display = 'none';
+    // Comenzar experiencia
+    enterScene(0);
+    requestAnimationFrame(mainLoop);
+  }, 1500);
+}
+
+// Avanzar escena al tocar
+document.addEventListener('click', e => {
+  if (e.target === startBtn || e.target === audioToggle || e.target === replayEl ||
+      e.target.closest('#audio-toggle') || e.target.closest('#splash')) return;
+  advanceScene();
+});
+document.addEventListener('touchend', e => {
+  if (e.target === startBtn || e.target === audioToggle || e.target === replayEl ||
+      e.target.closest('#audio-toggle') || e.target.closest('#splash')) return;
+  advanceScene();
+});
+
+// Toggle audio
+audioToggle.addEventListener('click', e => {
+  e.stopPropagation();
+  Audio.toggleMute();
+  audioToggle.style.opacity = Audio.muted ? '0.3' : '1';
+});
+
+// Replay
+replayEl.addEventListener('click', e => {
+  e.stopPropagation();
+  particles.forEach(p => p.alive = false);
+  replayEl.classList.remove('show');
+  enterScene(0);
+});
+
+// Prevenir scroll y zoom
+document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+document.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+
+// Teclado
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'Enter') {
+    if (document.activeElement !== nameInput) advanceScene();
+  }
+});
+
+// Re-computar datos dependientes de tamaño
+window.addEventListener('resize', () => {
+  constellationPts.length = 0;
+  constellationLines.length = 0;
+  for (let t = 0; t < Math.PI * 2; t += 0.25) {
+    constellationPts.push(heartPoint(t, 6));
+  }
+  for (let i = 0; i < constellationPts.length; i++) {
+    const next = (i + 1) % constellationPts.length;
+    constellationLines.push([i, next]);
+    if (i % 3 === 0 && i + 3 < constellationPts.length) {
+      constellationLines.push([i, i + 3]);
+    }
+  }
+  galaxyPts.length = 0;
+  for (let i = 0; i < 180; i++) {
+    const arm = i % 3;
+    const baseAngle = arm * (Math.PI * 2 / 3);
+    const dist = (i / 180) * Math.min(W, H) * 0.35;
+    const angle = baseAngle + dist * 0.025;
+    const jx = (Math.random() - 0.5) * 12;
+    const jy = (Math.random() - 0.5) * 12;
+    galaxyPts.push({ angle, dist, jx, jy, size: Math.random() * 1.5 + 0.5, alpha: Math.random() * 0.5 + 0.3 });
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gracias Por Estar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#d4a853;--gold-light:#f0d68a;--warm:#c47a3a;
+  --dark:#0a0a0f;--dark2:#0d1117;--dark3:#111820;
+  --text:#e8e0d4;--text-muted:#8a8078;
+  --glass:rgba(255,255,255,0.06);--glass-border:rgba(255,255,255,0.1);
+}
+html{scroll-behavior:auto}
+body{
+  font-family:'Lato',sans-serif;background:var(--dark);color:var(--text);
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.serif{font-family:'Playfair Display',serif}
+::selection{background:var(--gold);color:var(--dark)}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px}
+
+/* Canvas */
+#particles-canvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:1;pointer-events:none;
+}
+
+/* Loader */
+#loader{
+  position:fixed;inset:0;z-index:9999;background:var(--dark);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 0.8s ease;
+}
+#loader.hidden{opacity:0;pointer-events:none}
+#loader .pulse{
+  width:40px;height:40px;border-radius:50%;
+  border:2px solid var(--gold);
+  animation:loaderPulse 1.5s ease-in-out infinite;
+}
+#loader p{margin-top:20px;color:var(--text-muted);font-size:14px;letter-spacing:2px}
+@keyframes loaderPulse{
+  0%{transform:scale(0.8);opacity:0.5}
+  50%{transform:scale(1.2);opacity:1}
+  100%{transform:scale(0.8);opacity:0.5}
+}
+
+/* Wrapper 9:16 */
+.app-wrapper{
+  position:relative;max-width:480px;margin:0 auto;
+  min-height:100vh;overflow:hidden;
+}
+@media(min-width:481px){
+  body{background:#050508}
+  .app-wrapper{
+    box-shadow:0 0 80px rgba(212,168,83,0.05);
+    border-left:1px solid rgba(255,255,255,0.03);
+    border-right:1px solid rgba(255,255,255,0.03);
+  }
+}
+
+/* Scenes */
+.scene{
+  position:relative;min-height:100vh;width:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 24px;overflow:hidden;z-index:2;
+}
+.scene-bg{
+  position:absolute;inset:0;z-index:0;
+  transition:background 1.5s ease;
+}
+
+/* Typography */
+.scene-title{
+  font-size:clamp(24px,6vw,36px);font-weight:700;
+  line-height:1.2;text-align:center;margin-bottom:16px;
+  color:var(--text);
+}
+.scene-subtitle{
+  font-size:clamp(16px,4vw,22px);font-weight:300;
+  line-height:1.5;text-align:center;
+  color:var(--text-muted);max-width:320px;
+}
+.scene-quote{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(18px,4.5vw,26px);line-height:1.5;
+  text-align:center;color:var(--gold-light);max-width:320px;
+}
+.gold{color:var(--gold)}
+.gold-light{color:var(--gold-light)}
+.warm{color:var(--warm)}
+.muted{color:var(--text-muted)}
+
+/* Glass card */
+.glass-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-radius:16px;padding:24px;
+  transition:transform 0.3s ease,border-color 0.3s ease;
+}
+.glass-card:hover{transform:translateY(-2px);border-color:rgba(212,168,83,0.2)}
+
+/* Intro */
+#scene-intro{z-index:3}
+#scene-intro .intro-line{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(20px,5.5vw,32px);font-style:italic;
+  line-height:1.5;text-align:center;
+  opacity:0;max-width:340px;
+}
+
+/* Dawn */
+#scene-dawn .dawn-sky{
+  position:absolute;inset:0;z-index:0;
+  background:linear-gradient(180deg,#0a0a1a 0%,#1a0f2e 30%,#2d1b3d 50%,#6b3a5a 70%,#c47a3a 85%,#e8a948 95%,#f0d68a 100%);
+  opacity:0;
+}
+#scene-dawn .paths-container{
+  position:relative;width:100%;max-width:300px;height:200px;z-index:2;
+}
+#scene-dawn svg{width:100%;height:100%}
+.path-line{
+  fill:none;stroke:var(--gold);stroke-width:2;stroke-linecap:round;
+  stroke-dasharray:400;stroke-dashoffset:400;opacity:0.6;
+}
+.path-glow{
+  fill:none;stroke:var(--gold-light);stroke-width:4;stroke-linecap:round;
+  stroke-dasharray:400;stroke-dashoffset:400;opacity:0.15;
+  filter:blur(3px);
+}
+
+/* Presentation */
+.names-container{text-align:center;opacity:0}
+.name{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(32px,8vw,48px);font-weight:700;
+  color:var(--text);display:block;line-height:1.3;
+}
+.ampersand{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(28px,7vw,42px);color:var(--gold);
+  display:block;margin:4px 0;
+}
+.friendship-date{
+  margin-top:24px;font-size:14px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--text-muted);opacity:0;
+}
+.friendship-date span{
+  display:block;margin-top:8px;font-size:18px;
+  color:var(--gold-light);letter-spacing:1px;
+}
+
+/* Timeline */
+.timeline{
+  position:relative;width:100%;max-width:300px;
+  padding-left:30px;
+}
+.timeline::before{
+  content:'';position:absolute;left:8px;top:0;bottom:0;
+  width:2px;background:linear-gradient(180deg,var(--gold),var(--warm),var(--gold));
+  opacity:0.3;
+}
+.timeline-item{
+  position:relative;margin-bottom:40px;opacity:0;
+  transform:translateX(20px);
+}
+.timeline-dot{
+  position:absolute;left:-26px;top:4px;
+  width:12px;height:12px;border-radius:50%;
+  background:var(--dark);border:2px solid var(--gold);
+  z-index:2;
+}
+.timeline-dot::after{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  background:var(--gold);opacity:0.2;animation:dotPulse 2s ease infinite;
+}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:0.2}50%{transform:scale(1.5);opacity:0}}
+.timeline-label{
+  font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:4px;
+}
+.timeline-text{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(16px,4vw,20px);line-height:1.4;
+  color:var(--text);
+}
+
+/* Gallery */
+.gallery-grid{
+  display:flex;flex-direction:column;gap:24px;
+  width:100%;max-width:320px;
+}
+.polaroid{
+  background:#f5f0e8;padding:12px 12px 40px;
+  border-radius:2px;box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  transform:rotate(var(--rot,0deg));cursor:pointer;
+  transition:transform 0.4s ease,box-shadow 0.4s ease;opacity:0;
+}
+.polaroid:hover{transform:rotate(0deg) scale(1.03);box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+.polaroid img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;border-radius:1px}
+.polaroid-caption{
+  position:absolute;bottom:10px;left:12px;right:12px;
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:13px;color:#3a3530;text-align:center;
+}
+/* Photo overlay */
+.photo-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.4s ease;padding:24px;
+}
+.photo-overlay.active{opacity:1;pointer-events:auto}
+.photo-overlay img{
+  max-width:90%;max-height:60vh;object-fit:contain;
+  border-radius:4px;box-shadow:0 0 60px rgba(212,168,83,0.15);
+}
+.photo-overlay .photo-quote{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:18px;color:var(--gold-light);text-align:center;
+  margin-top:24px;max-width:300px;line-height:1.5;
+}
+.photo-overlay .close-btn{
+  position:absolute;top:20px;right:20px;
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.2);background:transparent;
+  color:var(--text);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color 0.3s;
+}
+.photo-overlay .close-btn:hover{border-color:var(--gold)}
+
+/* Floating phrases */
+.floating-phrase{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(16px,4vw,22px);line-height:1.5;
+  text-align:center;color:var(--gold-light);
+  max-width:320px;opacity:0;
+}
+
+/* Constellation */
+.constellation-svg{
+  width:280px;height:280px;overflow:visible;
+}
+.const-star{
+  fill:var(--gold-light);filter:url(#starGlow);
+}
+.const-line{
+  stroke:var(--gold);stroke-width:1;opacity:0;
+  stroke-dasharray:200;stroke-dashoffset:200;
+}
+
+/* Capsule */
+.capsule-container{perspective:800px}
+.capsule-box{
+  width:200px;height:140px;position:relative;
+  transform-style:preserve-3d;cursor:pointer;
+  transition:transform 0.6s ease;
+}
+.capsule-box:hover{transform:rotateX(-5deg)}
+.capsule-body{
+  width:200px;height:100px;position:absolute;bottom:0;
+  background:linear-gradient(135deg,#2a1f0e,#1a150a);
+  border:1px solid rgba(212,168,83,0.3);border-radius:4px 4px 8px 8px;
+  box-shadow:0 10px 40px rgba(212,168,83,0.1);
+}
+.capsule-lid{
+  width:210px;height:40px;position:absolute;top:0;left:-5px;
+  background:linear-gradient(135deg,#3a2a14,#2a1f0e);
+  border:1px solid rgba(212,168,83,0.4);border-radius:8px 8px 2px 2px;
+  transform-origin:bottom center;
+  transition:transform 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 -4px 20px rgba(212,168,83,0.1);
+  z-index:2;
+}
+.capsule-box.opened .capsule-lid{
+  transform:rotateX(-120deg);
+}
+.capsule-glow{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  width:60px;height:60px;border-radius:50%;
+  background:radial-gradient(circle,rgba(212,168,83,0.4),transparent);
+  opacity:0;transition:opacity 0.8s ease;filter:blur(10px);
+}
+.capsule-box.opened .capsule-glow{opacity:1}
+.capsule-messages{
+  margin-top:32px;width:100%;max-width:300px;
+}
+.capsule-msg{
+  background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:12px;padding:16px;margin-bottom:12px;
+  font-style:italic;color:var(--gold-light);font-size:15px;
+  line-height:1.5;text-align:center;
+  opacity:0;transform:translateY(20px);
+}
+
+/* Gratitude wall */
+.gratitude-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  width:100%;max-width:340px;
+}
+.gratitude-card{
+  background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:16px;padding:20px 16px;text-align:center;
+  opacity:0;transform:translateY(30px);
+  transition:border-color 0.3s ease;
+}
+.gratitude-card:hover{border-color:rgba(212,168,83,0.3)}
+.gratitude-card .icon{
+  font-size:24px;color:var(--gold);margin-bottom:12px;
+}
+.gratitude-card p{
+  font-size:14px;line-height:1.5;color:var(--text);
+}
+
+/* Tree */
+.tree-container{position:relative;width:280px;height:380px}
+.tree-svg{width:100%;height:100%}
+.tree-light{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  background:var(--gold-light);
+  box-shadow:0 0 8px var(--gold),0 0 20px rgba(212,168,83,0.4);
+  opacity:0;transition:opacity 0.6s ease;
+}
+.tree-light.on{opacity:1}
+
+/* Reflection */
+.word-reveal span{
+  display:inline-block;opacity:0;transform:translateY(10px);
+  margin-right:6px;
+}
+
+/* Finale lights */
+.floating-light{
+  position:absolute;width:4px;height:4px;border-radius:50%;
+  background:var(--gold-light);
+  box-shadow:0 0 6px var(--gold),0 0 15px rgba(212,168,83,0.3);
+}
+
+/* CTA */
+.cta-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:10px;padding:16px 32px;border-radius:50px;
+  background:linear-gradient(135deg,var(--gold),var(--warm));
+  color:var(--dark);font-weight:700;font-size:15px;
+  border:none;cursor:pointer;letter-spacing:0.5px;
+  box-shadow:0 4px 30px rgba(212,168,83,0.3);
+  transition:transform 0.3s ease,box-shadow 0.3s ease;
+  text-decoration:none;
+}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 6px 40px rgba(212,168,83,0.4)}
+.share-options{
+  display:flex;gap:16px;margin-top:24px;
+}
+.share-opt{
+  width:50px;height:50px;border-radius:50%;
+  border:1px solid var(--glass-border);background:var(--glass);
+  color:var(--text);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color 0.3s ease,background 0.3s ease;
+}
+.share-opt:hover{border-color:var(--gold);background:rgba(212,168,83,0.1)}
+.share-opt.whatsapp:hover{border-color:#25D366;background:rgba(37,211,102,0.1);color:#25D366}
+.share-opt.telegram:hover{border-color:#26A5E4;background:rgba(38,165,228,0.1);color:#26A5E4}
+.share-opt.copy:hover{border-color:var(--gold);background:rgba(212,168,83,0.1);color:var(--gold)}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--glass);border:1px solid var(--glass-border);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-radius:50px;padding:12px 24px;z-index:200;
+  font-size:14px;color:var(--gold-light);
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Music toggle */
+.music-toggle{
+  position:fixed;top:16px;right:16px;z-index:50;
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--glass-border);background:var(--glass);
+  backdrop-filter:blur(8px);color:var(--text);font-size:14px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:border-color 0.3s;
+}
+.music-toggle:hover{border-color:var(--gold)}
+.music-toggle .bars{display:flex;gap:2px;align-items:flex-end;height:14px}
+.music-toggle .bar{
+  width:2px;background:var(--gold);border-radius:1px;
+  animation:musicBar 0.8s ease-in-out infinite alternate;
+}
+.music-toggle .bar:nth-child(1){height:6px;animation-delay:0s}
+.music-toggle .bar:nth-child(2){height:10px;animation-delay:0.2s}
+.music-toggle .bar:nth-child(3){height:4px;animation-delay:0.4s}
+.music-toggle .bar:nth-child(4){height:8px;animation-delay:0.1s}
+.music-toggle.paused .bar{animation-play-state:paused}
+@keyframes musicBar{0%{height:4px}100%{height:14px}}
+
+/* Divider */
+.divider{
+  width:60px;height:1px;margin:16px auto;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+/* Scroll indicator */
+.scroll-indicator{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0.6;
+}
+.scroll-indicator span{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)}
+.scroll-arrow{
+  width:20px;height:20px;border-right:1px solid var(--text-muted);
+  border-bottom:1px solid var(--text-muted);transform:rotate(45deg);
+  animation:scrollBounce 2s ease infinite;
+}
+@keyframes scrollBounce{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(4px,4px)}}
+
+/* Final names */
+.final-names{
+  font-family:'Playfair Display',serif;font-weight:700;
+  font-size:clamp(24px,6vw,36px);text-align:center;
+  opacity:0;
+}
+.final-names .fn-amp{
+  font-style:italic;color:var(--gold);display:block;
+  font-size:clamp(20px,5vw,30px);margin:4px 0;
+}
+
+/* Scene spacing helpers */
+.spacer{height:20vh}
+.scene-pad{padding-top:60px;padding-bottom:60px}
+
+/* Ambient glow */
+.ambient-glow{
+  position:absolute;border-radius:50%;filter:blur(80px);
+  pointer-events:none;opacity:0.15;z-index:0;
+}
+
+/* Fade-in class for generic use */
+.fade-in{opacity:0;transform:translateY(20px)}
+
+/* Responsive fine-tuning */
+@media(max-width:360px){
+  .scene{padding:30px 16px}
+  .polaroid{padding:8px 8px 32px}
+  .gratitude-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Particle Canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="pulse"></div>
+  <p>Preparando algo especial...</p>
+</div>
+
+<!-- Music Toggle -->
+<button class="music-toggle paused" id="musicToggle" title="Música">
+  <div class="bars">
+    <div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div>
+  </div>
+</button>
+
+<!-- Photo Overlay -->
+<div class="photo-overlay" id="photoOverlay">
+  <button class="close-btn" id="closeOverlay"><i class="fas fa-times"></i></button>
+  <img id="overlayImg" src="" alt="Recuerdo">
+  <p class="photo-quote" id="overlayQuote"></p>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- App Wrapper -->
+<div class="app-wrapper">
+
+  <!-- SCENE 1: INTRO -->
+  <section class="scene" id="scene-intro" style="min-height:100vh">
+    <div class="scene-bg" style="background:var(--dark)"></div>
+    <div class="ambient-glow" style="width:300px;height:300px;background:var(--gold);top:30%;left:-20%"></div>
+    <p class="intro-line" id="intro-line1">La familia no siempre<br>comparte tu sangre...</p>
+    <div style="height:40px"></div>
+    <p class="intro-line" id="intro-line2">...a veces comparte<br>tus mejores recuerdos.</p>
+    <div class="scroll-indicator" id="scrollHint">
+      <span>Desliza</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- SCENE 2: DAWN -->
+  <section class="scene" id="scene-dawn" style="min-height:120vh">
+    <div class="dawn-sky" id="dawnSky"></div>
+    <div class="ambient-glow" style="width:400px;height:200px;background:#c47a3a;bottom:20%;left:50%;transform:translateX(-50%)"></div>
+    <div class="paths-container" id="pathsContainer">
+      <svg viewBox="0 0 300 200" fill="none">
+        <path class="path-glow" id="path1Glow" d="M30,180 Q80,120 150,100 Q220,80 270,20"/>
+        <path class="path-line" id="path1Line" d="M30,180 Q80,120 150,100 Q220,80 270,20"/>
+        <path class="path-glow" id="path2Glow" d="M30,190 Q90,140 150,110 Q210,80 270,30"/>
+        <path class="path-line" id="path2Line" d="M30,190 Q90,140 150,110 Q210,80 270,30"/>
+        <circle cx="30" cy="180" r="4" fill="var(--gold)" opacity="0"/>
+        <circle cx="270" cy="20" r="4" fill="var(--gold-light)" opacity="0"/>
+        <circle cx="30" cy="190" r="4" fill="var(--gold)" opacity="0"/>
+        <circle cx="270" cy="30" r="4" fill="var(--gold-light)" opacity="0"/>
+      </svg>
+    </div>
+    <p class="scene-quote fade-in" style="margin-top:32px">Dos vidas caminando juntas<br>en la misma dirección</p>
+  </section>
+
+  <!-- SCENE 3: PRESENTATION -->
+  <section class="scene scene-pad" id="scene-presentation">
+    <div class="scene-bg" style="background:linear-gradient(180deg,var(--dark) 0%,#12100a 100%)"></div>
+    <div class="ambient-glow" style="width:250px;height:250px;background:var(--gold);top:20%;right:-30%"></div>
+    <div class="names-container" id="namesContainer">
+      <span class="name" id="name1"></span>
+      <span class="ampersand">&</span>
+      <span class="name" id="name2"></span>
+    </div>
+    <div class="friendship-date" id="dateContainer">
+      Amigos desde
+      <span id="dateDisplay"></span>
+    </div>
+  </section>
+
+  <!-- SCENE 4: TIMELINE -->
+  <section class="scene scene-pad" id="scene-timeline">
+    <div class="scene-bg" style="background:linear-gradient(180deg,#12100a 0%,#0e0c14 100%)"></div>
+    <h2 class="scene-title fade-in" style="margin-bottom:40px">Nuestro Camino</h2>
+    <div class="timeline" id="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Capítulo 1</div>
+        <div class="timeline-text">Nos conocimos</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Capítulo 2</div>
+        <div class="timeline-text">Compartimos aventuras</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Capítulo 3</div>
+        <div class="timeline-text">Reímos hasta llorar</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Capítulo 4</div>
+        <div class="timeline-text">Superamos momentos difíciles</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Hoy</div>
+        <div class="timeline-text" style="color:var(--gold-light)">Seguimos aquí</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 5: GALLERY -->
+  <section class="scene scene-pad" id="scene-gallery">
+    <div class="scene-bg" style="background:linear-gradient(180deg,#0e0c14 0%,#0f0d10 100%)"></div>
+    <h2 class="scene-title fade-in" style="margin-bottom:8px">Nuestros Recuerdos</h2>
+    <p class="scene-subtitle fade-in" style="margin-bottom:32px">Toca cada foto</p>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </section>
+
+  <!-- SCENE 6: FLOATING PHRASES -->
+  <section class="scene" id="scene-phrases" style="min-height:150vh">
+    <div class="scene-bg" style="background:linear-gradient(180deg,#0f0d10 0%,#0d0b0f 50%,#0f0d10 100%)"></div>
+    <div class="floating-phrase" style="margin-bottom:60px">
+      "Gracias por escuchar incluso<br>cuando no sabía qué decir."
+    </div>
+    <div class="floating-phrase" style="margin-bottom:60px">
+      "Gracias por quedarte<br>cuando era más fácil irse."
+    </div>
+    <div class="floating-phrase" style="margin-bottom:60px">
+      "Gracias por cada risa."
+    </div>
+    <div class="floating-phrase">
+      "Gracias por cada consejo."
+    </div>
+  </section>
+
+  <!-- SCENE 7: CONSTELLATION -->
+  <section class="scene" id="scene-constellation" style="min-height:140vh">
+    <div class="scene-bg" style="background:var(--dark)"></div>
+    <svg class="constellation-svg" id="constellationSvg" viewBox="0 0 280 280">
+      <defs>
+        <filter id="starGlow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- Star 1 (left) -->
+      <circle class="const-star" id="star1" cx="50" cy="140" r="5"/>
+      <!-- Star 2 (right) -->
+      <circle class="const-star" id="star2" cx="230" cy="140" r="5"/>
+      <!-- Intermediate stars -->
+      <circle class="const-star const-mid" cx="90" cy="100" r="3" opacity="0"/>
+      <circle class="const-star const-mid" cx="140" cy="80" r="3" opacity="0"/>
+      <circle class="const-star const-mid" cx="190" cy="100" r="3" opacity="0"/>
+      <circle class="const-star const-mid" cx="110" cy="160" r="2.5" opacity="0"/>
+      <circle class="const-star const-mid" cx="170" cy="170" r="2.5" opacity="0"/>
+      <circle class="const-star const-mid" cx="140" cy="130" r="3.5" opacity="0"/>
+      <!-- Lines -->
+      <line class="const-line" id="cline1" x1="50" y1="140" x2="90" y2="100"/>
+      <line class="const-line" id="cline2" x1="90" y1="100" x2="140" y2="80"/>
+      <line class="const-line" id="cline3" x1="140" y1="80" x2="190" y2="100"/>
+      <line class="const-line" id="cline4" x1="190" y1="100" x2="230" y2="140"/>
+      <line class="const-line" id="cline5" x1="50" y1="140" x2="110" y2="160"/>
+      <line class="const-line" id="cline6" x1="110" y1="160" x2="140" y2="130"/>
+      <line class="const-line" id="cline7" x1="140" y1="130" x2="170" y2="170"/>
+      <line class="const-line" id="cline8" x1="170" y1="170" x2="230" y2="140"/>
+      <line class="const-line" id="cline9" x1="140" y1="80" x2="140" y2="130"/>
+    </svg>
+    <div style="height:30px"></div>
+    <p class="scene-quote fade-in">Las mejores amistades no necesitan hablar todos los días.</p>
+    <div style="height:20px"></div>
+    <p class="scene-subtitle fade-in" style="color:var(--gold-light)">Solo necesitan saber<br>que siguen ahí.</p>
+  </section>
+
+  <!-- SCENE 8: CAPSULE -->
+  <section class="scene scene-pad" id="scene-capsule">
+    <div class="scene-bg" style="background:linear-gradient(180deg,var(--dark) 0%,#100e08 100%)"></div>
+    <h2 class="scene-title fade-in" style="margin-bottom:8px">Cápsula de Recuerdos</h2>
+    <p class="scene-subtitle fade-in" style="margin-bottom:32px">Toca para abrir</p>
+    <div class="capsule-container">
+      <div class="capsule-box" id="capsuleBox">
+        <div class="capsule-lid"></div>
+        <div class="capsule-body">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+            <i class="fas fa-star" style="color:var(--gold);font-size:24px;opacity:0.5"></i>
+          </div>
+        </div>
+        <div class="capsule-glow"></div>
+      </div>
+    </div>
+    <div class="capsule-messages" id="capsuleMessages"></div>
+  </section>
+
+  <!-- SCENE 9: GRATITUDE WALL -->
+  <section class="scene scene-pad" id="scene-gratitude">
+    <div class="scene-bg" style="background:linear-gradient(180deg,#100e08 0%,#0e0c12 100%)"></div>
+    <h2 class="scene-title fade-in" style="margin-bottom:8px">Muro de Gratitud</h2>
+    <p class="scene-subtitle fade-in" style="margin-bottom:32px">Cada tarjeta es un gracias sincero</p>
+    <div class="gratitude-grid" id="gratitudeGrid"></div>
+  </section>
+
+  <!-- SCENE 10: TREE -->
+  <section class="scene" id="scene-tree" style="min-height:130vh">
+    <div class="scene-bg" style="background:linear-gradient(180deg,#0e0c12 0%,#0a0908 100%)"></div>
+    <h2 class="scene-title fade-in" style="margin-bottom:24px;z-index:2;position:relative">Nuestro Árbol</h2>
+    <div class="tree-container" id="treeContainer">
+      <svg class="tree-svg" viewBox="0 0 280 380" fill="none">
+        <!-- Trunk -->
+        <path d="M130,380 L130,240 Q128,220 125,200 L125,180 Q130,160 135,150 L140,140 Q145,160 150,180 L150,200 Q147,220 145,240 L145,380 Z" fill="#1a1408" stroke="rgba(212,168,83,0.15)" stroke-width="1"/>
+        <!-- Branches -->
+        <path d="M135,250 Q100,230 70,210" stroke="#1a1408" stroke-width="6" stroke-linecap="round"/>
+        <path d="M140,220 Q170,190 210,170" stroke="#1a1408" stroke-width="5" stroke-linecap="round"/>
+        <path d="M135,200 Q100,170 60,150" stroke="#1a1408" stroke-width="4" stroke-linecap="round"/>
+        <path d="M138,180 Q160,150 190,130" stroke="#1a1408" stroke-width="4" stroke-linecap="round"/>
+        <path d="M140,160 Q120,130 90,110" stroke="#1a1408" stroke-width="3" stroke-linecap="round"/>
+        <path d="M140,150 Q155,120 180,100" stroke="#1a1408" stroke-width="3" stroke-linecap="round"/>
+        <!-- Canopy (overlapping circles) -->
+        <circle cx="140" cy="120" r="70" fill="rgba(15,20,10,0.9)"/>
+        <circle cx="100" cy="140" r="55" fill="rgba(12,18,8,0.9)"/>
+        <circle cx="180" cy="135" r="55" fill="rgba(12,18,8,0.9)"/>
+        <circle cx="75" cy="115" r="40" fill="rgba(10,15,8,0.85)"/>
+        <circle cx="200" cy="110" r="40" fill="rgba(10,15,8,0.85)"/>
+        <circle cx="140" cy="80" r="50" fill="rgba(13,19,10,0.9)"/>
+        <circle cx="110" cy="95" r="40" fill="rgba(11,16,9,0.85)"/>
+        <circle cx="170" cy="90" r="40" fill="rgba(11,16,9,0.85)"/>
+      </svg>
+      <!-- Tree lights will be added by JS -->
+    </div>
+    <div style="height:30px"></div>
+    <p class="scene-quote fade-in">Las amistades verdaderas<br>no se miden en tiempo.</p>
+    <div class="divider"></div>
+    <p class="scene-subtitle fade-in" style="color:var(--gold-light)">Se miden en momentos.</p>
+  </section>
+
+  <!-- SCENE 11: REFLECTION -->
+  <section class="scene" id="scene-reflection" style="min-height:100vh">
+    <div class="scene-bg" style="background:radial-gradient(ellipse at center,#0f0d12 0%,var(--dark) 100%)"></div>
+    <div class="ambient-glow" style="width:200px;height:200px;background:var(--gold);top:40%;left:50%;transform:translateX(-50%);opacity:0.08"></div>
+    <p class="word-reveal scene-quote" id="reflectionText1" style="margin-bottom:32px"></p>
+    <p class="word-reveal scene-subtitle" id="reflectionText2" style="color:var(--gold-light)"></p>
+  </section>
+
+  <!-- SCENE 12: FINALE -->
+  <section class="scene" id="scene-finale" style="min-height:130vh">
+    <div class="scene-bg" style="background:linear-gradient(180deg,var(--dark) 0%,#0c0a10 50%,#0e0b08 100%)"></div>
+    <div id="finaleLights" style="position:absolute;inset:0;overflow:hidden;z-index:1"></div>
+    <div style="z-index:2;position:relative;text-align:center">
+      <p class="scene-quote fade-in" style="margin-bottom:28px">Gracias por cada recuerdo.</p>
+      <p class="scene-quote fade-in" style="margin-bottom:28px;opacity:0.8">Gracias por cada consejo.</p>
+      <div class="divider"></div>
+      <p class="scene-quote fade-in" style="font-size:clamp(22px,6vw,34px);color:var(--gold)">Gracias por estar.</p>
+    </div>
+  </section>
+
+  <!-- SCENE 13: FINAL -->
+  <section class="scene scene-pad" id="scene-final">
+    <div class="scene-bg" style="background:radial-gradient(ellipse at center,#100e14 0%,var(--dark) 100%)"></div>
+    <div class="ambient-glow" style="width:300px;height:300px;background:var(--gold);top:30%;left:50%;transform:translateX(-50%);opacity:0.06"></div>
+    <div style="z-index:2;position:relative;text-align:center">
+      <p class="scene-subtitle fade-in" style="margin-bottom:12px;color:var(--text)">Algunas personas pasan<br>por nuestra vida.</p>
+      <div style="height:24px"></div>
+      <p class="scene-quote fade-in">Otras se convierten<br>en parte de ella.</p>
+      <div style="height:40px"></div>
+      <div class="final-names" id="finalNames">
+        <span id="finalName1"></span>
+        <span class="fn-amp">&</span>
+        <span id="finalName2"></span>
+      </div>
+      <div style="height:16px"></div>
+      <p class="fade-in" id="finalMessage" style="font-style:italic;color:var(--text-muted);font-size:15px"></p>
+    </div>
+  </section>
+
+  <!-- SCENE 14: CTA -->
+  <section class="scene" id="scene-cta" style="min-height:80vh">
+    <div class="scene-bg" style="background:linear-gradient(180deg,var(--dark) 0%,#0e0c10 100%)"></div>
+    <div style="z-index:2;position:relative;text-align:center">
+      <p class="scene-subtitle fade-in" style="margin-bottom:32px">¿Tienes un amigo que siempre ha estado ahí?</p>
+      <a class="cta-btn fade-in" id="ctaShare">
+        <i class="fas fa-paper-plane"></i>
+        Enviar a ese amigo
+      </a>
+      <div class="share-options fade-in">
+        <button class="share-opt whatsapp" id="shareWhatsapp" title="WhatsApp">
+          <i class="fab fa-whatsapp"></i>
+        </button>
+        <button class="share-opt telegram" id="shareTelegram" title="Telegram">
+          <i class="fab fa-telegram-plane"></i>
+        </button>
+        <button class="share-opt copy" id="shareCopy" title="Copiar enlace">
+          <i class="fas fa-link"></i>
+        </button>
+      </div>
+      <div style="height:40px"></div>
+      <p class="muted fade-in" style="font-size:12px;letter-spacing:1px">Hecho con gratitud ❤️</p>
+    </div>
+  </section>
+
+</div><!-- end app-wrapper -->
+
+<script>
+// ============================================================
+// CONFIGURACIÓN EDITABLE
+// ============================================================
+const CONFIG = {
+  nombre1: "abigail",
+  nombre2: "alexis",
+  fechaAmistad: "10 de octubre del 2025",
+  mensajeFinal: "te extraño mucho y espero que podamos crear muchos más recuerdos juntos.",
+  fotos: [
+    { src: "https://picsum.photos/seed/friendship1/400/300", frase: "Nunca olvidaré este día." },
+    { src: "https://picsum.photos/seed/friendship2/400/300", frase: "Aquí entendí que podía contar contigo." },
+    { src: "https://picsum.photos/seed/friendship3/400/300", frase: "Una foto, mil historias." },
+    { src: "https://picsum.photos/seed/friendship4/400/300", frase: "Momentos que quedan para siempre." }
+  ],
+  recuerdos: [
+    "Recuerdo cuando nos conocimos y no imaginaba lo importante que serías para mí.",
+    "Nunca olvidaré esa vez que nos reímos hasta llorar sin razón.",
+    "Gracias por quedarte despierto/a conmigo en mis peores noches."
+  ],
+  agradecimientos: [
+    { icon: "fa-heart", texto: "Gracias por tu sinceridad." },
+    { icon: "fa-hands-helping", texto: "Gracias por tu apoyo." },
+    { icon: "fa-sun", texto: "Gracias por hacer más ligeros los días difíciles." },
+    { icon: "fa-book-open", texto: "Gracias por ser parte de mi historia." }
+  ]
+};
+
+// ============================================================
+// INIT
+// ============================================================
+gsap.registerPlugin(ScrollTrigger);
+
+// Populate names and date
+document.getElementById('name1').textContent = CONFIG.nombre1;
+document.getElementById('name2').textContent = CONFIG.nombre2;
+document.getElementById('dateDisplay').textContent = CONFIG.fechaAmistad;
+document.getElementById('finalName1').textContent = CONFIG.nombre1;
+document.getElementById('finalName2').textContent = CONFIG.nombre2;
+document.getElementById('finalMessage').textContent = CONFIG.mensajeFinal;
+
+// ============================================================
+// PARTICLE CANVAS
+// ============================================================
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let animFrame;
+let currentScene = 'intro';
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor(opts = {}) {
+    this.x = opts.x || Math.random() * canvas.width;
+    this.y = opts.y || Math.random() * canvas.height;
+    this.size = opts.size || Math.random() * 2 + 0.5;
+    this.speedX = opts.speedX || (Math.random() - 0.5) * 0.3;
+    this.speedY = opts.speedY || (Math.random() - 0.5) * 0.3 - 0.1;
+    this.opacity = opts.opacity || Math.random() * 0.5 + 0.1;
+    this.maxOpacity = this.opacity;
+    this.color = opts.color || '#d4a853';
+    this.life = opts.life || Infinity;
+    this.maxLife = this.life;
+    this.floating = opts.floating || false;
+    this.ascending = opts.ascending || false;
+    if (this.ascending) {
+      this.speedY = -(Math.random() * 1.5 + 0.5);
+      this.speedX = (Math.random() - 0.5) * 0.5;
+    }
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.floating) {
+      this.x += Math.sin(Date.now() * 0.001 + this.y * 0.01) * 0.2;
+    }
+    if (this.life !== Infinity) {
+      this.life--;
+      this.opacity = this.maxOpacity * (this.life / this.maxLife);
+    }
+    if (this.x < 0) this.x = canvas.width;
+    if (this.x > canvas.width) this.x = 0;
+    if (this.y < 0 && !this.ascending) this.y = canvas.height;
+    if (this.y > canvas.height && !this.ascending) this.y = 0;
+  }
+  draw() {
+    if (this.opacity <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    ctx.fillStyle = this.color;
+    ctx.shadowBlur = this.size * 4;
+    ctx.shadowColor = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function initParticles(count = 60) {
+  particles = [];
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle({
+      color: i % 3 === 0 ? '#f0d68a' : '#d4a853',
+      floating: true,
+      size: Math.random() * 1.8 + 0.4,
+      opacity: Math.random() * 0.4 + 0.1
+    }));
+  }
+}
+
+function addAscendingParticles(count = 40) {
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      particles.push(new Particle({
+        x: Math.random() * canvas.width,
+        y: canvas.height + 10,
+        size: Math.random() * 2 + 1,
+        color: Math.random() > 0.5 ? '#f0d68a' : '#d4a853',
+        opacity: Math.random() * 0.6 + 0.2,
+        life: 200 + Math.random() * 150,
+        ascending: true
+      }));
+    }, i * 80);
+  }
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles = particles.filter(p => p.life > 0 || p.life === Infinity);
+  particles.forEach(p => { p.update(); p.draw(); });
+  animFrame = requestAnimationFrame(animateParticles);
+}
+
+initParticles();
+animateParticles();
+
+// ============================================================
+// LOADER
+// ============================================================
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+    startIntroAnimation();
+  }, 1500);
+});
+
+// ============================================================
+// INTRO ANIMATION
+// ============================================================
+function startIntroAnimation() {
+  const tl = gsap.timeline();
+  tl.to('#intro-line1', { opacity: 1, duration: 2, ease: 'power2.out' })
+    .to('#intro-line2', { opacity: 1, duration: 2, ease: 'power2.out' }, '+=1')
+    .to('#scrollHint', { opacity: 0.6, duration: 1 }, '+=0.5');
+}
+
+// ============================================================
+// SCROLL ANIMATIONS
+// ============================================================
+
+// Hide scroll hint on scroll
+ScrollTrigger.create({
+  trigger: '#scene-intro',
+  start: 'top top',
+  end: 'bottom top',
+  onLeave: () => gsap.to('#scrollHint', { opacity: 0, duration: 0.5 }),
+  onEnterBack: () => gsap.to('#scrollHint', { opacity: 0.6, duration: 0.5 })
+});
+
+// Dawn scene
+ScrollTrigger.create({
+  trigger: '#scene-dawn',
+  start: 'top 80%',
+  end: 'top 20%',
+  onEnter: () => {
+    gsap.to('#dawnSky', { opacity: 1, duration: 2 });
+    currentScene = 'dawn';
+  },
+  onLeaveBack: () => {
+    gsap.to('#dawnSky', { opacity: 0, duration: 1 });
+    currentScene = 'intro';
+  }
+});
+
+// Paths animation
+gsap.utils.toArray('.path-line, .path-glow').forEach(path => {
+  gsap.to(path, {
+    strokeDashoffset: 0,
+    scrollTrigger: {
+      trigger: '#scene-dawn',
+      start: 'top 60%',
+      end: 'top 10%',
+      scrub: 1
+    }
+  });
+});
+
+// Dawn circles
+ScrollTrigger.create({
+  trigger: '#scene-dawn',
+  start: 'top 30%',
+  onEnter: () => {
+    gsap.utils.toArray('#scene-dawn circle').forEach((c, i) => {
+      gsap.to(c, { opacity: 1, duration: 0.5, delay: i * 0.2 });
+    });
+  }
+});
+
+// Dawn quote
+gsap.from('#scene-dawn .scene-quote', {
+  opacity: 0, y: 30,
+  scrollTrigger: { trigger: '#scene-dawn .scene-quote', start: 'top 80%', end: 'top 50%', scrub: 1 }
+});
+
+// Presentation
+gsap.to('#namesContainer', {
+  opacity: 1, duration: 1.5,
+  scrollTrigger: { trigger: '#scene-presentation', start: 'top 70%' }
+});
+gsap.from('.name', {
+  y: 30, opacity: 0, duration: 1, stagger: 0.3,
+  scrollTrigger: { trigger: '#scene-presentation', start: 'top 60%' }
+});
+gsap.from('.ampersand', {
+  scale: 0, opacity: 0, duration: 0.8, ease: 'back.out(2)',
+  scrollTrigger: { trigger: '#scene-presentation', start: 'top 50%' }
+});
+gsap.to('#dateContainer', {
+  opacity: 1, duration: 1,
+  scrollTrigger: { trigger: '#scene-presentation', start: 'top 40%' }
+});
+
+// Timeline items
+gsap.utils.toArray('.timeline-item').forEach((item, i) => {
+  gsap.to(item, {
+    opacity: 1, x: 0, duration: 0.8, delay: i * 0.1,
+    scrollTrigger: { trigger: item, start: 'top 85%', end: 'top 60%', scrub: 1 }
+  });
+});
+
+// Gallery
+function buildGallery() {
+  const grid = document.getElementById('galleryGrid');
+  CONFIG.fotos.forEach((foto, i) => {
+    const rot = (Math.random() - 0.5) * 4;
+    const div = document.createElement('div');
+    div.className = 'polaroid';
+    div.style.setProperty('--rot', rot + 'deg');
+    div.innerHTML = `
+      <img src="${foto.src}" alt="Recuerdo ${i+1}" loading="lazy">
+      <span class="polaroid-caption">${foto.frase}</span>
+    `;
+    div.addEventListener('click', () => openPhoto(foto.src, foto.frase));
+    grid.appendChild(div);
+
+    gsap.to(div, {
+      opacity: 1, duration: 0.8,
+      scrollTrigger: { trigger: div, start: 'top 85%' }
+    });
+  });
+}
+buildGallery();
+
+// Photo overlay
+function openPhoto(src, quote) {
+  document.getElementById('overlayImg').src = src;
+  document.getElementById('overlayQuote').textContent = quote;
+  document.getElementById('photoOverlay').classList.add('active');
+}
+document.getElementById('closeOverlay').addEventListener('click', () => {
+  document.getElementById('photoOverlay').classList.remove('active');
+});
+document.getElementById('photoOverlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    document.getElementById('photoOverlay').classList.remove('active');
+  }
+});
+
+// Floating phrases
+gsap.utils.toArray('.floating-phrase').forEach(phrase => {
+  gsap.to(phrase, {
+    opacity: 1, duration: 1.5,
+    scrollTrigger: { trigger: phrase, start: 'top 80%', end: 'top 40%', scrub: 1 }
+  });
+});
+
+// Constellation
+ScrollTrigger.create({
+  trigger: '#scene-constellation',
+  start: 'top 60%',
+  end: 'bottom 40%',
+  scrub: 1,
+  onUpdate: (self) => {
+    const p = self.progress;
+    // Show intermediate stars
+    gsap.utils.toArray('.const-mid').forEach((star, i) => {
+      const threshold = (i + 1) * 0.1;
+      if (p > threshold) gsap.to(star, { opacity: Math.min(1, (p - threshold) * 5), duration: 0.3 });
+    });
+    // Animate lines
+    gsap.utils.toArray('.const-line').forEach((line, i) => {
+      const threshold = (i + 1) * 0.08;
+      if (p > threshold) {
+        const lineProgress = Math.min(1, (p - threshold) * 4);
+        gsap.set(line, { opacity: lineProgress * 0.6, strokeDashoffset: 200 * (1 - lineProgress) });
+      }
+    });
+  }
+});
+
+// Constellation text
+gsap.from('#scene-constellation .scene-quote', {
+  opacity: 0, y: 20,
+  scrollTrigger: { trigger: '#scene-constellation .scene-quote', start: 'top 80%' }
+});
+gsap.from('#scene-constellation .scene-subtitle', {
+  opacity: 0, y: 20,
+  scrollTrigger: { trigger: '#scene-constellation .scene-subtitle', start: 'top 80%' }
+});
+
+// Capsule
+function buildCapsuleMessages() {
+  const container = document.getElementById('capsuleMessages');
+  CONFIG.recuerdos.forEach(rec => {
+    const div = document.createElement('div');
+    div.className = 'capsule-msg';
+    div.textContent = rec;
+    container.appendChild(div);
+  });
+}
+buildCapsuleMessages();
+
+document.getElementById('capsuleBox').addEventListener('click', function() {
+  this.classList.toggle('opened');
+  if (this.classList.contains('opened')) {
+    gsap.utils.toArray('.capsule-msg').forEach((msg, i) => {
+      gsap.to(msg, { opacity: 1, y: 0, duration: 0.6, delay: 0.3 + i * 0.25, ease: 'power2.out' });
+    });
+  } else {
+    gsap.utils.toArray('.capsule-msg').forEach(msg => {
+      gsap.to(msg, { opacity: 0, y: 20, duration: 0.3 });
+    });
+  }
+});
+
+// Gratitude wall
+function buildGratitude() {
+  const grid = document.getElementById('gratitudeGrid');
+  CONFIG.agradecimientos.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'gratitude-card';
+    card.innerHTML = `<div class="icon"><i class="fas ${item.icon}"></i></div><p>${item.texto}</p>`;
+    grid.appendChild(card);
+
+    gsap.to(card, {
+      opacity: 1, y: 0, duration: 0.7,
+      scrollTrigger: { trigger: card, start: 'top 90%' }
+    });
+  });
+}
+buildGratitude();
+
+// Tree lights
+function buildTreeLights() {
+  const container = document.getElementById('treeContainer');
+  const positions = [
+    {x:120,y:100},{x:160,y:95},{x:140,y:70},{x:100,y:110},
+    {x:180,y:105},{x:85,y:130},{x:195,y:125},{x:140,y:130},
+    {x:110,y:85},{x:170,y:80},{x:130,y:55},{x:155,y:60},
+    {x:95,y:145},{x:190,y:140},{x:140,y:145},{x:125,y:115},
+    {x:160,y:120},{x:75,y:155},{x:205,y:148},{x:140,y:90}
+  ];
+  positions.forEach((pos, i) => {
+    const light = document.createElement('div');
+    light.className = 'tree-light';
+    light.style.left = pos.x + 'px';
+    light.style.top = pos.y + 'px';
+    light.dataset.index = i;
+    container.appendChild(light);
+  });
+}
+buildTreeLights();
+
+// Animate tree lights based on scroll
+ScrollTrigger.create({
+  trigger: '#scene-tree',
+  start: 'top 50%',
+  end: 'bottom 30%',
+  scrub: 1,
+  onUpdate: (self) => {
+    const lights = document.querySelectorAll('.tree-light');
+    const progress = self.progress;
+    lights.forEach((light, i) => {
+      const threshold = i / lights.length;
+      if (progress > threshold) {
+        light.classList.add('on');
+      } else {
+        light.classList.remove('on');
+      }
+    });
+  }
+});
+
+// Tree text
+gsap.from('#scene-tree .scene-quote', {
+  opacity: 0, y: 20,
+  scrollTrigger: { trigger: '#scene-tree .scene-quote', start: 'top 80%' }
+});
+gsap.from('#scene-tree .scene-subtitle', {
+  opacity: 0, y: 20,
+  scrollTrigger: { trigger: '#scene-tree .scene-subtitle', start: 'top 80%' }
+});
+
+// Reflection - word by word
+function setupWordReveal(elementId, text) {
+  const el = document.getElementById(elementId);
+  const words = text.split(' ');
+  el.innerHTML = words.map(w => `<span>${w}</span>`).join('');
+}
+
+setupWordReveal('reflectionText1', 'No sé cuántos años más compartiremos.');
+setupWordReveal('reflectionText2', 'Pero agradezco cada día que hemos compartido hasta ahora.');
+
+ScrollTrigger.create({
+  trigger: '#scene-reflection',
+  start: 'top 60%',
+  end: 'top 10%',
+  scrub: 1,
+  onUpdate: (self) => {
+    const spans1 = document.querySelectorAll('#reflectionText1 span');
+    const spans2 = document.querySelectorAll('#reflectionText2 span');
+    const totalSpans = spans1.length + spans2.length;
+    const currentIdx = Math.floor(self.progress * totalSpans);
+    spans1.forEach((span, i) => {
+      gsap.to(span, { opacity: i < currentIdx ? 1 : 0, y: i < currentIdx ? 0 : 10, duration: 0.3 });
+    });
+    spans2.forEach((span, i) => {
+      const globalIdx = spans1.length + i;
+      gsap.to(span, { opacity: globalIdx < currentIdx ? 1 : 0, y: globalIdx < currentIdx ? 0 : 10, duration: 0.3 });
+    });
+  }
+});
+
+// Finale - ascending lights
+ScrollTrigger.create({
+  trigger: '#scene-finale',
+  start: 'top 70%',
+  onEnter: () => {
+    addAscendingParticles(50);
+    // Also create floating light divs
+    const container = document.getElementById('finaleLights');
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const light = document.createElement('div');
+        light.className = 'floating-light';
+        light.style.left = Math.random() * 100 + '%';
+        light.style.bottom = '-10px';
+        light.style.width = (Math.random() * 4 + 2) + 'px';
+        light.style.height = light.style.width;
+        container.appendChild(light);
+        gsap.to(light, {
+          y: -(window.innerHeight + 100),
+          x: (Math.random() - 0.5) * 100,
+          opacity: 0,
+          duration: 4 + Math.random() * 3,
+          ease: 'power1.out',
+          onComplete: () => light.remove()
+        });
+      }, i * 150);
+    }
+  },
+  once: true
+});
+
+// Finale text
+gsap.utils.toArray('#scene-finale .scene-quote, #scene-finale .divider').forEach(el => {
+  gsap.to(el, {
+    opacity: el.style.opacity === '0.8' ? 0.8 : 1, duration: 1,
+    scrollTrigger: { trigger: el, start: 'top 80%' }
+  });
+});
+
+// Final scene
+gsap.utils.toArray('#scene-final .fade-in, #scene-final .scene-quote, #scene-final .scene-subtitle').forEach(el => {
+  gsap.to(el, {
+    opacity: 1, y: 0, duration: 1,
+    scrollTrigger: { trigger: el, start: 'top 85%' }
+  });
+});
+gsap.to('#finalNames', {
+  opacity: 1, duration: 1.5,
+  scrollTrigger: { trigger: '#finalNames', start: 'top 80%' }
+});
+
+// CTA scene
+gsap.utils.toArray('#scene-cta .fade-in').forEach(el => {
+  gsap.to(el, {
+    opacity: 1, y: 0, duration: 0.8,
+    scrollTrigger: { trigger: el, start: 'top 85%' }
+  });
+});
+
+// Generic fade-in elements
+gsap.utils.toArray('.fade-in').forEach(el => {
+  if (el.closest('#scene-final') || el.closest('#scene-cta') || el.closest('#scene-tree') ||
+      el.closest('#scene-constellation') || el.closest('#scene-finale')) return; // handled above
+  gsap.to(el, {
+    opacity: 1, y: 0, duration: 0.8,
+    scrollTrigger: { trigger: el, start: 'top 85%' }
+  });
+});
+
+// ============================================================
+// MUSIC - Web Audio API ambient pad
+// ============================================================
+let audioCtx = null;
+let isPlaying = false;
+let gainNode = null;
+
+function createAmbientMusic() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(audioCtx.destination);
+
+  // Warm pad with multiple oscillators
+  const notes = [130.81, 164.81, 196.00, 246.94]; // C3, E3, G3, B3
+  notes.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.value = 0.08;
+
+    // Slight detuning for warmth
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.value = freq * 1.003;
+    const osc2Gain = audioCtx.createGain();
+    osc2Gain.gain.value = 0.05;
+
+    // LFO for gentle movement
+    const lfo = audioCtx.createOscillator();
+    lfo.frequency.value = 0.2 + i * 0.05;
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 0.01;
+    lfo.connect(lfoGain);
+    lfoGain.connect(oscGain.gain);
+    lfo.start();
+
+    osc.connect(oscGain);
+    osc2.connect(osc2Gain);
+    oscGain.connect(gainNode);
+    osc2Gain.connect(gainNode);
+    osc.start();
+    osc2.start();
+  });
+}
+
+document.getElementById('musicToggle').addEventListener('click', () => {
+  const btn = document.getElementById('musicToggle');
+  if (!audioCtx) createAmbientMusic();
+
+  if (isPlaying) {
+    gsap.to(gainNode.gain, { value: 0, duration: 1 });
+    btn.classList.add('paused');
+    isPlaying = false;
+  } else {
+    audioCtx.resume();
+    gsap.to(gainNode.gain, { value: 0.6, duration: 2 });
+    btn.classList.remove('paused');
+    isPlaying = true;
+  }
+});
+
+// ============================================================
+// SHARE FUNCTIONALITY
+// ============================================================
+const shareText = `✨ "Gracias Por Estar" ✨\n\nPara mi amigo/a que siempre ha estado ahí. Eres parte de mi historia. 💛\n\nÁbrelo y recuerda nuestros momentos juntos:`;
+const shareUrl = window.location.href;
+
+document.getElementById('shareWhatsapp').addEventListener('click', () => {
+  const url = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`;
+  window.open(url, '_blank');
+  showToast('Abriendo WhatsApp...');
+});
+
+document.getElementById('shareTelegram').addEventListener('click', () => {
+  const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+  window.open(url, '_blank');
+  showToast('Abriendo Telegram...');
+});
+
+document.getElementById('shareCopy').addEventListener('click', () => {
+  navigator.clipboard.writeText(shareText + '\n' + shareUrl).then(() => {
+    showToast('¡Enlace copiado! 📋');
+  }).catch(() => {
+    showToast('No se pudo copiar');
+  });
+});
+
+document.getElementById('ctaShare').addEventListener('click', () => {
+  if (navigator.share) {
+    navigator.share({
+      title: 'Gracias Por Estar',
+      text: shareText,
+      url: shareUrl
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(shareText + '\n' + shareUrl).then(() => {
+      showToast('¡Enlace copiado! 📋');
+    });
+  }
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// SCENE-BASED PARTICLE CHANGES
+// ============================================================
+ScrollTrigger.create({
+  trigger: '#scene-dawn',
+  start: 'top 50%',
+  onEnter: () => { currentScene = 'dawn'; },
+  onLeaveBack: () => { currentScene = 'intro'; }
+});
+
+ScrollTrigger.create({
+  trigger: '#scene-finale',
+  start: 'top 50%',
+  onEnter: () => { currentScene = 'finale'; },
+  onLeaveBack: () => { currentScene = 'default'; }
+});
+
+// ============================================================
+// TOUCH HINT - First scroll
+// ============================================================
+let hasScrolled = false;
+window.addEventListener('scroll', () => {
+  if (!hasScrolled) {
+    hasScrolled = true;
+    gsap.to('#scrollHint', { opacity: 0, duration: 0.5 });
+  }
+}, { passive: true });
+
+// ============================================================
+// PERFORMANCE - Reduce particles on low-end
+// ============================================================
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  cancelAnimationFrame(animFrame);
+  canvas.style.display = 'none';
+}
+</script>
+</body>
+</html>

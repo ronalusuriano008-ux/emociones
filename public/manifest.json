@@ -1,0 +1,8 @@
+{
+  "name": "EmotiArt",
+  "short_name": "EmotiArt",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07070a",
+  "theme_color": "#8b5cf6"
+}
