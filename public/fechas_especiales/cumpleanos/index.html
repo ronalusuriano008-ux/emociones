@@ -1,13 +1,4440 @@
-nombre homerito
-corazones que llame la tencion 
-por cumpleaños pero con amor de pareja
-del año 2000 09/07/2000
-priemero dedicatoria de amor
-de kely 
-y luego el mensaje de cumpleaños
-de parte de kely su pareja 
-cinematografica con fotos 
-y cartas de amor
-y un mensaje final de amor eterno 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para Homero — De Kely</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Cormorant Garamond',serif}
+  canvas{display:block;position:fixed;top:0;left:0;z-index:1}
 
-te queiro muvcho con toda mi alma si fuera por iria hasta el cielo a baajrte la luna para ti mi amor feliz cumpleaños mi vida te amo con todo mi corazon y alma eres lo mejor que me ha pasado en la vida y siempre estare a tu lado para apoyarte en todo lo que necesites te amo con todo mi ser feliz cumpleaños mi amor eterno
+  /* Overlay de carga */
+  #loader{position:fixed;inset:0;z-index:1000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity 1.5s ease}
+  #loader.hidden{opacity:0;pointer-events:none}
+  #loader p{color:rgba(255,255,255,0.5);font-size:1.1rem;letter-spacing:0.3em;text-transform:uppercase;animation:breathe 3s ease-in-out infinite}
+  #loader .line{width:60px;height:1px;background:rgba(255,180,200,0.4);margin-top:20px;animation:expandLine 3s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:0.3}50%{opacity:1}}
+  @keyframes expandLine{0%,100%{width:60px}50%{width:120px}}
+
+  /* Transición entre escenas */
+  #transition{position:fixed;inset:0;z-index:900;background:#000;opacity:0;pointer-events:none;transition:opacity 0.8s ease}
+  #transition.active{opacity:1}
+
+  /* Overlay de texto cinematográfico */
+  #cinematic-overlay{position:fixed;inset:0;z-index:800;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+  /* Texto de escena */
+  .scene-text{position:fixed;z-index:850;color:#fff;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.5s ease}
+  .scene-text.visible{opacity:1}
+  .scene-title{font-size:clamp(1.5rem,4vw,3rem);font-weight:300;letter-spacing:0.15em;margin-bottom:0.5rem}
+  .scene-subtitle{font-size:clamp(0.8rem,1.5vw,1.1rem);font-weight:300;letter-spacing:0.3em;opacity:0.6;font-style:italic}
+
+  /* Carta overlay */
+  #letter-overlay{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;flex-direction:column}
+  #letter-overlay.active{display:flex}
+  #letter-content{max-width:500px;padding:3rem;color:#f5e6d3;font-size:1.2rem;line-height:2;text-align:center;font-style:italic;letter-spacing:0.05em}
+  #letter-close{margin-top:2rem;color:rgba(255,180,200,0.6);font-size:0.85rem;letter-spacing:0.2em;cursor:pointer;pointer-events:auto;border:1px solid rgba(255,180,200,0.2);padding:0.5rem 1.5rem;transition:all 0.3s}
+  #letter-close:hover{color:rgba(255,180,200,1);border-color:rgba(255,180,200,0.5)}
+
+  /* Texto final */
+  #final-overlay{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0);display:none;align-items:center;justify-content:center;flex-direction:column;transition:background 2s ease}
+  #final-overlay.active{display:flex;background:rgba(0,0,0,0.7)}
+  #final-text{max-width:600px;text-align:center;color:#fff}
+  #final-text p{opacity:0;font-size:clamp(1rem,2vw,1.4rem);line-height:2.2;font-weight:300;letter-spacing:0.05em;margin-bottom:0.3rem}
+  #final-text .sign{margin-top:2rem;font-size:1.6rem;color:#ffb4c8;font-weight:600;letter-spacing:0.1em}
+
+  /* Indicador de avance */
+  #advance-hint{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:850;color:rgba(255,255,255,0.3);font-size:0.75rem;letter-spacing:0.3em;text-transform:uppercase;pointer-events:none;animation:breathe 3s ease-in-out infinite}
+
+  /* Indicador de escena */
+  #scene-indicator{position:fixed;top:30px;right:30px;z-index:850;color:rgba(255,255,255,0.15);font-size:0.65rem;letter-spacing:0.2em;font-family:'Space Mono',monospace;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <p>Toca para comenzar</p>
+  <div class="line"></div>
+</div>
+
+<div id="transition"></div>
+
+<div id="cinematic-overlay"></div>
+
+<div class="scene-text" id="scene-text">
+  <div class="scene-title" id="scene-title"></div>
+  <div class="scene-subtitle" id="scene-subtitle"></div>
+</div>
+
+<div id="letter-overlay">
+  <div id="letter-content"></div>
+  <div id="letter-close">cerrar</div>
+</div>
+
+<div id="final-overlay">
+  <div id="final-text"></div>
+</div>
+
+<div id="advance-hint">toca para avanzar</div>
+<div id="scene-indicator">I / VII</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ═══════════════════════════════════════════
+// VARIABLES GLOBALES
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// VARIABLES GLOBALES
+// ═══════════════════════════════════════════
+let scene, camera, renderer, composer, bloomPass, clock;
+let mouseX = 0, mouseY = 0;
+let targetMouseX = 0, targetMouseY = 0; // <-- AÑADIR ESTO
+let currentSceneIndex = 0;
+let sceneGroup = new THREE.Group();
+let sceneAnimations = [];
+let canAdvance = false;
+let audioCtx, audioStarted = false;
+const W = () => window.innerWidth;
+const H = () => window.innerHeight;
+
+// ═══════════════════════════════════════════
+// MOTOR DE AUDIO AMBIENTAL
+// ═══════════════════════════════════════════
+class AudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.masterGain = null;
+    this.drones = [];
+  }
+
+  init() {
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.value = 0.15;
+    this.masterGain.connect(this.ctx.destination);
+
+    // Drone base - nota fundamental
+    this.createDrone(55, 'sine', 0.3);
+    this.createDrone(82.5, 'sine', 0.2);
+    this.createDrone(110, 'triangle', 0.1);
+
+    // Filtro para calidez
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 800;
+    filter.Q.value = 1;
+    this.masterGain.disconnect();
+    this.masterGain.connect(filter);
+    filter.connect(this.ctx.destination);
+  }
+
+  createDrone(freq, type, vol) {
+    const osc = this.ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.value = freq;
+    const g = this.ctx.createGain();
+    g.gain.value = vol;
+    osc.connect(g);
+    g.connect(this.masterGain);
+    osc.start();
+    this.drones.push({ osc, gain: g });
+  }
+
+  playChime(freq = 880) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const g = this.ctx.createGain();
+    g.gain.value = 0.06;
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 3);
+    osc.connect(g);
+    g.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 3);
+  }
+
+  playHeartbeat() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 60;
+    const g = this.ctx.createGain();
+    g.gain.value = 0;
+    g.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+    g.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime + 0.4);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.7);
+    osc.connect(g);
+    g.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.8);
+  }
+
+  setSceneMood(mood) {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    this.drones.forEach((d, i) => {
+      const freqs = {
+        space: [55, 82.5, 110],
+        warm: [65, 98, 130],
+        garden: [73, 110, 146],
+        love: [82, 123, 165],
+        epic: [55, 110, 165]
+      };
+      const f = freqs[mood] || freqs.space;
+      d.osc.frequency.exponentialRampToValueAtTime(Math.max(20, f[i] || f[0]), now + 2);
+    });
+  }
+}
+
+const audio = new AudioEngine();
+
+// ═══════════════════════════════════════════
+// UTILIDAD: TEXTO A PARTÍCULAS
+// ═══════════════════════════════════════════
+function textToPositions(text, fontSize = 120, density = 2) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.font = `bold ${fontSize}px 'Cormorant Garamond', serif`;
+  const m = ctx.measureText(text);
+  canvas.width = Math.ceil(m.width) + 40;
+  canvas.height = fontSize * 1.5;
+  ctx.font = `bold ${fontSize}px 'Cormorant Garamond', serif`;
+  ctx.fillStyle = '#fff';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 20, canvas.height / 2);
+
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const positions = [];
+  const step = Math.max(1, Math.round(density));
+
+  for (let y = 0; y < canvas.height; y += step) {
+    for (let x = 0; x < canvas.width; x += step) {
+      if (data[(y * canvas.width + x) * 4 + 3] > 128) {
+        positions.push(
+          (x - canvas.width / 2) * 0.05,
+          -(y - canvas.height / 2) * 0.05,
+          (Math.random() - 0.5) * 0.3
+        );
+      }
+    }
+  }
+  return new Float32Array(positions);
+}
+
+// ═══════════════════════════════════════════
+// UTILIDAD: CREAR PARTÍCULAS
+// ═══════════════════════════════════════════
+function createParticles(count, options = {}) {
+  const {
+    spread = 100,
+    size = 0.3,
+    color = '#ffffff',
+    opacity = 0.8,
+    positions: customPos = null
+  } = options;
+
+  const geo = new THREE.BufferGeometry();
+  const pos = customPos || new Float32Array(count * 3);
+  const randoms = new Float32Array(count);
+
+  if (!customPos) {
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * spread;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * spread;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * spread;
+    }
+  }
+
+  for (let i = 0; i < count; i++) randoms[i] = Math.random();
+
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
+
+  const mat = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: { value: size },
+      uColor: { value: new THREE.Color(color) },
+      uOpacity: { value: opacity },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+    },
+    vertexShader: `
+      attribute float aRandom;
+      uniform float uTime;
+      uniform float uSize;
+      uniform float uPixelRatio;
+      varying float vAlpha;
+      void main() {
+        vec3 pos = position;
+        pos.x += sin(uTime * 0.3 + aRandom * 6.28) * 0.2;
+        pos.y += cos(uTime * 0.2 + aRandom * 6.28) * 0.2;
+        vAlpha = 0.5 + 0.5 * sin(uTime + aRandom * 6.28);
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = uSize * uPixelRatio * (80.0 / -mv.z);
+        gl_PointSize = max(gl_PointSize, 1.0);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      varying float vAlpha;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float a = smoothstep(0.5, 0.1, d) * uOpacity * vAlpha;
+        gl_FragColor = vec4(uColor, a);
+      }
+    `
+  });
+
+  return new THREE.Points(geo, mat);
+}
+
+// ═══════════════════════════════════════════
+// SHADERS COMPARTIDOS
+// ═══════════════════════════════════════════
+const nebulaVertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const nebulaFragmentShader = `
+  uniform float uTime;
+  uniform vec3 uColor1;
+  uniform vec3 uColor2;
+  varying vec2 vUv;
+
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+  }
+
+  float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+
+  float fbm(vec2 p) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 5; i++) {
+      v += a * noise(p);
+      p *= 2.0;
+      a *= 0.5;
+    }
+    return v;
+  }
+
+  void main() {
+    vec2 uv = vUv - 0.5;
+    float dist = length(uv);
+    float n = fbm(uv * 3.0 + uTime * 0.05);
+    float n2 = fbm(uv * 2.0 - uTime * 0.03 + 5.0);
+    vec3 color = mix(uColor1, uColor2, n);
+    color += vec3(0.1, 0.05, 0.15) * n2;
+    float alpha = smoothstep(0.5, 0.0, dist) * (0.15 + 0.1 * n);
+    gl_FragColor = vec4(color, alpha);
+  }
+`;
+
+// ═══════════════════════════════════════════
+// ESCENA 1: EL NACIMIENTO DE UNA ESTRELLA
+// ═══════════════════════════════════════════
+function createScene1() {
+  const group = new THREE.Group();
+  const updates = [];
+  let prevTime = 0;
+
+  // ── FONDO PROFUNDO: 3 capas de estrellas con parallax ──
+
+  // Capa 1: Estrellas muy distantes, pequeñas, frías
+  const farStars = createParticles(20000, { spread: 500, size: 0.12, color: '#99aadd', opacity: 0.5 });
+  farStars.name = 'farStars';
+  group.add(farStars);
+  updates.push((t) => { farStars.material.uniforms.uTime.value = t; });
+
+  // Capa 2: Estrellas medianas, blancas
+  const midStars = createParticles(15000, { spread: 300, size: 0.3, color: '#ffffff', opacity: 0.8 });
+  midStars.name = 'midStars';
+  group.add(midStars);
+  updates.push((t) => { midStars.material.uniforms.uTime.value = t; });
+
+  // Capa 3: Estrellas cercanas, cálidas, grandes
+  const nearStars = createParticles(5000, { spread: 150, size: 0.6, color: '#ffeedd', opacity: 1.0 });
+  nearStars.name = 'nearStars';
+  group.add(nearStars);
+  updates.push((t) => { nearStars.material.uniforms.uTime.value = t; });
+
+  // Capa 4: Estrellas de color (rojas/azules ocasionales)
+  const colorStars = createParticles(1500, { spread: 200, size: 0.5, color: '#ff8855', opacity: 0.7 });
+  colorStars.name = 'colorStars';
+  group.add(colorStars);
+  updates.push((t) => { colorStars.material.uniforms.uTime.value = t; });
+
+  const blueStars = createParticles(800, { spread: 200, size: 0.45, color: '#5588ff', opacity: 0.6 });
+  blueStars.name = 'blueStars';
+  group.add(blueStars);
+  updates.push((t) => { blueStars.material.uniforms.uTime.value = t; });
+
+  // ── NEBULOSAS MULTICAPA ──
+  // Más capas, mejor posicionamiento, variedades de escala
+  const nebulaConfigs = [
+    { colors: ['#0a0018', '#5a0090'], pos: [-30, 20, -80], rot: 0.3, scale: 2.0 },
+    { colors: ['#050020', '#0040a0'], pos: [35, -15, -60], rot: -0.5, scale: 1.4 },
+    { colors: ['#200015', '#900050'], pos: [0, 5, -100], rot: 0.8, scale: 2.5 },
+    { colors: ['#001025', '#004060'], pos: [-20, -25, -50], rot: 1.2, scale: 1.0 },
+    { colors: ['#150025', '#600090'], pos: [25, 25, -70], rot: -0.2, scale: 1.3 },
+    { colors: ['#080015', '#250050'], pos: [0, 10, -120], rot: 0.1, scale: 3.0 },
+    { colors: ['#100008', '#500030'], pos: [-40, -5, -90], rot: 0.6, scale: 1.8 },
+  ];
+
+  nebulaConfigs.forEach((cfg) => {
+    const geo = new THREE.PlaneGeometry(80 * cfg.scale, 80 * cfg.scale);
+    const mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uColor1: { value: new THREE.Color(cfg.colors[0]) },
+        uColor2: { value: new THREE.Color(cfg.colors[1]) }
+      },
+      vertexShader: nebulaVertexShader,
+      fragmentShader: nebulaFragmentShader
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
+    mesh.rotation.z = cfg.rot;
+    group.add(mesh);
+    updates.push((t) => { mat.uniforms.uTime.value = t; });
+  });
+
+  // ── GAS INTERESTELAR ANIMADO (con warp de dominio) ──
+  const gasGeo = new THREE.PlaneGeometry(160, 160);
+  const gasMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uColor1: { value: new THREE.Color('#080015') },
+      uColor2: { value: new THREE.Color('#1a0045') }
+    },
+    vertexShader: nebulaVertexShader,
+    fragmentShader: `
+      uniform float uTime;
+      uniform vec3 uColor1;
+      uniform vec3 uColor2;
+      varying vec2 vUv;
+
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float a = hash(i);
+        float b = hash(i + vec2(1.0, 0.0));
+        float c = hash(i + vec2(0.0, 1.0));
+        float d = hash(i + vec2(1.0, 1.0));
+        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0;
+        float a = 0.5;
+        for (int i = 0; i < 6; i++) {
+          v += a * noise(p);
+          p *= 2.1;
+          a *= 0.5;
+        }
+        return v;
+      }
+
+      void main() {
+        vec2 uv = vUv - 0.5;
+        float dist = length(uv);
+        // Domain warping para flujo orgánico
+        vec2 warp = vec2(
+          fbm(uv * 2.0 + uTime * 0.015),
+          fbm(uv * 2.0 + uTime * 0.015 + 5.2)
+        );
+        float n = fbm(uv * 3.0 + warp * 0.6 + uTime * 0.02);
+        float n2 = fbm(uv * 1.5 - uTime * 0.015 + 10.0);
+        vec3 color = mix(uColor1, uColor2, n);
+        color += vec3(0.12, 0.04, 0.18) * n2;
+        float alpha = smoothstep(0.5, 0.0, dist) * n * 0.18;
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const gasMesh = new THREE.Mesh(gasGeo, gasMat);
+  gasMesh.position.z = -40;
+  group.add(gasMesh);
+  updates.push((t) => { gasMat.uniforms.uTime.value = t; });
+
+  // ── ESTRELLAS FUGACES ──
+  const shootingStars = [];
+  for (let i = 0; i < 10; i++) {
+    const trailLen = 35;
+    const positions = new Float32Array(trailLen * 3);
+    const alphas = new Float32Array(trailLen);
+    for (let j = 0; j < trailLen; j++) {
+      alphas[j] = 1.0 - j / trailLen;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
+    const mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uColor: { value: new THREE.Color('#ffffff') },
+        uOpacity: { value: 0 }
+      },
+      vertexShader: `
+        attribute float aAlpha;
+        varying float vAlpha;
+        void main() {
+          vAlpha = aAlpha;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor;
+        uniform float uOpacity;
+        varying float vAlpha;
+        void main() {
+          gl_FragColor = vec4(uColor, vAlpha * uOpacity);
+        }
+      `
+    });
+    const line = new THREE.Line(geo, mat);
+    line.userData = {
+      active: false,
+      timer: Math.random() * 12,
+      interval: 6 + Math.random() * 14,
+      head: new THREE.Vector3(),
+      vel: new THREE.Vector3(),
+      trailLen
+    };
+    group.add(line);
+    shootingStars.push(line);
+  }
+
+  function launchShootingStar(star) {
+    const d = star.userData;
+    d.active = true;
+    star.material.uniforms.uOpacity.value = 1.0;
+    const theta = Math.random() * Math.PI * 2;
+    const r = 60 + Math.random() * 100;
+    d.head.set(
+      Math.cos(theta) * r,
+      20 + Math.random() * 40,
+      (Math.random() - 0.5) * 60 - 20
+    );
+    const speed = 1.2 + Math.random() * 2.5;
+    d.vel.set(
+      -Math.cos(theta) * speed * 0.8,
+      -speed * 0.6 - Math.random() * 0.5,
+      (Math.random() - 0.5) * speed * 0.3
+    );
+    const posArr = star.geometry.attributes.position.array;
+    for (let j = 0; j < d.trailLen; j++) {
+      posArr[j * 3] = d.head.x;
+      posArr[j * 3 + 1] = d.head.y;
+      posArr[j * 3 + 2] = d.head.z;
+    }
+    star.geometry.attributes.position.needsUpdate = true;
+  }
+
+  updates.push((t) => {
+    const dt = Math.min(t - prevTime, 0.1);
+    shootingStars.forEach(star => {
+      const d = star.userData;
+      if (!d.active) {
+        d.timer += dt;
+        if (d.timer > d.interval) {
+          d.timer = 0;
+          launchShootingStar(star);
+        }
+        return;
+      }
+      const posArr = star.geometry.attributes.position.array;
+      for (let j = d.trailLen - 1; j > 0; j--) {
+        posArr[j * 3] = posArr[(j - 1) * 3];
+        posArr[j * 3 + 1] = posArr[(j - 1) * 3 + 1];
+        posArr[j * 3 + 2] = posArr[(j - 1) * 3 + 2];
+      }
+      d.head.add(d.vel.clone().multiplyScalar(dt * 60));
+      posArr[0] = d.head.x;
+      posArr[1] = d.head.y;
+      posArr[2] = d.head.z;
+      star.geometry.attributes.position.needsUpdate = true;
+      star.material.uniforms.uOpacity.value *= 0.993;
+      if (star.material.uniforms.uOpacity.value < 0.01) {
+        d.active = false;
+        star.material.uniforms.uOpacity.value = 0;
+      }
+    });
+  });
+
+  // ── RAYOS VOLUMÉTRICOS DIAGONALES ──
+  const godRaysCount = 14;
+  for (let i = 0; i < godRaysCount; i++) {
+    const rayGeo = new THREE.PlaneGeometry(0.4, 100);
+    const rayMat = new THREE.MeshBasicMaterial({
+      color: '#18103a',
+      transparent: true, opacity: 0.012,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const ray = new THREE.Mesh(rayGeo, rayMat);
+    const angle = (i / godRaysCount) * Math.PI * 2;
+    ray.position.set(0, 0, -35);
+    ray.rotation.z = angle;
+    ray.userData = { baseAngle: angle, baseOp: 0.012 };
+    group.add(ray);
+    updates.push((t) => {
+      ray.rotation.z = ray.userData.baseAngle + Math.sin(t * 0.08 + ray.userData.baseAngle) * 0.04;
+      ray.material.opacity = ray.userData.baseOp * (0.4 + 0.6 * Math.sin(t * 0.25 + i * 0.7));
+    });
+  }
+
+  // ── PARTÍCULAS CÓSMICAS DE POLVO (lentas, atmosféricas) ──
+  const cosmicDust = createParticles(4000, { spread: 80, size: 0.15, color: '#aa88cc', opacity: 0.25 });
+  cosmicDust.name = 'cosmicDust';
+  group.add(cosmicDust);
+  updates.push((t) => { cosmicDust.material.uniforms.uTime.value = t; });
+
+  // ── PARTÍCULAS QUE FORMARÁN LA FECHA ──
+  const dateText = '09 / 07 / 2000';
+  const targetPositions = textToPositions(dateText, 90, 1.6);
+  const particleCount = targetPositions.length / 3;
+
+  // Posiciones iniciales: esparcidas por el campo estelar
+  const startPos = new Float32Array(particleCount * 3);
+  const randoms = new Float32Array(particleCount);
+  const aSizeArr = new Float32Array(particleCount);
+  for (let i = 0; i < particleCount; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = (Math.random() - 0.5) * Math.PI * 0.8;
+    const r = 40 + Math.random() * 120;
+    startPos[i * 3] = Math.cos(theta) * Math.cos(phi) * r;
+    startPos[i * 3 + 1] = Math.sin(phi) * r;
+    startPos[i * 3 + 2] = Math.cos(theta) * Math.sin(phi) * r - 20;
+    randoms[i] = Math.random();
+    aSizeArr[i] = 0.4 + Math.random() * 0.8;
+  }
+
+  const dateGeo = new THREE.BufferGeometry();
+  dateGeo.setAttribute('position', new THREE.BufferAttribute(startPos.slice(), 3));
+  dateGeo.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
+  dateGeo.setAttribute('aSize', new THREE.BufferAttribute(aSizeArr, 1));
+
+  const dateMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: { value: 0.7 },
+      uColor: { value: new THREE.Color('#ffccdd') },
+      uOpacity: { value: 0 },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+      uProgress: { value: 0 },
+      uPulse: { value: 0 },
+      uExplode: { value: 0 }
+    },
+    vertexShader: `
+      attribute float aRandom;
+      attribute float aSize;
+      uniform float uTime;
+      uniform float uSize;
+      uniform float uPixelRatio;
+      uniform float uProgress;
+      uniform float uPulse;
+      uniform float uExplode;
+      varying float vAlpha;
+      varying float vDist;
+
+      void main() {
+        vec3 pos = position;
+
+        // Respiración que se calma al converger
+        float breathAmp = (1.0 - uProgress) * 3.0;
+        pos.x += sin(uTime * 0.35 + aRandom * 6.283) * breathAmp;
+        pos.y += cos(uTime * 0.25 + aRandom * 6.283) * breathAmp;
+        pos.z += sin(uTime * 0.15 + aRandom * 3.14) * breathAmp * 0.5;
+
+        // Pulso rítmico al formarse
+        float pulse = 1.0 + uPulse * sin(uTime * 3.5 + aRandom * 6.28) * 0.04;
+        pos *= pulse;
+
+        // Explosión suave hacia afuera
+        vec3 explodeDir = normalize(pos + vec3(0.0001));
+        pos += explodeDir * uExplode * (15.0 + aRandom * 35.0);
+
+        vAlpha = 0.15 + 0.85 * smoothstep(0.0, 0.6, uProgress);
+        vDist = aRandom;
+
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        float sizeMult = mix(1.0, 2.8, uPulse);
+        sizeMult = mix(sizeMult, 0.2, uExplode);
+        gl_PointSize = uSize * aSize * sizeMult * uPixelRatio * (80.0 / -mv.z);
+        gl_PointSize = max(gl_PointSize, 1.0);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      uniform float uPulse;
+      uniform float uExplode;
+      varying float vAlpha;
+      varying float vDist;
+
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+
+        float core = smoothstep(0.5, 0.0, d);
+        float glow = smoothstep(0.5, 0.15, d);
+
+        vec3 color = uColor;
+        // Brillo adicional durante pulso
+        color = mix(color, vec3(1.0, 0.95, 1.0), uPulse * 0.6);
+        // Tinte violeta durante explosión
+        color = mix(color, vec3(0.5, 0.2, 1.0), uExplode * 0.7);
+
+        float a = (core * 0.6 + glow * 0.4) * uOpacity * vAlpha;
+        a *= (1.0 - uExplode * 0.85);
+
+        gl_FragColor = vec4(color, a);
+      }
+    `
+  });
+
+  const dateParticles = new THREE.Points(dateGeo, dateMat);
+  group.add(dateParticles);
+
+  // ── SECUENCIA ANIMADA: converger → latir → explotar ──
+  const progress = { value: 0 };
+  const pulse = { value: 0 };
+  const explode = { value: 0 };
+  const dateTimeline = gsap.timeline({ delay: 4 });
+
+  // Fase 1: Convergencia épica (5 segundos)
+  dateTimeline.to(progress, {
+    value: 1,
+    duration: 5,
+    ease: 'power3.inOut',
+    onUpdate: () => {
+      const posArr = dateGeo.attributes.position.array;
+      for (let i = 0; i < particleCount; i++) {
+        const idx = i * 3;
+        // Cada partícula tiene un micro-retardo basado en su random
+        const localP = Math.max(0, Math.min(1, progress.value * 1.15 - randoms[i] * 0.15));
+        const ep = localP < 0.5
+          ? 4 * localP * localP * localP
+          : 1 - Math.pow(-2 * localP + 2, 3) / 2;
+        posArr[idx] = startPos[idx] + (targetPositions[idx] - startPos[idx]) * ep;
+        posArr[idx + 1] = startPos[idx + 1] + (targetPositions[idx + 1] - startPos[idx + 1]) * ep;
+        posArr[idx + 2] = startPos[idx + 2] + (targetPositions[idx + 2] - startPos[idx + 2]) * ep;
+      }
+      dateGeo.attributes.position.needsUpdate = true;
+      dateMat.uniforms.uProgress.value = progress.value;
+    }
+  });
+
+  // Fase 2: Latido cósmico (pulsa y despulsa)
+  dateTimeline.to(pulse, {
+    value: 1, duration: 1.2, ease: 'sine.inOut',
+    onUpdate: () => { dateMat.uniforms.uPulse.value = pulse.value; }
+  });
+  dateTimeline.to(pulse, {
+    value: 0, duration: 1.2, ease: 'sine.inOut',
+    onUpdate: () => { dateMat.uniforms.uPulse.value = pulse.value; }
+  });
+  // Segundo latido más fuerte
+  dateTimeline.to(pulse, {
+    value: 1, duration: 0.8, ease: 'sine.inOut',
+    onUpdate: () => { dateMat.uniforms.uPulse.value = pulse.value; }
+  });
+  dateTimeline.to(pulse, {
+    value: 0, duration: 0.8, ease: 'sine.inOut',
+    onUpdate: () => { dateMat.uniforms.uPulse.value = pulse.value; }
+  });
+
+  // Fase 3: Explosión suave (las estrellas se dispersan)
+  dateTimeline.to(explode, {
+    value: 1,
+    duration: 3,
+    ease: 'power2.in',
+    onUpdate: () => { dateMat.uniforms.uExplode.value = explode.value; }
+  });
+
+  // Fade in gradual
+  gsap.to(dateMat.uniforms.uOpacity, { value: 1, duration: 3, delay: 3 });
+
+  // Flash de luz en el momento del latido
+  const flashLight = new THREE.PointLight('#ffffff', 0, 200);
+  flashLight.position.set(0, 0, -5);
+  group.add(flashLight);
+  dateTimeline.to(flashLight, {
+    intensity: 8, duration: 0.3, ease: 'power2.in',
+    onUpdate: () => { flashLight.color.setHex(0xffccff); }
+  }, '-=3.2');
+  dateTimeline.to(flashLight, { intensity: 0, duration: 1.5, ease: 'power2.out' });
+
+  // ── PORTAL DIMENSIONAL (5 capas) ──
+
+  // Capa 1: Anillo exterior — ondas de energía
+  const outerRingGeo = new THREE.TorusGeometry(11, 0.25, 32, 160);
+  const outerRingMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 } },
+    vertexShader: `
+      varying vec3 vPos;
+      void main() {
+        vPos = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uOpacity;
+      varying vec3 vPos;
+      void main() {
+        float angle = atan(vPos.y, vPos.x);
+        float wave1 = sin(angle * 14.0 + uTime * 5.0) * 0.5 + 0.5;
+        float wave2 = sin(angle * 9.0 - uTime * 3.0) * 0.5 + 0.5;
+        vec3 c1 = vec3(0.25, 0.0, 0.65);
+        vec3 c2 = vec3(0.0, 0.45, 1.0);
+        vec3 c3 = vec3(0.9, 0.15, 0.55);
+        vec3 color = mix(c1, c2, wave1);
+        color = mix(color, c3, wave2 * 0.35);
+        float alpha = uOpacity * (0.35 + 0.65 * wave1);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
+  outerRing.position.z = -30;
+  group.add(outerRing);
+
+  // Capa 2: Anillo medio — espiral
+  const midRingGeo = new THREE.TorusGeometry(9, 0.5, 32, 120);
+  const midRingMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 } },
+    vertexShader: `
+      varying vec3 vPos;
+      void main() {
+        vPos = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uOpacity;
+      varying vec3 vPos;
+      void main() {
+        float angle = atan(vPos.y, vPos.x);
+        float dist = length(vPos.xy);
+        float swirl = sin(angle * 10.0 + uTime * 3.5 + dist * 0.4) * 0.5 + 0.5;
+        vec3 c1 = vec3(0.35, 0.0, 0.8);
+        vec3 c2 = vec3(0.0, 0.55, 1.0);
+        vec3 c3 = vec3(1.0, 0.25, 0.55);
+        vec3 color = mix(c1, c2, swirl);
+        color = mix(color, c3, sin(uTime * 1.3 + angle * 2.0) * 0.25 + 0.25);
+        float alpha = uOpacity * (0.45 + 0.55 * swirl);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const midRing = new THREE.Mesh(midRingGeo, midRingMat);
+  midRing.position.z = -30;
+  group.add(midRing);
+
+  // Capa 3: Disco interior — vórtice profundo con noise
+  const discGeo = new THREE.CircleGeometry(8.5, 80);
+  const discMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uOpacity;
+      varying vec2 vUv;
+
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) {
+        vec2 i = floor(p); vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i+vec2(1,0)), f.x),
+                   mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);
+      }
+
+      void main() {
+        vec2 uv = vUv - 0.5;
+        float dist = length(uv);
+        float angle = atan(uv.y, uv.x);
+
+        // Vórtice multicapa
+        float s1 = sin(angle * 7.0 - uTime * 5.0 + dist * 18.0) * 0.5 + 0.5;
+        float s2 = cos(angle * 5.0 + uTime * 3.0 - dist * 12.0) * 0.5 + 0.5;
+        float s3 = sin(angle * 12.0 - uTime * 7.0 + dist * 25.0) * 0.5 + 0.5;
+        float n = noise(uv * 6.0 + uTime * 0.4);
+
+        vec3 color = mix(vec3(0.12, 0.0, 0.35), vec3(0.0, 0.35, 0.85), s1);
+        color = mix(color, vec3(0.75, 0.08, 0.45), s2 * 0.4);
+        color = mix(color, vec3(1.0, 0.85, 1.0), s3 * 0.12);
+        color += vec3(0.08) * n;
+
+        // Centro brillante
+        float center = smoothstep(0.35, 0.0, dist);
+        color += vec3(0.35, 0.25, 0.55) * center;
+
+        float alpha = uOpacity * smoothstep(0.5, 0.0, dist) * (0.15 + 0.85 * s1);
+        alpha = max(alpha, center * uOpacity * 0.6);
+
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const disc = new THREE.Mesh(discGeo, discMat);
+  disc.position.z = -30;
+  group.add(disc);
+
+  // Capa 4: Lens flare central (destello con spikes)
+  const flareGeo = new THREE.PlaneGeometry(6, 6);
+  const flareMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uOpacity;
+      varying vec2 vUv;
+      void main() {
+        vec2 uv = vUv - 0.5;
+        float dist = length(uv);
+        float glow = exp(-dist * 5.0);
+        vec3 color = vec3(0.85, 0.75, 1.0) * glow;
+        // Spikes cruciformes
+        float spikeH = exp(-abs(uv.x) * 40.0) * exp(-abs(uv.y) * 4.0);
+        float spikeV = exp(-abs(uv.y) * 40.0) * exp(-abs(uv.x) * 4.0);
+        float spikeD1 = exp(-abs(uv.x - uv.y) * 25.0) * exp(-abs(uv.x + uv.y) * 4.0);
+        float spikeD2 = exp(-abs(uv.x + uv.y) * 25.0) * exp(-abs(uv.x - uv.y) * 4.0);
+        float spikes = (spikeH + spikeV) * 0.6 + (spikeD1 + spikeD2) * 0.3;
+        color += vec3(0.55, 0.45, 0.85) * spikes * 0.4;
+        // Pulso sutil
+        float pulse = 0.85 + 0.15 * sin(uTime * 2.0);
+        float alpha = (glow + spikes * 0.25) * uOpacity * pulse;
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const flare = new THREE.Mesh(flareGeo, flareMat);
+  flare.position.z = -29;
+  group.add(flare);
+
+  // Capa 5: Tendrils de energía (partículas espirales)
+  const tendrilCount = 4000;
+  const tendrilPos = new Float32Array(tendrilCount * 3);
+  const tendrilRand = new Float32Array(tendrilCount);
+  for (let i = 0; i < tendrilCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = 2 + Math.random() * 18;
+    tendrilPos[i * 3] = Math.cos(angle) * r;
+    tendrilPos[i * 3 + 1] = Math.sin(angle) * r;
+    tendrilPos[i * 3 + 2] = -30 + (Math.random() - 0.5) * 6;
+    tendrilRand[i] = Math.random();
+  }
+  const tendrilGeo = new THREE.BufferGeometry();
+  tendrilGeo.setAttribute('position', new THREE.BufferAttribute(tendrilPos, 3));
+  tendrilGeo.setAttribute('aRandom', new THREE.BufferAttribute(tendrilRand, 1));
+  const tendrilMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: { value: 0.18 },
+      uColor: { value: new THREE.Color('#7050ff') },
+      uOpacity: { value: 0 },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+    },
+    vertexShader: `
+      attribute float aRandom;
+      uniform float uTime;
+      uniform float uSize;
+      uniform float uPixelRatio;
+      varying float vAlpha;
+      void main() {
+        vec3 pos = position;
+        float angle = atan(pos.y, pos.x);
+        float r = length(pos.xy);
+        // Espiral hacia el centro
+        float newR = r - sin(uTime * 0.4 + aRandom * 6.28) * 0.8;
+        newR = max(newR, 0.3);
+        float spinSpeed = 0.4 + aRandom * 0.4;
+        pos.x = cos(angle + uTime * spinSpeed) * newR;
+        pos.y = sin(angle + uTime * spinSpeed) * newR;
+        pos.z += sin(uTime * 0.8 + aRandom * 6.28) * 0.4;
+        vAlpha = 0.2 + 0.8 * aRandom;
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = uSize * uPixelRatio * (50.0 / -mv.z);
+        gl_PointSize = max(gl_PointSize, 1.0);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      varying float vAlpha;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float a = smoothstep(0.5, 0.0, d) * uOpacity * vAlpha;
+        gl_FragColor = vec4(uColor, a);
+      }
+    `
+  });
+  const tendrils = new THREE.Points(tendrilGeo, tendrilMat);
+  group.add(tendrils);
+  updates.push((t) => { tendrilMat.uniforms.uTime.value = t; });
+
+  // Capa 6: Anillo de partículas orbitando el portal
+  const orbitCount = 2000;
+  const orbitPos = new Float32Array(orbitCount * 3);
+  const orbitRand = new Float32Array(orbitCount);
+  for (let i = 0; i < orbitCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = 9 + Math.random() * 3;
+    orbitPos[i * 3] = Math.cos(angle) * r;
+    orbitPos[i * 3 + 1] = Math.sin(angle) * r;
+    orbitPos[i * 3 + 2] = -30 + (Math.random() - 0.5) * 2;
+    orbitRand[i] = Math.random();
+  }
+  const orbitGeo = new THREE.BufferGeometry();
+  orbitGeo.setAttribute('position', new THREE.BufferAttribute(orbitPos, 3));
+  orbitGeo.setAttribute('aRandom', new THREE.BufferAttribute(orbitRand, 1));
+  const orbitMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: { value: 0.25 },
+      uColor: { value: new THREE.Color('#cc80ff') },
+      uOpacity: { value: 0 },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+    },
+    vertexShader: `
+      attribute float aRandom;
+      uniform float uTime;
+      uniform float uSize;
+      uniform float uPixelRatio;
+      varying float vAlpha;
+      void main() {
+        vec3 pos = position;
+        float angle = atan(pos.y, pos.x) + uTime * (0.8 + aRandom * 0.3);
+        float r = length(pos.xy);
+        pos.x = cos(angle) * r;
+        pos.y = sin(angle) * r;
+        vAlpha = 0.4 + 0.6 * sin(uTime * 2.0 + aRandom * 6.28);
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = uSize * uPixelRatio * (60.0 / -mv.z);
+        gl_PointSize = max(gl_PointSize, 1.0);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      varying float vAlpha;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float a = smoothstep(0.5, 0.0, d) * uOpacity * vAlpha;
+        gl_FragColor = vec4(uColor, a);
+      }
+    `
+  });
+  const orbitParticles = new THREE.Points(orbitGeo, orbitMat);
+  group.add(orbitParticles);
+  updates.push((t) => { orbitMat.uniforms.uTime.value = t; });
+
+  // ── ANIMACIÓN DE APARICIÓN DEL PORTAL ──
+  dateTimeline.to([outerRingMat.uniforms.uOpacity, midRingMat.uniforms.uOpacity], {
+    value: 1, duration: 2, ease: 'power2.inOut'
+  }, '-=2');
+  dateTimeline.to(discMat.uniforms.uOpacity, {
+    value: 1, duration: 2.5, ease: 'power2.inOut'
+  }, '-=1.5');
+  dateTimeline.to(flareMat.uniforms.uOpacity, {
+    value: 1, duration: 1.5, ease: 'power2.inOut'
+  }, '-=1.5');
+  dateTimeline.to(tendrilMat.uniforms.uOpacity, {
+    value: 0.7, duration: 2, ease: 'power2.inOut'
+  }, '-=2');
+  dateTimeline.to(orbitMat.uniforms.uOpacity, {
+    value: 0.8, duration: 2, ease: 'power2.inOut'
+  }, '-=1.5');
+
+  updates.push((t) => {
+    outerRingMat.uniforms.uTime.value = t;
+    midRingMat.uniforms.uTime.value = t;
+    discMat.uniforms.uTime.value = t;
+    flareMat.uniforms.uTime.value = t;
+    dateMat.uniforms.uTime.value = t;
+    outerRing.rotation.z = t * 0.12;
+    midRing.rotation.z = -t * 0.18;
+    prevTime = t;
+  });
+
+  // ── CÁMARA CINEMATOGRÁFICA: dolly + crane ──
+  const camAnim = {
+    x: 0, y: 2, z: 40,
+    lookX: 0, lookY: 0, lookZ: -30
+  };
+
+  // Dolly forward lento
+  gsap.to(camAnim, { z: 12, duration: 18, ease: 'none' });
+  // Crane down suave
+  gsap.to(camAnim, { y: 0, duration: 18, ease: 'power1.inOut' });
+  // Look target se mueve al portal
+  gsap.to(camAnim, { lookZ: -30, duration: 18, ease: 'none' });
+
+  return {
+    group, updates,
+    cameraUpdate: () => {
+      camera.position.x = camAnim.x + mouseX * 4;
+      camera.position.y = camAnim.y + mouseY * 3;
+      camera.position.z = camAnim.z;
+      camera.lookAt(camAnim.lookX, camAnim.lookY, camAnim.lookZ);
+    },
+    destroy: () => {
+      dateTimeline.kill();
+      group.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (obj.material.map) obj.material.map.dispose();
+          obj.material.dispose();
+        }
+      });
+    }
+  };
+}
+
+// ═══════════════════════════════════════════
+// ESCENA 2: EL LIBRO DEL DESTINO
+// ═══════════════════════════════════════════
+function createScene2() {
+  const group = new THREE.Group();
+  const updates = [];
+
+  // ── ATMÓSFERA Y NIEBLA ──
+  scene.fog = new THREE.FogExp2('#0a0608', 0.025);
+
+  // ── ILUMINACIÓN CINEMATOGRÁFICA ──
+  const ambientLight = new THREE.AmbientLight('#1a0f0a', 0.4);
+  group.add(ambientLight);
+
+  const warmLight = new THREE.PointLight('#ff8c00', 3, 80);
+  warmLight.position.set(0, 15, 5);
+  group.add(warmLight);
+
+  const goldLight = new THREE.SpotLight('#ffd700', 4, 80, Math.PI / 5, 0.6, 1);
+  goldLight.position.set(0, 25, 15);
+  goldLight.target.position.set(0, 0, -5);
+  group.add(goldLight);
+  group.add(goldLight.target);
+
+  const rimLight = new THREE.PointLight('#4a2060', 1.5, 60);
+  rimLight.position.set(-15, 5, -10);
+  group.add(rimLight);
+
+  // ── POLVO VOLUMÉTRICO DENSO ──
+  const dust = createParticles(8000, { spread: 80, size: 0.1, color: '#ffa500', opacity: 0.3 });
+  group.add(dust);
+  updates.push((t) => { dust.material.uniforms.uTime.value = t; });
+
+  // ── ARQUITECTURA INFINITA (Interstellar / Inception) ──
+  
+  // Suelo infinito reflectante
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: '#050204', roughness: 0.2, metalness: 0.9
+  });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -8;
+  group.add(floor);
+
+  // Pilares colosales
+  const pillarGeo = new THREE.CylinderGeometry(0.8, 1.2, 40, 8);
+  const pillarMat = new THREE.MeshStandardMaterial({ color: '#0a0506', roughness: 0.6, metalness: 0.5 });
+  const pillarPositions = [];
+  for (let i = 0; i < 16; i++) {
+    const angle = (i / 16) * Math.PI * 2;
+    const r = 25;
+    const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+    pillar.position.set(Math.cos(angle) * r, 12, Math.sin(angle) * r);
+    group.add(pillar);
+    pillarPositions.push(pillar.position);
+  }
+
+  // Arcos entre pilares
+  const archMat = new THREE.MeshStandardMaterial({ color: '#150a0c', roughness: 0.5, metalness: 0.6 });
+  for (let i = 0; i < 16; i++) {
+    const angle1 = (i / 16) * Math.PI * 2;
+    const angle2 = ((i + 1) / 16) * Math.PI * 2;
+    const r = 25;
+    const midAngle = (angle1 + angle2) / 2;
+    
+    const arch = new THREE.Mesh(
+      new THREE.TorusGeometry(r * Math.sin(Math.PI / 16) * 2.05, 0.4, 8, 12, Math.PI),
+      archMat
+    );
+    arch.position.set(Math.cos(midAngle) * r, 30, Math.sin(midAngle) * r);
+    arch.rotation.y = -midAngle + Math.PI / 2;
+    arch.rotation.x = Math.PI;
+    group.add(arch);
+  }
+
+  // Escaleras imposibles (Penrose / Inception)
+  const stairMat = new THREE.MeshStandardMaterial({ color: '#120808', roughness: 0.7, metalness: 0.4 });
+  const stairGroup = new THREE.Group();
+  for (let loop = 0; loop < 4; loop++) {
+    const stairLoop = new THREE.Group();
+    const stepsPerSide = 8;
+    for (let side = 0; side < 4; side++) {
+      for (let step = 0; step < stepsPerSide; step++) {
+        const stepMesh = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 1), stairMat);
+        const progress = step / stepsPerSide;
+        stepMesh.position.set(
+          (side === 0 ? progress * 8 : side === 2 ? -progress * 8 : side === 1 ? 8 : -8) + (side < 2 ? 0 : 0),
+          loop * 10 + step * 0.5 + side * stepsPerSide * 0.5,
+          (side === 1 ? progress * 8 : side === 3 ? -progress * 8 : side === 0 ? 8 : -8)
+        );
+        stepMesh.rotation.y = side * Math.PI / 2;
+        stairLoop.add(stepMesh);
+      }
+    }
+    stairLoop.position.y = loop * 10;
+    stairLoop.rotation.y = loop * 0.4;
+    stairGroup.add(stairLoop);
+  }
+  stairGroup.position.set(15, -5, -15);
+  group.add(stairGroup);
+
+  // ── VITRALES GIGANTES ──
+  function createStainedGlassTexture(hue) {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 1024;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#050208';
+    ctx.fillRect(0, 0, 512, 1024);
+    
+    // Patrón de vitral romántico
+    const colors = [`hsl(${hue}, 80%, 40%)`, `hsl(${hue + 30}, 70%, 50%)`, `hsl(${hue + 60}, 90%, 30%)`];
+    for (let i = 0; i < 25; i++) {
+      ctx.beginPath();
+      ctx.arc(
+        Math.random() * 512, Math.random() * 1024,
+        30 + Math.random() * 80, 0, Math.PI * 2
+      );
+      ctx.fillStyle = colors[i % 3];
+      ctx.globalAlpha = 0.6;
+      ctx.fill();
+      ctx.strokeStyle = '#0a0510';
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    }
+    // Líneas de estructura
+    for (let y = 0; y < 1024; y += 80) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y);
+      ctx.strokeStyle = '#0a0510'; ctx.lineWidth = 6; ctx.stroke();
+    }
+    for (let x = 0; x < 512; x += 80) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1024);
+      ctx.strokeStyle = '#0a0510'; ctx.lineWidth = 6; ctx.stroke();
+    }
+    // Brillo central
+    const grad = ctx.createRadialGradient(256, 512, 0, 256, 512, 300);
+    grad.addColorStop(0, 'rgba(255, 220, 150, 0.4)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 1024);
+    
+    const tex = new THREE.CanvasTexture(c);
+    return tex;
+  }
+
+  const windowPositions = [
+    { pos: [25, 15, -5], rot: [0, -Math.PI / 2, 0], hue: 330 },
+    { pos: [-25, 15, -5], rot: [0, Math.PI / 2, 0], hue: 270 },
+    { pos: [0, 15, -25], rot: [0, Math.PI, 0], hue: 30 }
+  ];
+
+  windowPositions.forEach(wp => {
+    const glassTex = createStainedGlassTexture(wp.hue);
+    const glassMat = new THREE.MeshBasicMaterial({
+      map: glassTex, transparent: true, opacity: 0.8,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+    });
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(12, 24), glassMat);
+    glass.position.set(...wp.pos);
+    glass.rotation.set(...wp.rot);
+    group.add(glass);
+
+    // Marco del vitral
+    const frameMat = new THREE.MeshStandardMaterial({ color: '#0a0508', roughness: 0.4, metalness: 0.8 });
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(12.5, 24.5, 0.5), frameMat);
+    frame.position.set(...wp.pos);
+    frame.rotation.set(...wp.rot);
+    group.add(frame);
+  });
+
+  // ── RAYOS VOLUMÉTRICOS DINÁMICOS ──
+  const godRaysGroup = new THREE.Group();
+  for (let i = 0; i < 18; i++) {
+    const rayGeo = new THREE.PlaneGeometry(1.5, 35);
+    const rayMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uColor: { value: new THREE.Color('#ffcc66') },
+        uBaseOpacity: { value: 0.015 + Math.random() * 0.02 }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uTime;
+        uniform vec3 uColor;
+        uniform float uBaseOpacity;
+        varying vec2 vUv;
+        
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        
+        void main() {
+          vec2 uv = vUv;
+          // Fade desde la parte superior
+          float fade = smoothstep(0.0, 0.4, uv.y) * smoothstep(1.0, 0.6, uv.y);
+          // Movimiento de polvo
+          float dust = hash(uv * 10.0 + uTime * 0.2) * 0.5;
+          float flicker = 0.8 + 0.2 * sin(uTime * 0.5 + uv.y * 3.0);
+          float alpha = fade * uBaseOpacity * (0.7 + dust) * flicker;
+          gl_FragColor = vec4(uColor, alpha);
+        }
+      `
+    });
+    const ray = new THREE.Mesh(rayGeo, rayMat);
+    ray.position.set(
+      (Math.random() - 0.5) * 20,
+      15,
+      (Math.random() - 0.5) * 10 - 5
+    );
+    ray.rotation.x = -0.2 + Math.random() * 0.1;
+    ray.rotation.z = (Math.random() - 0.5) * 0.3;
+    godRaysGroup.add(ray);
+    updates.push((t) => { rayMat.uniforms.uTime.value = t; });
+  }
+  group.add(godRaysGroup);
+
+  // ── LIBROS FLOTANTES MEJORADOS ──
+  const bookColors = ['#8B4513', '#654321', '#4a2c0a', '#6b3a2a', '#5c3317', '#7a2e35', '#2e1a47'];
+  for (let i = 0; i < 60; i++) {
+    const bookGroup = new THREE.Group();
+    const bw = 1 + Math.random() * 1.8;
+    const bh = 1.5 + Math.random() * 1.2;
+    const bd = 0.2 + Math.random() * 0.4;
+    
+    // Cubierta
+    const bookCover = new THREE.Mesh(
+      new THREE.BoxGeometry(bw, bh, bd),
+      new THREE.MeshStandardMaterial({ 
+        color: bookColors[i % bookColors.length],
+        roughness: 0.7, metalness: 0.2
+      })
+    );
+    bookGroup.add(bookCover);
+    
+    // Páginas (lomo blanco/crema)
+    const pagesMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(bw * 0.9, bh * 0.9, bd * 0.7),
+      new THREE.MeshStandardMaterial({ color: '#f5e6d3', roughness: 0.9 })
+    );
+    pagesMesh.position.z = bd * 0.2;
+    bookGroup.add(pagesMesh);
+
+    // Brillo mágico para algunos
+    if (Math.random() > 0.7) {
+      const glowLight = new THREE.PointLight('#ffaa44', 0.3, 5);
+      glowLight.position.set(0, 0, 1);
+      bookGroup.add(glowLight);
+    }
+
+    bookGroup.position.set(
+      (Math.random() - 0.5) * 50,
+      (Math.random() - 0.5) * 30,
+      (Math.random() - 0.5) * 40 - 10
+    );
+    bookGroup.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    
+    bookGroup.userData = {
+      origY: bookGroup.position.y,
+      speed: 0.2 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.008,
+      floatAmp: 0.3 + Math.random() * 0.7
+    };
+    
+    group.add(bookGroup);
+    updates.push((t) => {
+      bookGroup.position.y = bookGroup.userData.origY + Math.sin(t * bookGroup.userData.speed + bookGroup.userData.phase) * bookGroup.userData.floatAmp;
+      bookGroup.rotation.y += bookGroup.userData.rotSpeed;
+    });
+  }
+
+  // ── CARTAS FLOTANTES ──
+  const letterParticles = createParticles(3000, { spread: 50, size: 0.08, color: '#ffd1dc', opacity: 0.5 });
+  group.add(letterParticles);
+  updates.push((t) => { letterParticles.material.uniforms.uTime.value = t; });
+
+  // ── LIBRO GIGANTE CENTRAL (Rig cinematográfico) ──
+  const bookRig = new THREE.Group();
+  bookRig.position.set(0, 0, -5);
+
+  // Canvas de la cubierta con "HOMERO"
+  const coverCanvas = document.createElement('canvas');
+  coverCanvas.width = 1024; coverCanvas.height = 512;
+  const cCtx = coverCanvas.getContext('2d');
+  
+  // Fondo de cuero envejecido
+  const leatherGrad = cCtx.createRadialGradient(512, 256, 0, 512, 256, 512);
+  leatherGrad.addColorStop(0, '#3a1a08');
+  leatherGrad.addColorStop(1, '#1a0a02');
+  cCtx.fillStyle = leatherGrad;
+  cCtx.fillRect(0, 0, 1024, 512);
+  
+  // Bordes ornamentales dorados
+  cCtx.strokeStyle = '#c9a84c';
+  cCtx.lineWidth = 6;
+  cCtx.strokeRect(30, 30, 964, 452);
+  cCtx.strokeRect(50, 50, 924, 412);
+  cCtx.strokeRect(70, 70, 884, 372);
+  
+  // Esquinas decorativas
+  const cornerSize = 40;
+  [[70, 70], [954 - cornerSize, 70], [70, 442 - cornerSize], [954 - cornerSize, 442 - cornerSize]].forEach(([x, y]) => {
+    cCtx.beginPath();
+    cCtx.moveTo(x, y + cornerSize);
+    cCtx.lineTo(x, y);
+    cCtx.lineTo(x + cornerSize, y);
+    cCtx.strokeStyle = '#dbb860';
+    cCtx.lineWidth = 4;
+    cCtx.stroke();
+  });
+
+  // Texto "HOMERO" con efecto de brillo
+  cCtx.font = 'bold 120px Cormorant Garamond, serif';
+  cCtx.textAlign = 'center';
+  cCtx.textBaseline = 'middle';
+  cCtx.shadowColor = '#ffd700';
+  cCtx.shadowBlur = 30;
+  cCtx.fillStyle = '#c9a84c';
+  cCtx.fillText('HOMERO', 512, 200);
+  cCtx.shadowBlur = 0;
+  
+  // Símbolo de corazón bajo el nombre
+  cCtx.font = '60px serif';
+  cCtx.fillStyle = '#8a3030';
+  cCtx.fillText('❧', 512, 320);
+
+  const coverTexture = new THREE.CanvasTexture(coverCanvas);
+
+  // Cubierta frontal (con pivot en el borde izquierdo para abrir)
+  const coverPivot = new THREE.Group();
+  coverPivot.position.x = -4; // Borde izquierdo
+  const coverMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(8, 6, 0.3),
+    new THREE.MeshStandardMaterial({ 
+      map: coverTexture, roughness: 0.5, metalness: 0.4,
+      emissive: '#1a0800', emissiveIntensity: 0.2
+    })
+  );
+  coverMesh.position.x = 4; // Offset para que el pivot esté a la izquierda
+  coverPivot.add(coverMesh);
+  bookRig.add(coverPivot);
+
+  // Páginas del libro
+  const pagesMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(7.5, 5.5, 1.2),
+    new THREE.MeshStandardMaterial({ color: '#f5e6d3', roughness: 0.95 })
+  );
+  bookRig.add(pagesMesh);
+
+  // Contraportada
+  const backCover = new THREE.Mesh(
+    new THREE.BoxGeometry(8, 6, 0.3),
+    new THREE.MeshStandardMaterial({ color: '#1a0a02', roughness: 0.6, metalness: 0.3 })
+  );
+  backCover.position.z = -0.6;
+  bookRig.add(backCover);
+
+  // Lomo del libro
+  const spine = new THREE.Mesh(
+    new THREE.BoxGeometry(0.3, 6, 1.5),
+    new THREE.MeshStandardMaterial({ color: '#2a1508', roughness: 0.5, metalness: 0.4 })
+  );
+  spine.position.x = -4;
+  bookRig.add(spine);
+
+  group.add(bookRig);
+
+  // ── ANIMACIÓN DE APERTURA CINEMATOGRÁFICA ──
+  const openTimeline = gsap.timeline({ delay: 2 });
+  
+  // Luz que se enciende al abrir
+  const bookLight = new THREE.PointLight('#ffd700', 0, 20);
+  bookLight.position.set(0, 2, 2);
+  bookRig.add(bookLight);
+
+  // Libro levantándose primero
+  openTimeline.to(bookRig.rotation, { x: -0.4, duration: 1.5, ease: 'power2.inOut' }, 0);
+  openTimeline.to(bookRig.position, { y: 1, duration: 1.5, ease: 'power2.inOut' }, 0);
+  
+  // Apertura de la cubierta
+  openTimeline.to(coverPivot.rotation, { y: -Math.PI * 0.85, duration: 2.5, ease: 'power3.inOut' }, 1);
+  
+  // Luz dorada que emana del interior
+  openTimeline.to(bookLight, { intensity: 5, duration: 2, ease: 'power2.in' }, 1.5);
+  
+  // Partículas doradas emergiendo del libro
+  const bookParticles = createParticles(2000, { spread: 3, size: 0.2, color: '#ffd700', opacity: 0.8 });
+  bookParticles.position.set(0, 1, 0);
+  bookRig.add(bookParticles);
+  updates.push((t) => { bookParticles.material.uniforms.uTime.value = t; });
+  
+  openTimeline.to(bookParticles.material.uniforms.uOpacity, { value: 0.5, duration: 2, ease: 'power2.in' }, 2);
+  openTimeline.to(bookParticles.scale, { x: 6, y: 8, z: 6, duration: 3, ease: 'power2.out' }, 2);
+
+  // ── FOTOGRAFÍAS HOLOGRÁFICAS ──
+  const photoSeeds = ['love', 'couple', 'sunset', 'romantic', 'heart', 'flower', 'ocean', 'stars', 'embrace', 'destiny'];
+  const photos = [];
+  
+  const hologramVertexShader = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+  
+  const hologramFragmentShader = `
+    uniform sampler2D uMap;
+    uniform float uTime;
+    uniform float uOpacity;
+    varying vec2 vUv;
+    
+    void main() {
+      vec2 uv = vUv;
+      // Scanlines
+      float scanline = sin(uv.y * 200.0 + uTime * 2.0) * 0.04;
+      // Chromatic aberration
+      float aberr = 0.003 + sin(uTime) * 0.001;
+      float r = texture2D(uMap, uv + vec2(aberr, 0.0)).r;
+      float g = texture2D(uMap, uv).g;
+      float b = texture2D(uMap, uv - vec2(aberr, 0.0)).b;
+      vec3 color = vec3(r, g, b);
+      // Brillo holográfico
+      color += vec3(0.1, 0.2, 0.3) * scanline;
+      // Flicker
+      float flicker = 0.95 + 0.05 * sin(uTime * 10.0);
+      // Borde brillante
+      float border = smoothstep(0.0, 0.05, uv.x) * smoothstep(1.0, 0.95, uv.x) *
+                     smoothstep(0.0, 0.05, uv.y) * smoothstep(1.0, 0.95, uv.y);
+      color += vec3(0.3, 0.5, 0.8) * (1.0 - border) * 0.5;
+      
+      float alpha = uOpacity * flicker * border;
+      gl_FragColor = vec4(color, alpha);
+    }
+  `;
+
+  photoSeeds.forEach((seed, i) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = `https://picsum.photos/seed/${seed}kely${i}/256/256.jpg`;
+    const tex = new THREE.Texture(img);
+    img.onload = () => { tex.needsUpdate = true; };
+
+    const photoMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      uniforms: {
+        uMap: { value: tex },
+        uTime: { value: 0 },
+        uOpacity: { value: 0 }
+      },
+      vertexShader: hologramVertexShader,
+      fragmentShader: hologramFragmentShader
+    });
+
+    const frame = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), photoMat);
+    
+    const angle = (i / photoSeeds.length) * Math.PI * 2;
+    const radius = 7 + Math.random() * 4;
+    const height = (Math.random() - 0.5) * 8;
+    
+    frame.position.set(
+      Math.cos(angle) * radius,
+      height,
+      Math.sin(angle) * radius - 5
+    );
+    
+    frame.userData = { 
+      angle, radius, height,
+      speed: 0.08 + Math.random() * 0.08, 
+      ySpeed: 0.3 + Math.random() * 0.2,
+      phase: Math.random() * Math.PI * 2
+    };
+    
+    group.add(frame);
+    photos.push(frame);
+    
+    // Aparición escalonada
+    openTimeline.to(photoMat.uniforms.uOpacity, { 
+      value: 0.85, duration: 1.5, ease: 'power2.inOut' 
+    }, 3 + i * 0.3);
+  });
+
+  updates.push((t) => {
+    photos.forEach(p => {
+      const d = p.userData;
+      const a = d.angle + t * d.speed;
+      p.position.x = Math.cos(a) * d.radius;
+      p.position.z = Math.sin(a) * d.radius - 5;
+      p.position.y = d.height + Math.sin(t * d.ySpeed + d.phase) * 1.5;
+      p.lookAt(camera.position);
+      p.material.uniforms.uTime.value = t;
+    });
+  });
+
+  // ── CÁMARA CINEMATOGRÁFICA ──
+  const camBase = { x: 0, y: 2, z: 14 };
+  gsap.to(camBase, { y: 5, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  gsap.to(camBase, { z: 10, duration: 12, ease: 'none' });
+
+  return {
+    group, updates,
+    cameraUpdate: () => {
+      camera.position.set(
+        camBase.x + mouseX * 4, 
+        camBase.y + mouseY * 3, 
+        camBase.z
+      );
+      camera.lookAt(0, 1, -5);
+    },
+    destroy: () => {
+      openTimeline.kill();
+      scene.fog = new THREE.FogExp2('#000000', 0.008); // Reset fog
+      group.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (obj.material.map) obj.material.map.dispose();
+          obj.material.dispose();
+        }
+      });
+    }
+  };
+}
+
+// ═══════════════════════════════════════════
+// ESCENA 3: LA MEMORIA DEL CORAZÓN
+// ═══════════════════════════════════════════
+function createScene3() {
+  const group = new THREE.Group();
+  const updates = [];
+  const interactivePhotos = [];
+  const activeMemories = [];
+
+  // ── ATMÓSFERA Y NIEBLA CÁLIDA ──
+  scene.fog = new THREE.FogExp2('#180812', 0.018);
+
+  // ── ILUMINACIÓN DE ATARDECER ETERNO ──
+  const ambient = new THREE.AmbientLight('#2a0a1a', 0.5);
+  group.add(ambient);
+
+  const sunsetLight = new THREE.DirectionalLight('#ff6040', 2);
+  sunsetLight.position.set(-30, 20, 10);
+  group.add(sunsetLight);
+
+  const rimLight = new THREE.DirectionalLight('#8020aa', 0.8);
+  rimLight.position.set(20, -10, -20);
+  group.add(rimLight);
+
+  const centerGlow = new THREE.PointLight('#ff2050', 3, 60);
+  centerGlow.position.set(0, 8, 0);
+  group.add(centerGlow);
+
+  // ── SUELO DE CALLES LUMINOSAS ──
+  const floorShaderMat = new THREE.ShaderMaterial({
+    transparent: true,
+    uniforms: {
+      uTime: { value: 0 },
+      uColor1: { value: new THREE.Color('#050005') },
+      uColor2: { value: new THREE.Color('#ff2060') },
+      uColor3: { value: new THREE.Color('#2000aa') }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec3 vPos;
+      void main() {
+        vUv = uv;
+        vPos = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform vec3 uColor1;
+      uniform vec3 uColor2;
+      uniform vec3 uColor3;
+      varying vec2 vUv;
+      varying vec3 vPos;
+
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+      void main() {
+        vec2 uv = vUv * 40.0;
+        // Cuadrícula de calles
+        float lineX = smoothstep(0.08, 0.0, abs(fract(uv.x) - 0.5));
+        float lineY = smoothstep(0.08, 0.0, abs(fract(uv.y) - 0.5));
+        float grid = max(lineX, lineY);
+        
+        // Distancia desde el centro para desvanecimiento
+        float dist = length(vPos.xz) / 50.0;
+        float fade = smoothstep(1.0, 0.2, dist);
+        
+        // Color pulsante en las intersecciones
+        float intersection = lineX * lineY;
+        vec3 color = mix(uColor1, uColor2, grid * 0.5);
+        color += uColor3 * intersection * 2.0; // Cruces brillantes
+        
+        // Brillo que viaja por las calles
+        float traveler = sin(uv.x * 3.14 + uTime * 2.0) * sin(uv.y * 3.14 - uTime * 1.5);
+        color += uColor2 * smoothstep(0.9, 1.0, traveler) * grid * 0.5;
+
+        float alpha = fade * (0.3 + grid * 0.7);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), floorShaderMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -5;
+  group.add(floor);
+  updates.push((t) => { floorShaderMat.uniforms.uTime.value = t; });
+
+  // Reflejo del suelo (plano extra semitransparente debajo)
+  const reflectFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(120, 120),
+    new THREE.MeshStandardMaterial({ color: '#050005', roughness: 0.1, metalness: 1.0, transparent: true, opacity: 0.6 })
+  );
+  reflectFloor.rotation.x = -Math.PI / 2;
+  reflectFloor.position.y = -5.1;
+  group.add(reflectFloor);
+
+  // ── CIELO DE MENSAJES DE KELY ──
+  const skyMessages = [
+    'Te elegí a ti', 'Siempre juntos', 'Mi destino', 'Eres mi hoy y mi mañana', 
+    'Nuestro amor', 'Para siempre', 'Mi lugar favorito', 'Gracias por existir'
+  ];
+  const skyGroup = new THREE.Group();
+  skyMessages.forEach((msg, i) => {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 128;
+    const ct = c.getContext('2d');
+    ct.font = 'italic bold 48px Cormorant Garamond, serif';
+    ct.textAlign = 'center';
+    ct.textBaseline = 'middle';
+    ct.shadowColor = '#ff4080';
+    ct.shadowBlur = 20;
+    ct.fillStyle = '#ff8090';
+    ct.fillText(msg, 256, 64);
+    
+    const tex = new THREE.CanvasTexture(c);
+    const skyMat = new THREE.MeshBasicMaterial({
+      map: tex, transparent: true, opacity: 0.4,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const skyPlane = new THREE.Mesh(new THREE.PlaneGeometry(25, 6), skyMat);
+    const angle = (i / skyMessages.length) * Math.PI * 2;
+    const radius = 40 + Math.random() * 20;
+    skyPlane.position.set(
+      Math.cos(angle) * radius,
+      25 + Math.random() * 15,
+      Math.sin(angle) * radius
+    );
+    skyPlane.lookAt(0, 30, 0); // Mirar hacia el centro
+    skyPlane.userData = { baseOpacity: 0.3 + Math.random() * 0.2, phase: Math.random() * 6.28 };
+    skyGroup.add(skyPlane);
+    
+    updates.push((t) => {
+      skyPlane.material.opacity = skyPlane.userData.baseOpacity * (0.6 + 0.4 * Math.sin(t * 0.5 + skyPlane.userData.phase));
+      skyPlane.position.y += Math.sin(t * 0.2 + skyPlane.userData.phase) * 0.002;
+    });
+  });
+  group.add(skyGroup);
+
+  // ── EDIFICIOS DE RECUERDOS (Torres de fotografías y cartas) ──
+  const buildingSeeds = ['love', 'couple', 'sunset', 'romantic', 'heart', 'flower', 'ocean', 'stars', 'embrace', 'destiny', 'kiss', 'promise'];
+  
+  for (let i = 0; i < 18; i++) {
+    const towerGroup = new THREE.Group();
+    const floors = 3 + Math.floor(Math.random() * 5);
+    const towerSeed = buildingSeeds[i % buildingSeeds.length];
+    
+    for (let f = 0; f < floors; f++) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = `https://picsum.photos/seed/${towerSeed}${i}floor${f}/256/256.jpg`;
+      const tex = new THREE.Texture(img);
+      img.onload = () => { tex.needsUpdate = true; };
+
+      // Fotografía con marco
+      const photoMat = new THREE.MeshStandardMaterial({
+        map: tex, roughness: 0.5, metalness: 0.1,
+        emissive: '#200810', emissiveIntensity: 0.4,
+        side: THREE.DoubleSide
+      });
+      const photoMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.5), photoMat);
+      photoMesh.position.y = f * 3;
+      
+      // Marco de la foto
+      const frameMat = new THREE.MeshStandardMaterial({ color: '#000000', roughness: 0.3, metalness: 0.8 });
+      const frameTop = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.15, 0.15), frameMat);
+      frameTop.position.set(0, 1.25, 0.08);
+      photoMesh.add(frameTop);
+      const frameBot = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.15, 0.15), frameMat);
+      frameBot.position.set(0, -1.25, 0.08);
+      photoMesh.add(frameBot);
+      const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.5, 0.15), frameMat);
+      frameLeft.position.set(-1.25, 0, 0.08);
+      photoMesh.add(frameLeft);
+      const frameRight = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.5, 0.15), frameMat);
+      frameRight.position.set(1.25, 0, 0.08);
+      photoMesh.add(frameRight);
+
+      // Luz detrás de la foto (efecto ventana)
+      const backLight = new THREE.PointLight('#ff4060', 0.5, 5);
+      backLight.position.z = -0.5;
+      photoMesh.add(backLight);
+
+      // Hacerla interactiva
+      photoMesh.userData = { isInteractive: true, id: `tower${i}floor${f}`, baseEmissive: 0.4, targetScale: 1 };
+      interactivePhotos.push(photoMesh);
+      towerGroup.add(photoMesh);
+
+      // Cartas de amor como aleros
+      if (f > 0 && Math.random() > 0.4) {
+        const letterCanvas = document.createElement('canvas');
+        letterCanvas.width = 256; letterCanvas.height = 128;
+        const lCtx = letterCanvas.getContext('2d');
+        lCtx.fillStyle = '#f5e6d3';
+        lCtx.fillRect(0, 0, 256, 128);
+        lCtx.font = '18px Cormorant Garamond, serif';
+        lCtx.fillStyle = '#8a2030';
+        lCtx.fillText('Mi amor...', 20, 40);
+        lCtx.fillText('Siempre tuyo', 20, 70);
+        const letterTex = new THREE.CanvasTexture(letterCanvas);
+        
+        const letterMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.5, 0.8),
+          new THREE.MeshStandardMaterial({ map: letterTex, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+        );
+        letterMesh.position.set(1.5, f * 3 - 1, 0.5);
+        letterMesh.rotation.y = -0.5;
+        letterMesh.rotation.x = -0.2;
+        towerGroup.add(letterMesh);
+      }
+    }
+
+    const angle = (i / 18) * Math.PI * 2;
+    const radius = 10 + Math.random() * 12;
+    towerGroup.position.set(
+      Math.cos(angle) * radius,
+      -4,
+      Math.sin(angle) * radius
+    );
+    towerGroup.rotation.y = angle + Math.PI;
+    
+    // Animación de construcción orgánica
+    towerGroup.scale.y = 0;
+    gsap.to(towerGroup.scale, { y: 1, duration: 2, delay: 1 + i * 0.15, ease: 'elastic.out(1, 0.5)' });
+    
+    group.add(towerGroup);
+    updates.push((t) => {
+      towerGroup.rotation.y += 0.001;
+    });
+  }
+
+  // ── RAYCASTER E INTERACTIVIDAD (Cobra vida al mirarla) ──
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2(-10, -10); // Fuera de pantalla inicialmente
+  
+  const onPointerMove = (event) => {
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  };
+  window.addEventListener('pointermove', onPointerMove);
+
+  updates.push(() => {
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(interactivePhotos);
+
+    // Resetear todas las fotos
+    interactivePhotos.forEach(p => {
+      p.userData.targetScale = 1.0;
+      p.material.emissiveIntensity = THREE.MathUtils.lerp(p.material.emissiveIntensity, p.userData.baseEmissive, 0.1);
+    });
+
+    // Activar la foto mirada
+    if (intersects.length > 0) {
+      const obj = intersects[0].object;
+      obj.userData.targetScale = 1.3;
+      obj.material.emissiveIntensity = THREE.MathUtils.lerp(obj.material.emissiveIntensity, 2.5, 0.2);
+      
+      // Generar partículas de memoria si no está activa
+      if (!obj.userData.memoryActive) {
+        obj.userData.memoryActive = true;
+        spawnMemoryParticles(obj.getWorldPosition(new THREE.Vector3()));
+        setTimeout(() => { obj.userData.memoryActive = false; }, 1000);
+      }
+    }
+
+    interactivePhotos.forEach(p => {
+      p.scale.lerp(new THREE.Vector3(p.userData.targetScale, p.userData.targetScale, 1), 0.1);
+    });
+  });
+
+  // ── PARTÍCULAS DE MEMORIA (Explosión holográfica al mirar foto) ──
+  const memoryParticleMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uColor: { value: new THREE.Color('#ff80a0') },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+    },
+    vertexShader: `
+      uniform float uTime;
+      uniform float uPixelRatio;
+      varying float vAlpha;
+      attribute vec3 aVelocity;
+      attribute float aLife;
+      
+      void main() {
+        vec3 pos = position + aVelocity * uTime;
+        float life = 1.0 - (uTime / aLife);
+        vAlpha = life;
+        
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = 4.0 * uPixelRatio * (50.0 / -mv.z) * life;
+        gl_PointSize = max(gl_PointSize, 1.0);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      varying float vAlpha;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if(d > 0.5) discard;
+        float a = smoothstep(0.5, 0.0, d) * vAlpha;
+        gl_FragColor = vec4(uColor, a);
+      }
+    `
+  });
+
+  function spawnMemoryParticles(origin) {
+    const count = 50;
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const velocities = new Float32Array(count * 3);
+    const lifes = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = origin.x;
+      positions[i * 3 + 1] = origin.y;
+      positions[i * 3 + 2] = origin.z;
+      velocities[i * 3] = (Math.random() - 0.5) * 4;
+      velocities[i * 3 + 1] = (Math.random() - 0.5) * 4;
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 4;
+      lifes[i] = 1.0 + Math.random() * 1.5;
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('aVelocity', new THREE.BufferAttribute(velocities, 3));
+    geo.setAttribute('aLife', new THREE.BufferAttribute(lifes, 1));
+
+    const mat = memoryParticleMat.clone();
+    const points = new THREE.Points(geo, mat);
+    points.startTime = clock.getElapsedTime();
+    group.add(points);
+    activeMemories.push(points);
+  }
+
+  updates.push((t) => {
+    for (let i = activeMemories.length - 1; i >= 0; i--) {
+      const m = activeMemories[i];
+      const elapsed = t - m.startTime;
+      m.material.uniforms.uTime.value = elapsed;
+      if (elapsed > 2.5) {
+        group.remove(m);
+        m.geometry.dispose();
+        m.material.dispose();
+        activeMemories.splice(i, 1);
+      }
+    }
+  });
+
+  // ── LUCAS DE CALLE (Palabras románticas como neón) ──
+  const neonWords = ['Amor', 'Siempre', 'Destino', 'Eterno', 'Unidos', 'Mi Vida', 'Sueño', 'Pasión', 'Magia', 'Felicidad'];
+  neonWords.forEach((word, i) => {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 64;
+    const ct = c.getContext('2d');
+    ct.font = 'bold 40px Cormorant Garamond, serif';
+    ct.textAlign = 'center';
+    ct.textBaseline = 'middle';
+    ct.shadowColor = '#ff2060';
+    ct.shadowBlur = 25;
+    ct.fillStyle = '#ff6090';
+    ct.fillText(word, 128, 32);
+    ct.shadowBlur = 0;
+    ct.strokeStyle = '#ff2060';
+    ct.lineWidth = 1;
+    ct.strokeText(word, 128, 32);
+
+    const tex = new THREE.CanvasTexture(c);
+    const neonMat = new THREE.MeshBasicMaterial({
+      map: tex, transparent: true, opacity: 0.9,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const neon = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), neonMat);
+    
+    const angle = (i / neonWords.length) * Math.PI * 2;
+    const radius = 6 + Math.random() * 5;
+    neon.position.set(
+      Math.cos(angle) * radius,
+      -3 + Math.random() * 2, // A la altura de la calle
+      Math.sin(angle) * radius
+    );
+    neon.rotation.y = angle + Math.PI;
+    neon.userData = { phase: Math.random() * 6.28 };
+    
+    group.add(neon);
+    updates.push((t) => {
+      neon.material.opacity = 0.6 + 0.4 * Math.sin(t * 2.5 + neon.userData.phase); // Parpadeo neón
+    });
+  });
+
+  // ── PARTÍCULAS AMBIENTALES (Ascendentes) ──
+  const emberParticles = createParticles(4000, { spread: 50, size: 0.15, color: '#ff4060', opacity: 0.6 });
+  group.add(emberParticles);
+  // Sobrescribir el update de las partículas para que subvan como brasas
+  const posArray = emberParticles.geometry.attributes.position.array;
+  const origYEmber = new Float32Array(posArray.length / 3);
+  for(let i=0; i<origYEmber.length; i++) origYEmber[i] = posArray[i*3+1];
+
+  updates.push((t) => { 
+    emberParticles.material.uniforms.uTime.value = t;
+    for(let i=0; i<origYEmber.length; i++) {
+      posArray[i*3+1] = ((origYEmber[i] + t * (0.5 + emberParticles.geometry.attributes.aRandom.array[i]*0.5)) % 30) - 5;
+    }
+    emberParticles.geometry.attributes.position.needsUpdate = true;
+  });
+
+  // ── RAYOS VOLUMÉTRICOS DEL ATARDECER ──
+  const godRayMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color('#ff4030') } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform vec3 uColor;
+      varying vec2 vUv;
+      void main() {
+        float fade = smoothstep(0.0, 0.4, vUv.y) * smoothstep(1.0, 0.6, vUv.y);
+        float flicker = 0.8 + 0.2 * sin(uTime * 0.5 + vUv.y * 2.0);
+        float alpha = fade * 0.03 * flicker;
+        gl_FragColor = vec4(uColor, alpha);
+      }
+    `
+  });
+  for(let i=0; i<8; i++) {
+    const ray = new THREE.Mesh(new THREE.PlaneGeometry(3, 50), godRayMat.clone());
+    ray.position.set(-30 + i*8, 15, -20);
+    ray.rotation.x = -0.2;
+    ray.rotation.z = -0.1 + i * 0.05;
+    group.add(ray);
+    updates.push((t) => { ray.material.uniforms.uTime.value = t; });
+  }
+
+  // ── CÁMARA CINEMATOGRÁFICA ──
+  const camTarget = { radius: 18, height: 4, speed: 0.1 };
+  gsap.to(camTarget, { radius: 12, duration: 15, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  gsap.to(camTarget, { height: 8, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+  return {
+    group, updates,
+    cameraUpdate: () => {
+      const t = clock.getElapsedTime();
+      camera.position.set(
+        Math.sin(t * camTarget.speed) * camTarget.radius + mouseX * 3,
+        camTarget.height + mouseY * 2,
+        Math.cos(t * camTarget.speed) * camTarget.radius
+      );
+      camera.lookAt(0, 2, 0);
+    },
+    destroy: () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      scene.fog = new THREE.FogExp2('#000000', 0.008);
+      group.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (obj.material.map) obj.material.map.dispose();
+          obj.material.dispose();
+        }
+      });
+    }
+  };
+}
+// ═══════════════════════════════════════════
+// ESCENA 4: EL JARDÍN DEL TIEMPO
+// ═══════════════════════════════════════════
+function createScene4() {
+  const group = new THREE.Group();
+  const updates = [];
+
+  // ── ATMÓSFERA VIOLET EVERGARDEN ──
+  scene.fog = new THREE.FogExp2('#1a0a20', 0.015);
+
+  // ── ILUMINACIÓN ONÍRICA ──
+  const ambient = new THREE.AmbientLight('#2a1a3a', 0.6);
+  group.add(ambient);
+
+  const sunLight = new THREE.DirectionalLight('#ffccaa', 1.2);
+  sunLight.position.set(10, 25, 15);
+  group.add(sunLight);
+
+  const moonLight = new THREE.DirectionalLight('#8080ff', 0.4);
+  moonLight.position.set(-15, 10, -10);
+  group.add(moonLight);
+
+  const gardenGlow = new THREE.PointLight('#ff40a0', 2, 40);
+  gardenGlow.position.set(0, 3, 0);
+  group.add(gardenGlow);
+
+  // ── SUELO DE MUSGO LUMINISCENTE ──
+  const groundMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uColor1: { value: new THREE.Color('#050a05') },
+      uColor2: { value: new THREE.Color('#1a6a2a') }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec3 vPos;
+      void main() {
+        vUv = uv;
+        vPos = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform vec3 uColor1;
+      uniform vec3 uColor2;
+      varying vec2 vUv;
+      varying vec3 vPos;
+      
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      
+      void main() {
+        vec2 uv = vUv * 30.0;
+        float n = hash(floor(uv));
+        float dist = length(vPos.xz) / 50.0;
+        float fade = smoothstep(1.0, 0.2, dist);
+        vec3 color = mix(uColor1, uColor2, n * 0.3);
+        // Puntos de luz en el césped
+        float dots = smoothstep(0.4, 0.5, n) * smoothstep(0.6, 0.5, n);
+        color += vec3(0.2, 0.8, 0.4) * dots * 2.0 * (0.5 + 0.5 * sin(uTime * 2.0 + n * 6.28));
+        gl_FragColor = vec4(color, fade);
+      }
+    `
+  });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -3;
+  group.add(ground);
+  updates.push((t) => { groundMat.uniforms.uTime.value = t; });
+
+  // ── RAYOS DE SOL VOLUMÉTRICOS ──
+  for (let i = 0; i < 6; i++) {
+    const rayGeo = new THREE.PlaneGeometry(4, 40);
+    const rayMat = new THREE.MeshBasicMaterial({
+      color: '#ffddc0', transparent: true, opacity: 0.03,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const ray = new THREE.Mesh(rayGeo, rayMat);
+    ray.position.set((Math.random() - 0.5) * 20, 15, (Math.random() - 0.5) * 20);
+    ray.rotation.x = -0.3;
+    ray.rotation.z = (Math.random() - 0.5) * 0.4;
+    group.add(ray);
+    updates.push((t) => {
+      rayMat.opacity = 0.02 + 0.015 * Math.sin(t * 0.3 + i * 1.5);
+      ray.rotation.y = t * 0.02 + i;
+    });
+  }
+
+  // ── ÁRBOLES CRISTALINOS MEJORADOS ──
+  for (let i = 0; i < 10; i++) {
+    const treeGroup = new THREE.Group();
+    
+    // Tronco facetado
+    const trunkGeo = new THREE.CylinderGeometry(0.15, 0.4, 5 + Math.random() * 3, 6);
+    const trunkMat = new THREE.MeshPhysicalMaterial({
+      color: '#1a1a4a', roughness: 0.1, metalness: 0.2,
+      transmission: 0.6, thickness: 1.5, transparent: true, opacity: 0.8
+    });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = 0;
+    treeGroup.add(trunk);
+
+    // Copa cristalina doble capa
+    const crownGeo = new THREE.IcosahedronGeometry(2.5 + Math.random(), 1);
+    const crownMatSolid = new THREE.MeshPhysicalMaterial({
+      color: '#3050dd', roughness: 0.1, metalness: 0.1,
+      transmission: 0.8, thickness: 2, transparent: true, opacity: 0.3
+    });
+    const crownSolid = new THREE.Mesh(crownGeo, crownMatSolid);
+    crownSolid.position.y = 4;
+    treeGroup.add(crownSolid);
+
+    const crownWire = new THREE.Mesh(crownGeo, new THREE.MeshBasicMaterial({
+      color: '#6080ff', wireframe: true, transparent: true, opacity: 0.4
+    }));
+    crownWire.position.y = 4;
+    crownWire.scale.set(1.02, 1.02, 1.02);
+    treeGroup.add(crownWire);
+
+    // Hojas con recuerdos flotando
+    for (let j = 0; j < 8; j++) {
+      const leafCanvas = document.createElement('canvas');
+      leafCanvas.width = 128; leafCanvas.height = 64;
+      const lCtx = leafCanvas.getContext('2d');
+      lCtx.font = 'italic 20px Cormorant Garamond, serif';
+      lCtx.fillStyle = '#ffd700';
+      lCtx.textAlign = 'center';
+      const phrases = ['Recuerdo', 'Nuestro', 'Siempre', 'Amor', 'Vida', 'Juntos', 'Sueño', 'Ternura'];
+      lCtx.fillText(phrases[j % phrases.length], 64, 35);
+      
+      const leafTex = new THREE.CanvasTexture(leafCanvas);
+      const leaf = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.8, 0.4),
+        new THREE.MeshBasicMaterial({ map: leafTex, transparent: true, opacity: 0.8, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
+      );
+      const lAngle = (j / 8) * Math.PI * 2;
+      const lR = 2 + Math.random() * 1.5;
+      leaf.position.set(Math.cos(lAngle) * lR, 3.5 + Math.random() * 2, Math.sin(lAngle) * lR);
+      leaf.lookAt(0, leaf.position.y, 0);
+      leaf.userData = { origY: leaf.position.y, phase: Math.random() * 6.28, speed: 0.5 + Math.random() * 0.5 };
+      treeGroup.add(leaf);
+      
+      updates.push((t) => {
+        leaf.position.y = leaf.userData.origY + Math.sin(t * leaf.userData.speed + leaf.userData.phase) * 0.3;
+        leaf.rotation.y += 0.01;
+        leaf.material.opacity = 0.5 + 0.3 * Math.sin(t * 1.5 + leaf.userData.phase);
+      });
+    }
+
+    const angle = (i / 10) * Math.PI * 2;
+    const r = 10 + Math.random() * 12;
+    treeGroup.position.set(Math.cos(angle) * r, -3, Math.sin(angle) * r);
+    treeGroup.rotation.y = Math.random() * Math.PI;
+    group.add(treeGroup);
+    
+    updates.push((t) => {
+      treeGroup.rotation.z = Math.sin(t * 0.2 + i) * 0.03; // Viento
+    });
+  }
+
+  // ── FLORES GIGANTES ESTILIZADAS (Curvas Bézier) ──
+  const flowerColors = ['#ff4080', '#ff80c0', '#e040a0', '#ff60d0', '#ff3090', '#cc40ff'];
+  const flowerGroups = [];
+
+  for (let i = 0; i < 8; i++) {
+    const flowerGroup = new THREE.Group();
+
+    // Tallo curvado
+    const curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(Math.random() - 0.5, 1.5, Math.random() - 0.5),
+      new THREE.Vector3(Math.random() - 0.5, 3, Math.random() - 0.5),
+      new THREE.Vector3(0, 4.5, 0)
+    ]);
+    const stemGeo = new THREE.TubeGeometry(curve, 20, 0.06, 8, false);
+    const stemMat = new THREE.MeshStandardMaterial({ color: '#1a5a1a', roughness: 0.8, metalness: 0.1 });
+    flowerGroup.add(new THREE.Mesh(stemGeo, stemMat));
+
+    // Pétalos estilizados con Shape
+    const color = flowerColors[i % flowerColors.length];
+    const petalCount = 5 + Math.floor(Math.random() * 3);
+    
+    for (let p = 0; p < petalCount; p++) {
+      const shape = new THREE.Shape();
+      shape.moveTo(0, 0);
+      shape.bezierCurveTo(0.4, 0.8, 0.4, 1.8, 0, 2.5);
+      shape.bezierCurveTo(-0.4, 1.8, -0.4, 0.8, 0, 0);
+      
+      const petalGeo = new THREE.ShapeGeometry(shape);
+      const petalMat = new THREE.MeshPhysicalMaterial({
+        color, roughness: 0.3, metalness: 0.1,
+        transparent: true, opacity: 0.85, side: THREE.DoubleSide,
+        emissive: color, emissiveIntensity: 0.3
+      });
+      const petal = new THREE.Mesh(petalGeo, petalMat);
+      
+      const pAngle = (p / petalCount) * Math.PI * 2;
+      petal.rotation.x = -Math.PI / 2 + 0.4; // Inclinar hacia afuera
+      petal.rotation.z = pAngle;
+      petal.position.y = 4.5;
+      petal.userData = { baseRotX: petal.rotation.x, phase: Math.random() * 6.28 };
+      
+      flowerGroup.add(petal);
+    }
+
+    // Centro luminoso
+    const centerGeo = new THREE.SphereGeometry(0.4, 16, 16);
+    const centerMat = new THREE.MeshStandardMaterial({ 
+      color: '#ffdd00', emissive: '#ffaa00', emissiveIntensity: 1.5 
+    });
+    const center = new THREE.Mesh(centerGeo, centerMat);
+    center.position.y = 4.5;
+    flowerGroup.add(center);
+    
+    // Punto de luz interior
+    const fLight = new THREE.PointLight(color, 1, 8);
+    fLight.position.y = 4.5;
+    flowerGroup.add(fLight);
+
+    const fAngle = (i / 8) * Math.PI * 2 + Math.random() * 0.5;
+    const fR = 4 + Math.random() * 6;
+    flowerGroup.position.set(Math.cos(fAngle) * fR, -3, Math.sin(fAngle) * fR);
+    flowerGroup.userData = { phase: Math.random() * 6.28, speed: 0.4 + Math.random() * 0.3, baseScale: 0.8 + Math.random() * 0.5 };
+    flowerGroup.scale.set(0, 0, 0); // Crece animadamente
+    gsap.to(flowerGroup.scale, { x: flowerGroup.userData.baseScale, y: flowerGroup.userData.baseScale, z: flowerGroup.userData.baseScale, duration: 2, delay: 1 + i * 0.2, ease: 'elastic.out(1, 0.6)' });
+    
+    group.add(flowerGroup);
+    flowerGroups.push(flowerGroup);
+
+    updates.push((t) => {
+      flowerGroup.rotation.y = Math.sin(t * 0.3 + flowerGroup.userData.phase) * 0.15;
+      // Reacción musical simulada (respiración rítmica)
+      const breathe = 1 + Math.sin(t * 2.0 + flowerGroup.userData.phase) * 0.05;
+      flowerGroup.scale.set(
+        flowerGroup.userData.baseScale * breathe,
+        flowerGroup.userData.baseScale * breathe,
+        flowerGroup.userData.baseScale * breathe
+      );
+      // Mover pétalos suavemente
+      flowerGroup.children.forEach(child => {
+        if (child.userData.baseRotX !== undefined) {
+          child.rotation.x = child.userData.baseRotX + Math.sin(t * 0.8 + child.userData.phase) * 0.1;
+        }
+      });
+    });
+  }
+
+  // ── LLUVIA DE PÉTALOS CON FRASES ──
+  const petalPhrases = ['Amor', 'Vida', 'Siempre', 'Sueño', 'Tú y Yo', 'Magia', 'Eterno', 'Paz'];
+  const fallingPetals = [];
+  
+  for (let i = 0; i < 50; i++) {
+    const pCanvas = document.createElement('canvas');
+    pCanvas.width = 128; pCanvas.height = 64;
+    const pCtx = pCanvas.getContext('2d');
+    
+    // Forma de pétalo rosado
+    pCtx.fillStyle = '#ff80b0';
+    pCtx.beginPath();
+    pCtx.ellipse(64, 32, 50, 25, 0, 0, Math.PI * 2);
+    pCtx.fill();
+    
+    // Texto de amor
+    pCtx.font = 'italic bold 22px Cormorant Garamond, serif';
+    pCtx.fillStyle = '#ffffff';
+    pCtx.textAlign = 'center';
+    pCtx.textBaseline = 'middle';
+    pCtx.fillText(petalPhrases[i % petalPhrases.length], 64, 32);
+
+    const pTex = new THREE.CanvasTexture(pCanvas);
+    const petal = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.6, 0.3),
+      new THREE.MeshBasicMaterial({ map: pTex, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false })
+    );
+    
+    petal.position.set(
+      (Math.random() - 0.5) * 30,
+      Math.random() * 15 + 5,
+      (Math.random() - 0.5) * 30
+    );
+    petal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    petal.userData = {
+      velY: -0.01 - Math.random() * 0.02,
+      rotSpeed: (Math.random() - 0.5) * 0.05,
+      windPhase: Math.random() * 6.28,
+      windSpeed: 0.5 + Math.random() * 1.0,
+      windAmp: 0.02 + Math.random() * 0.03
+    };
+    
+    group.add(petal);
+    fallingPetals.push(petal);
+  }
+
+  updates.push((t) => {
+    fallingPetals.forEach(p => {
+      p.position.y += p.userData.velY;
+      p.position.x += Math.sin(t * p.userData.windSpeed + p.userData.windPhase) * p.userData.windAmp;
+      p.position.z += Math.cos(t * p.userData.windSpeed * 0.7 + p.userData.windPhase) * p.userData.windAmp * 0.5;
+      p.rotation.x += p.userData.rotSpeed;
+      p.rotation.z += p.userData.rotSpeed * 0.5;
+      
+      if (p.position.y < -3) {
+        p.position.y = 15 + Math.random() * 5;
+        p.position.x = (Math.random() - 0.5) * 30;
+        p.position.z = (Math.random() - 0.5) * 30;
+      }
+    });
+  });
+
+  // ── PARTÍCULAS DE POLVO MÁGICO ──
+  const magicDust = createParticles(3000, { spread: 40, size: 0.12, color: '#ffaaee', opacity: 0.5 });
+  group.add(magicDust);
+  updates.push((t) => { magicDust.material.uniforms.uTime.value = t; });
+
+  // ── MARIPOSAS DE LUZ CON ALAS GEOMÉTRICAS ──
+  for (let i = 0; i < 15; i++) {
+    const butterflyGroup = new THREE.Group();
+    
+    const wingGeo = new THREE.CircleGeometry(0.2, 4); // Alas diamante
+    const wingMat = new THREE.MeshBasicMaterial({
+      color: '#ffaaff', transparent: true, opacity: 0.8,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+    });
+    
+    const leftWing = new THREE.Mesh(wingGeo, wingMat.clone());
+    leftWing.position.x = -0.15;
+    butterflyGroup.add(leftWing);
+    
+    const rightWing = new THREE.Mesh(wingGeo, wingMat.clone());
+    rightWing.position.x = 0.15;
+    butterflyGroup.add(rightWing);
+    
+    // Trail de luz
+    const bLight = new THREE.PointLight('#ff80ff', 0.3, 3);
+    butterflyGroup.add(bLight);
+
+    butterflyGroup.userData = {
+      radius: 4 + Math.random() * 12,
+      speed: 0.2 + Math.random() * 0.4,
+      yBase: 2 + Math.random() * 6,
+      phase: Math.random() * 6.28,
+      yOffset: 1 + Math.random() * 2,
+      flapSpeed: 8 + Math.random() * 6
+    };
+    
+    group.add(butterflyGroup);
+    updates.push((t) => {
+      const d = butterflyGroup.userData;
+      const a = t * d.speed + d.phase;
+      butterflyGroup.position.set(
+        Math.cos(a) * d.radius,
+        d.yBase + Math.sin(t * 0.8 + d.phase) * d.yOffset,
+        Math.sin(a) * d.radius
+      );
+      butterflyGroup.rotation.y = a + Math.PI / 2;
+      // Aleteo
+      const flap = Math.sin(t * d.flapSpeed + d.phase) * 0.8;
+      leftWing.rotation.y = flap;
+      rightWing.rotation.y = -flap;
+      leftWing.material.opacity = 0.5 + Math.abs(flap) * 0.5;
+      rightWing.material.opacity = 0.5 + Math.abs(flap) * 0.5;
+    });
+  }
+
+  // ── CÁMARA DE ENSUEÑO ──
+  const camBase = { radius: 15, height: 3, speed: 0.06 };
+  gsap.to(camBase, { radius: 10, duration: 12, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  gsap.to(camBase, { height: 6, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+  return {
+    group, updates,
+    cameraUpdate: () => {
+      const t = clock.getElapsedTime();
+      camera.position.set(
+        Math.sin(t * camBase.speed) * camBase.radius + mouseX * 2,
+        camBase.height + mouseY * 1.5,
+        Math.cos(t * camBase.speed) * camBase.radius
+      );
+      camera.lookAt(0, 2, 0);
+    },
+    destroy: () => {
+      scene.fog = new THREE.FogExp2('#000000', 0.008);
+      group.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (obj.material.map) obj.material.map.dispose();
+          obj.material.dispose();
+        }
+      });
+    }
+  };
+}
+// ═══════════════════════════════════════════
+// ESCENA 5: LAS CARTAS DE KELY
+// ═══════════════════════════════════════════
+function createScene5() {
+  const group = new THREE.Group();
+  const updates = [];
+  let teAmoTriggered = false;
+  let activeWritingInterval = null;
+
+  // ── ATMÓSFERA DE TORMENTA DE PAPEL ──
+  scene.fog = new THREE.FogExp2('#0a0508', 0.02);
+
+  // ── ILUMINACIÓN DRAMÁTICA ──
+  const ambient = new THREE.AmbientLight('#1a0808', 0.4);
+  group.add(ambient);
+
+  const keyLight = new THREE.SpotLight('#ff2040', 4, 80, Math.PI / 5, 0.5, 1);
+  keyLight.position.set(0, 20, 20);
+  keyLight.target.position.set(0, 0, 0);
+  group.add(keyLight);
+  group.add(keyLight.target);
+
+  const rimLight = new THREE.PointLight('#4a00ff', 2, 60);
+  rimLight.position.set(-20, 5, -10);
+  group.add(rimLight);
+
+  const warmFill = new THREE.PointLight('#ffd700', 1.5, 50);
+  warmFill.position.set(10, 5, 10);
+  group.add(warmFill);
+
+  // ── VÓRTICE DE CARTAS (Tormenta infinita) ──
+  const letters = [
+    'Cada momento a tu lado es un regalo que guardo en el corazon',
+    'Eres la razon por la que creo en el destino',
+    'Tu sonrisa es mi lugar favorito en el mundo',
+    'No hay distancia que pueda separar lo que siento por ti',
+    'Eres mi hoy, mi manana y mi siempre',
+    'Contigo descubri que el amor verdadero existe',
+    'Cada dia a tu lado es la mejor aventura de mi vida',
+    'TE AMO' // La carta definitiva
+  ];
+
+  const envelopeGroups = [];
+  const totalEnvelopes = 80;
+
+  for (let i = 0; i < totalEnvelopes; i++) {
+    const envGroup = new THREE.Group();
+    const isSpecialLetter = i < letters.length;
+    const isTeAmo = letters[i] === 'TE AMO';
+
+    // Sobre principal
+    const envelopeMat = new THREE.MeshStandardMaterial({
+      color: isTeAmo ? '#ff0040' : (isSpecialLetter ? '#8b1a1a' : '#4a1010'),
+      roughness: 0.6, metalness: 0.2,
+      emissive: isTeAmo ? '#ff0040' : '#200505', emissiveIntensity: isTeAmo ? 0.8 : 0.2
+    });
+    const envelope = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1, 0.06), envelopeMat);
+    envGroup.add(envelope);
+
+    // Solapa del sobre (para animación de apertura)
+    const flapMat = new THREE.MeshStandardMaterial({ color: envelopeMat.color, roughness: 0.6, metalness: 0.2, side: THREE.DoubleSide });
+    const flap = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.5), flapMat);
+    flap.position.y = 0.5;
+    flap.position.z = 0.03;
+    flap.rotation.x = Math.PI; // Cerrada
+    flap.userData.isFlap = true;
+    envGroup.add(flap);
+
+    // Papel interior asomando
+    const paperMat = new THREE.MeshStandardMaterial({ color: '#f5e6d3', roughness: 0.9, side: THREE.DoubleSide });
+    const paper = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.8), paperMat);
+    paper.position.z = 0.04;
+    paper.rotation.y = Math.PI; // Oculto inicialmente
+    envGroup.add(paper);
+
+    // Sello de cera
+    if (isSpecialLetter) {
+      const sealGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.04, 16);
+      const sealMat = new THREE.MeshStandardMaterial({ 
+        color: isTeAmo ? '#ffdd00' : '#ffd700', 
+        emissive: isTeAmo ? '#ffaa00' : '#aa8800', 
+        emissiveIntensity: isTeAmo ? 1.5 : 0.5,
+        roughness: 0.3, metalness: 0.8
+      });
+      const seal = new THREE.Mesh(sealGeo, sealMat);
+      seal.rotation.x = Math.PI / 2;
+      seal.position.set(0.4, 0.2, 0.04);
+      envGroup.add(seal);
+      
+      // Luz interior para las cartas importantes
+      if (isTeAmo) {
+        const lLight = new THREE.PointLight('#ff0040', 2, 5);
+        lLight.position.set(0, 0, 1);
+        envGroup.add(lLight);
+      }
+    }
+
+    // Posicionamiento en vórtice doble hélice
+    const t_param = i / totalEnvelopes;
+    const angle = t_param * Math.PI * 12; // 6 vueltas
+    const radius = 6 + t_param * 15;
+    const height = (t_param - 0.5) * 30;
+    
+    envGroup.position.set(
+      Math.cos(angle) * radius,
+      height,
+      Math.sin(angle) * radius
+    );
+    
+    // Orientar hacia el centro con algo de randomidad
+    envGroup.lookAt(0, envGroup.position.y, 0);
+    envGroup.rotation.z += (Math.random() - 0.5) * 0.5;
+
+    envGroup.userData = {
+      isLetter: isSpecialLetter,
+      isTeAmo: isTeAmo,
+      letterIndex: i,
+      origPos: envGroup.position.clone(),
+      origRot: envGroup.rotation.clone(),
+      phase: Math.random() * 6.28,
+      speed: 0.3 + Math.random() * 0.5,
+      floatAmp: 0.5 + Math.random() * 1.0,
+      isAnimating: false
+    };
+
+    group.add(envGroup);
+    envelopeGroups.push(envGroup);
+  }
+
+  // ── PARTÍCULAS DE TINTA Y POLVO DORADO ──
+  const inkParticles = createParticles(3000, { spread: 50, size: 0.12, color: '#1a0030', opacity: 0.6 });
+  group.add(inkParticles);
+  updates.push((t) => { inkParticles.material.uniforms.uTime.value = t; });
+
+  const goldParticles = createParticles(4000, { spread: 50, size: 0.15, color: '#ffd700', opacity: 0.4 });
+  group.add(goldParticles);
+  updates.push((t) => { goldParticles.material.uniforms.uTime.value = t; });
+
+  // ── RAYCASTER E INTERACCIÓN CINEMATOGRÁFICA ──
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2(-10, -10);
+  let hoveredEnvelope = null;
+
+  const onPointerMove = (event) => {
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  };
+
+  const onClick = (e) => {
+    if (!hoveredEnvelope || hoveredEnvelope.userData.isAnimating) return;
+    
+    const clickedGroup = hoveredEnvelope;
+    const idx = clickedGroup.userData.letterIndex;
+    
+    if (idx >= letters.length) return; // Solo las especiales se abren
+
+    const letterText = letters[idx];
+    clickedGroup.userData.isAnimating = true;
+
+    // 1. Traer la carta hacia la cámara
+    const camDir = new THREE.Vector3();
+    camera.getWorldDirection(camDir);
+    const targetPos = camera.position.clone().add(camDir.multiplyScalar(3));
+
+    gsap.to(clickedGroup.position, {
+      x: targetPos.x, y: targetPos.y, z: targetPos.z,
+      duration: 1, ease: 'power2.out'
+    });
+    gsap.to(clickedGroup.rotation, {
+      x: 0, y: 0, z: 0,
+      duration: 1, ease: 'power2.out',
+      onComplete: () => {
+        // 2. Abrir la solapa
+        const flap = clickedGroup.children.find(c => c.userData.isFlap);
+        if (flap) {
+          gsap.to(flap.rotation, { x: -Math.PI / 2, duration: 0.8, ease: 'back.out(1.7)' });
+        }
+        // 3. Mostrar papel
+        const paper = clickedGroup.children.find(c => c.material && c.material.color && c.material.color.getHexString() === 'f5e6d3');
+        if (paper) {
+          gsap.to(paper.rotation, { y: 0, duration: 0.5, delay: 0.3 });
+          gsap.to(paper.position, { z: 0.2, duration: 0.5, delay: 0.3 });
+        }
+        
+        // 4. Mostrar UI con efecto de escritura
+        showLetterUI(letterText, clickedGroup);
+      }
+    });
+  };
+
+  function showLetterUI(text, envelopeGroup) {
+    const overlay = document.getElementById('letter-overlay');
+    const content = document.getElementById('letter-content');
+    content.innerHTML = ''; // Limpiar
+    overlay.classList.add('active');
+
+    // Efecto de escritura con partículas
+    let charIdx = 0;
+    clearInterval(activeWritingInterval);
+    
+    activeWritingInterval = setInterval(() => {
+      if (charIdx < text.length) {
+        const span = document.createElement('span');
+        span.textContent = text[charIdx];
+        span.style.opacity = '0';
+        span.style.transition = 'opacity 0.3s, text-shadow 0.5s';
+        content.appendChild(span);
+        
+        // Animar entrada del carácter
+        setTimeout(() => {
+          span.style.opacity = '1';
+          span.style.textShadow = '0 0 15px #ffd700';
+        }, 50);
+
+        // Generar partícula de tinta en 3D
+        spawnInkParticle(envelopeGroup.position.clone());
+
+        if (charIdx % 3 === 0) audio.playChime(600 + Math.random() * 400);
+        charIdx++;
+      } else {
+        clearInterval(activeWritingInterval);
+        // Comprobar si es TE AMO
+        if (text === 'TE AMO' && !teAmoTriggered) {
+          teAmoTriggered = true;
+          setTimeout(() => triggerTeAmo(envelopeGroup), 1000);
+        } else {
+          // Devolver la carta a su lugar
+          setTimeout(() => returnEnvelope(envelopeGroup), 2000);
+        }
+      }
+    }, 60);
+  }
+
+  function returnEnvelope(env) {
+    gsap.to(env.position, {
+      x: env.userData.origPos.x, y: env.userData.origPos.y, z: env.userData.origPos.z,
+      duration: 1.5, ease: 'power2.inOut'
+    });
+    gsap.to(env.rotation, {
+      x: env.userData.origRot.x, y: env.userData.origRot.y, z: env.userData.origRot.z,
+      duration: 1.5, ease: 'power2.inOut',
+      onComplete: () => { env.userData.isAnimating = false; }
+    });
+    document.getElementById('letter-overlay').classList.remove('active');
+  }
+
+  // ── PARTÍCULAS DE TINTA mÁGICA ──
+  const inkSparks = [];
+  function spawnInkParticle(origin) {
+    const sparkGeo = new THREE.SphereGeometry(0.05, 8, 8);
+    const sparkMat = new THREE.MeshBasicMaterial({ 
+      color: '#ffd700', transparent: true, opacity: 1, blending: THREE.AdditiveBlending 
+    });
+    const spark = new THREE.Mesh(sparkGeo, sparkMat);
+    spark.position.copy(origin);
+    spark.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.1, Math.random()*0.1, (Math.random()-0.5)*0.1);
+    group.add(spark);
+    inkSparks.push(spark);
+  }
+
+  updates.push(() => {
+    for (let i = inkSparks.length - 1; i >= 0; i--) {
+      const s = inkSparks[i];
+      s.position.add(s.userData.vel);
+      s.userData.vel.y -= 0.001; // Gravedad
+      s.material.opacity -= 0.02;
+      if (s.material.opacity <= 0) {
+        group.remove(s);
+        s.geometry.dispose();
+        s.material.dispose();
+        inkSparks.splice(i, 1);
+      }
+    }
+  });
+
+  // ── HOVER EFFECT ──
+  updates.push(() => {
+    raycaster.setFromCamera(pointer, camera);
+    const envelopes = envelopeGroups.filter(g => g.userData.isLetter && !g.userData.isAnimating).map(g => g.children[0]);
+    const intersects = raycaster.intersectObjects(envelopes);
+
+    if (hoveredEnvelope && hoveredEnvelope !== (intersects.length > 0 ? intersects[0].object.parent : null)) {
+      gsap.to(hoveredEnvelope.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+      hoveredEnvelope = null;
+    }
+
+    if (intersects.length > 0) {
+      hoveredEnvelope = intersects[0].object.parent;
+      gsap.to(hoveredEnvelope.scale, { x: 1.2, y: 1.2, z: 1.2, duration: 0.3 });
+      document.body.style.cursor = 'pointer';
+    } else {
+      document.body.style.cursor = 'default';
+    }
+  });
+
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('click', onClick);
+
+  // ── EVENTO ÉPICO: "TE AMO" - EL UNIVERSO RESPONDE ──
+  function triggerTeAmo(originEnvelope) {
+    document.getElementById('letter-overlay').classList.remove('active');
+    document.body.style.cursor = 'default';
+
+    // 1. Screen Shake
+    const origCamPos = camera.position.clone();
+    gsap.to(camera.position, {
+      x: origCamPos.x + (Math.random()-0.5)*2,
+      y: origCamPos.y + (Math.random()-0.5)*2,
+      duration: 0.1, repeat: 10, yoyo: true,
+      ease: 'none',
+      onComplete: () => camera.position.copy(origCamPos)
+    });
+
+    // 2. Onda de choque expansiva
+    const shockwaveGeo = new THREE.RingGeometry(0.1, 1, 64);
+    const shockwaveMat = new THREE.MeshBasicMaterial({ 
+      color: '#ff0055', transparent: true, opacity: 1, side: THREE.DoubleSide, blending: THREE.AdditiveBlending 
+    });
+    const shockwave = new THREE.Mesh(shockwaveGeo, shockwaveMat);
+    shockwave.position.copy(originEnvelope.position);
+    shockwave.lookAt(camera.position);
+    group.add(shockwave);
+
+    gsap.to(shockwave.scale, { x: 60, y: 60, z: 60, duration: 2, ease: 'power2.out' });
+    gsap.to(shockwaveMat, { opacity: 0, duration: 2 });
+
+    // 3. Flash de luz masivo
+    const flash = new THREE.PointLight('#ffffff', 50, 200);
+    flash.position.copy(originEnvelope.position);
+    group.add(flash);
+    gsap.to(flash, { intensity: 0, distance: 0, duration: 3, ease: 'power2.out' });
+
+    // 4. Todas las cartas se encienden y giran hacia el centro
+    envelopeGroups.forEach(env => {
+      gsap.to(env.rotation, { x: 0, z: 0, duration: 2 }); // Se alinean
+      if (env.userData.isTeAmo) return;
+      gsap.to(env.children[0].material.emissive, { r: 1, g: 0, b: 0.2, duration: 1.5 });
+      gsap.to(env.children[0].material, { emissiveIntensity: 2, duration: 1.5 });
+    });
+
+    // 5. Formar "TE AMO" en el espacio con partículas
+    setTimeout(() => {
+      const targetPositions = textToPositions('TE AMO', 120, 2);
+      const particleCount = targetPositions.length / 3;
+      const burstGeo = new THREE.BufferGeometry();
+      const burstPos = new Float32Array(particleCount * 3);
+      const burstRand = new Float32Array(particleCount);
+      
+      for(let i=0; i<particleCount; i++) {
+        // Empezar desde el sobre original
+        burstPos[i*3] = originEnvelope.position.x + (Math.random()-0.5);
+        burstPos[i*3+1] = originEnvelope.position.y + (Math.random()-0.5);
+        burstPos[i*3+2] = originEnvelope.position.z + (Math.random()-0.5);
+        burstRand[i] = Math.random();
+      }
+      
+      burstGeo.setAttribute('position', new THREE.BufferAttribute(burstPos, 3));
+      burstGeo.setAttribute('aRandom', new THREE.BufferAttribute(burstRand, 1));
+
+      const burstMat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0 }, uSize: { value: 1.5 }, uColor: { value: new THREE.Color('#ff4080') },
+          uOpacity: { value: 0 }, uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+        },
+        vertexShader: `
+          attribute float aRandom;
+          uniform float uTime; uniform float uSize; uniform float uPixelRatio;
+          varying float vAlpha;
+          void main() {
+            vec3 pos = position;
+            pos.x += sin(uTime + aRandom * 6.28) * 0.3;
+            pos.y += cos(uTime * 0.8 + aRandom * 6.28) * 0.3;
+            vAlpha = 0.5 + 0.5 * sin(uTime * 2.0 + aRandom * 6.28);
+            vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+            gl_PointSize = uSize * uPixelRatio * (80.0 / -mv.z);
+            gl_PointSize = max(gl_PointSize, 1.0);
+            gl_Position = projectionMatrix * mv;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 uColor; uniform float uOpacity; varying float vAlpha;
+          void main() {
+            float d = length(gl_PointCoord - 0.5);
+            if (d > 0.5) discard;
+            float a = smoothstep(0.5, 0.0, d) * uOpacity * vAlpha;
+            gl_FragColor = vec4(uColor, a);
+          }
+        `
+      });
+
+      const burstPoints = new THREE.Points(burstGeo, burstMat);
+      group.add(burstPoints);
+      gsap.to(burstMat.uniforms.uOpacity, { value: 1, duration: 1 });
+
+      // Morph al texto
+      const p = { val: 0 };
+      gsap.to(p, {
+        val: 1, duration: 3, ease: 'power2.out',
+        onUpdate: () => {
+          const arr = burstGeo.attributes.position.array;
+          for (let i = 0; i < particleCount; i++) {
+            const idx = i * 3;
+            arr[idx] = arr[idx] + (targetPositions[idx] - arr[idx]) * 0.05;
+            arr[idx+1] = arr[idx+1] + (targetPositions[idx+1] - arr[idx+1]) * 0.05;
+            arr[idx+2] = arr[idx+2] + (targetPositions[idx+2] - arr[idx+2]) * 0.05;
+          }
+          burstGeo.attributes.position.needsUpdate = true;
+        }
+      });
+
+      updates.push((t) => { burstMat.uniforms.uTime.value = t; });
+
+    }, 1000);
+
+    // 6. Cambio de ambiente global
+    gsap.to(scene.fog, { density: 0.005, duration: 4 }); // Despejar niebla
+    gsap.to(ambient.color, { r: 0.8, g: 0.2, b: 0.4, duration: 3 });
+    gsap.to(ambient, { intensity: 1.5, duration: 3 });
+
+    // 7. Audio Épico
+    audio.playChime(440); setTimeout(() => audio.playChime(554), 150); 
+    setTimeout(() => audio.playChime(659), 300); setTimeout(() => audio.playChime(880), 450);
+  }
+
+  // ── MOVIMIENTO DE VÓRTICE Y FLOTACIÓN ──
+  updates.push((t) => {
+    envelopeGroups.forEach(env => {
+      if (env.userData.isAnimating) return;
+      const d = env.userData;
+      // Movimiento de respiración y gravedad antigravedad
+      env.position.y = d.origPos.y + Math.sin(t * d.speed + d.phase) * d.floatAmp;
+      env.position.x = d.origPos.x + Math.cos(t * d.speed * 0.5 + d.phase) * 0.4;
+      env.rotation.y += 0.002;
+      env.rotation.z = Math.sin(t * 0.5 + d.phase) * 0.1;
+    });
+  });
+
+  // ── CÁMARA DE TRANCE ──
+  const camBase = { radius: 18, height: 0, speed: 0.15 };
+  gsap.to(camBase, { radius: 12, duration: 15, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  gsap.to(camBase, { height: 5, duration: 10, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+  return {
+    group, updates,
+    cameraUpdate: () => {
+      const t = clock.getElapsedTime();
+      camera.position.set(
+        Math.sin(t * camBase.speed) * camBase.radius + mouseX * 2,
+        camBase.height + mouseY * 3,
+        Math.cos(t * camBase.speed) * camBase.radius
+      );
+      camera.lookAt(0, camBase.height * 0.5, 0);
+    },
+    destroy: () => {
+      clearInterval(activeWritingInterval);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('click', onClick);
+      document.body.style.cursor = 'default';
+      scene.fog = new THREE.FogExp2('#000000', 0.008);
+      group.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (obj.material.map) obj.material.map.dispose();
+          obj.material.dispose();
+        }
+      });
+    }
+  };
+}
+// ═══════════════════════════════════════════
+// ESCENA 6: FELIZ CUMPLEAÑOS
+// ═══════════════════════════════════════════
+function createScene6() {
+  const group = new THREE.Group();
+  const updates = [];
+  const dynamicObjects = []; // Para fuegos artificiales/supernovas
+
+  // ── ATMÓSFERA CÓSMICA (Espacio profundo, sin niebla) ──
+  scene.fog = null;
+
+  // ── ILUMINACIÓN GALÁCTICA ──
+  const ambient = new THREE.AmbientLight('#1a1a3a', 0.6);
+  group.add(ambient);
+
+  const coreLight = new THREE.PointLight('#ff40a0', 4, 120);
+  coreLight.position.set(0, 0, -20);
+  group.add(coreLight);
+
+  const rimLight1 = new THREE.PointLight('#4000ff', 2, 100);
+  rimLight1.position.set(-25, 15, -15);
+  group.add(rimLight1);
+
+  const rimLight2 = new THREE.PointLight('#00ffff', 2, 100);
+  rimLight2.position.set(25, -15, -15);
+  group.add(rimLight2);
+
+  // ── FONDO DE GALAXIA ESPIRAL DINÁMICA ──
+  const galaxyGeo = new THREE.PlaneGeometry(350, 350);
+  const galaxyMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      varying vec2 vUv;
+      
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) {
+        vec2 i = floor(p); vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);
+      }
+
+      void main() {
+        vec2 uv = vUv - 0.5;
+        float dist = length(uv);
+        float angle = atan(uv.y, uv.x);
+        
+        // Brazos espirales rotantes
+        float spiral = sin(angle * 3.0 - dist * 18.0 + uTime * 0.3) * 0.5 + 0.5;
+        float spiral2 = sin(angle * 2.0 + dist * 12.0 - uTime * 0.2) * 0.5 + 0.5;
+        
+        float core = smoothstep(0.4, 0.0, dist);
+        float arms = smoothstep(0.7, 0.1, dist) * (spiral * 0.7 + spiral2 * 0.3);
+        
+        vec3 color = vec3(0.0);
+        color += vec3(0.5, 0.1, 0.9) * core * 2.0; // Centro morado brillante
+        color += vec3(0.1, 0.2, 0.9) * arms; // Brazos azules
+        color += vec3(0.9, 0.2, 0.6) * spiral2 * smoothstep(0.6, 0.2, dist); // Tinte rosa
+        color += vec3(1.0, 0.9, 1.0) * noise(uv * 80.0 + uTime * 0.5) * 0.2; // Estrellas polvo
+        
+        float alpha = (core + arms * 0.5) * 0.7;
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const galaxy = new THREE.Mesh(galaxyGeo, galaxyMat);
+  galaxy.position.z = -100;
+  group.add(galaxy);
+  updates.push((t) => { galaxyMat.uniforms.uTime.value = t; });
+
+  // ── NEBULOSAS QUE CAMBIAN DE COLOR (Ciclo cromático) ──
+  const nebulaConfigs = [
+    { c1: '#200030', c2: '#600040', pos: [-30, 15, -60] },
+    { c1: '#001025', c2: '#005080', pos: [30, -10, -70] },
+    { c1: '#300020', c2: '#900060', pos: [0, 20, -80] }
+  ];
+  const nebulae = [];
+  
+  const nebulaFragShader = `
+    uniform float uTime;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+    uniform float uHueShift;
+    varying vec2 vUv;
+    
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) {
+      vec2 i = floor(p); vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);
+    }
+    float fbm(vec2 p) {
+      float v = 0.0; float a = 0.5;
+      for(int i=0; i<5; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+      return v;
+    }
+    
+    vec3 hueShift(vec3 col, float shift) {
+      vec3 P = vec3(0.55735) * dot(vec3(0.55735), col);
+      vec3 U = col - P;
+      vec3 V = cross(vec3(0.55735), U);
+      col = U * cos(shift * 6.2832) + V * sin(shift * 6.2832) + P;
+      return col;
+    }
+
+    void main() {
+      vec2 uv = vUv - 0.5;
+      float dist = length(uv);
+      float n = fbm(uv * 3.0 + uTime * 0.04);
+      vec3 color = mix(uColor1, uColor2, n);
+      color = hueShift(color, uHueShift + uTime * 0.02); // Cambio de color dinámico
+      float alpha = smoothstep(0.5, 0.0, dist) * n * 0.3;
+      gl_FragColor = vec4(color, alpha);
+    }
+  `;
+
+  nebulaConfigs.forEach(cfg => {
+    const mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uColor1: { value: new THREE.Color(cfg.c1) },
+        uColor2: { value: new THREE.Color(cfg.c2) },
+        uHueShift: { value: 0 }
+      },
+      vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: nebulaFragShader
+    });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), mat);
+    mesh.position.set(...cfg.pos);
+    mesh.rotation.z = Math.random() * Math.PI;
+    group.add(mesh);
+    nebulae.push(mat);
+    updates.push((t) => { mat.uniforms.uTime.value = t; });
+  });
+
+  // Animar cambio de color de nebulosas
+  gsap.to(nebulae[0].uniforms.uHueShift, { value: 1.0, duration: 15, ease: 'none', repeat: -1 });
+  gsap.to(nebulae[1].uniforms.uHueShift, { value: -1.0, duration: 18, ease: 'none', repeat: -1 });
+  gsap.to(nebulae[2].uniforms.uHueShift, { value: 0.5, duration: 12, ease: 'none', repeat: -1 });
+
+  // ── ESTRELLAS DE FONDO ──
+  const bgStars = createParticles(35000, { spread: 350, size: 0.2, color: '#ffffff', opacity: 0.9 });
+  group.add(bgStars);
+  updates.push((t) => { bgStars.material.uniforms.uTime.value = t; });
+
+  // ── TEXTO FORMADO POR ESTRELLAS (Con brillo y morphing cinemático) ──
+  const line1 = textToPositions('FELIZ', 75, 2);
+  const line2 = textToPositions('CUMPLEAÑOS', 55, 2);
+  const line3 = textToPositions('HOMERO', 85, 2);
+
+  function createCosmicText(positions, yOffset, color) {
+    const count = positions.length / 3;
+    const startPos = new Float32Array(count * 3);
+    const randoms = new Float32Array(count);
+    
+    // Empezar desde el centro galáctico (Big Bang)
+    for (let i = 0; i < count; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
+      const r = 80 + Math.random() * 150;
+      startPos[i * 3] = Math.sin(phi) * Math.cos(theta) * r;
+      startPos[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r;
+      startPos[i * 3 + 2] = Math.cos(phi) * r - 20;
+      randoms[i] = Math.random();
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(startPos, 3));
+    geo.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
+
+    const mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uSize: { value: 1.5 },
+        uColor: { value: new THREE.Color(color) },
+        uOpacity: { value: 0 },
+        uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+      },
+      vertexShader: `
+        attribute float aRandom;
+        uniform float uTime;
+        uniform float uSize;
+        uniform float uPixelRatio;
+        varying float vAlpha;
+        void main() {
+          vec3 pos = position;
+          pos.x += sin(uTime * 0.5 + aRandom * 6.28) * 0.3;
+          pos.y += cos(uTime * 0.3 + aRandom * 6.28) * 0.3;
+          vAlpha = 0.7 + 0.3 * sin(uTime * 3.0 + aRandom * 6.28); // Parpadeo estelar
+          vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+          gl_PointSize = uSize * uPixelRatio * (120.0 / -mv.z);
+          gl_PointSize = max(gl_PointSize, 1.0);
+          gl_Position = projectionMatrix * mv;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor;
+        uniform float uOpacity;
+        varying float vAlpha;
+        void main() {
+          float d = length(gl_PointCoord - 0.5);
+          if (d > 0.5) discard;
+          float core = smoothstep(0.2, 0.0, d);
+          float glow = smoothstep(0.5, 0.0, d);
+          float a = (core * 1.0 + glow * 0.5) * uOpacity * vAlpha;
+          gl_FragColor = vec4(uColor, a);
+        }
+      `
+    });
+
+    const points = new THREE.Points(geo, mat);
+    group.add(points);
+
+    // Animación de convergencia cósmica
+    const progress = { value: 0 };
+    gsap.to(mat.uniforms.uOpacity, { value: 1, duration: 2, delay: 1 });
+    gsap.to(progress, {
+      value: 1, duration: 5, delay: 1, ease: 'power3.out',
+      onUpdate: () => {
+        const arr = geo.attributes.position.array;
+        for (let i = 0; i < count; i++) {
+          const idx = i * 3;
+          // Lerp suave hacia las posiciones del texto
+          arr[idx] = arr[idx] + (positions[idx] - arr[idx]) * 0.035;
+          arr[idx + 1] = arr[idx + 1] + (positions[idx + 1] + yOffset - arr[idx + 1]) * 0.035;
+          arr[idx + 2] = arr[idx + 2] + (positions[idx + 2] - arr[idx + 2]) * 0.035;
+        }
+        geo.attributes.position.needsUpdate = true;
+      }
+    });
+
+    updates.push((t) => { mat.uniforms.uTime.value = t; });
+    return points;
+  }
+
+  createCosmicText(line1, 10, '#ff60a0');
+  createCosmicText(line2, 0, '#ffd700');
+  createCosmicText(line3, -12, '#40ccff');
+
+  // ── CONVERGENCIA: ELEMENTOS DE ESCENAS ANTERIORES ORBITANDO ──
+  const convergenceGroup = new THREE.Group();
+  
+  // 1. Fotografías orbitando
+  const photoSeeds = ['destiny', 'kely', 'homero', 'love', 'heart', 'eternity', 'stars', 'sunset'];
+  photoSeeds.forEach((seed, i) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = `https://picsum.photos/seed/${seed}bday/256/256.jpg`;
+    const tex = new THREE.Texture(img);
+    img.onload = () => { tex.needsUpdate = true; };
+    
+    const frame = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.5, 2.5),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.9, side: THREE.DoubleSide })
+    );
+    const angle = (i / photoSeeds.length) * Math.PI * 2;
+    const r = 22 + Math.random() * 5;
+    frame.position.set(Math.cos(angle) * r, (Math.random()-0.5)*12 + 4, Math.sin(angle) * r - 15);
+    frame.lookAt(0, 4, -15);
+    convergenceGroup.add(frame);
+  });
+
+  // 2. Cartas de amor orbitando
+  for(let i=0; i<12; i++) {
+    const env = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 1, 0.1),
+      new THREE.MeshStandardMaterial({ color: '#8b1a1a', emissive: '#ff0040', emissiveIntensity: 0.6, roughness: 0.6 })
+    );
+    const angle = (i / 12) * Math.PI * 2;
+    const r = 28;
+    env.position.set(Math.cos(angle) * r, (Math.random()-0.5)*12 - 5, Math.sin(angle) * r - 15);
+    env.lookAt(0, -5, -15);
+    convergenceGroup.add(env);
+  }
+
+  // 3. Pétalos y flores flotando
+  const floatingPetals = createParticles(2000, { spread: 60, size: 0.5, color: '#ff80c0', opacity: 0.8 });
+  floatingPetals.position.z = -15;
+  convergenceGroup.add(floatingPetals);
+  updates.push((t) => { floatingPetals.material.uniforms.uTime.value = t; });
+
+  group.add(convergenceGroup);
+  
+  // Rotación orbital de convergencia
+  updates.push((t) => {
+    convergenceGroup.rotation.y = t * 0.15;
+    convergenceGroup.rotation.x = Math.sin(t * 0.05) * 0.15;
+  });
+
+  // ── AURORAS CÓSMICAS VÍVIDAS ──
+  for (let i = 0; i < 4; i++) {
+    const auroraGeo = new THREE.PlaneGeometry(140, 25);
+    const auroraMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uOffset: { value: i * 1.5 },
+        uColor1: { value: new THREE.Color('#00ffaa') },
+        uColor2: { value: new THREE.Color('#ff00cc') }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uTime;
+        uniform float uOffset;
+        uniform vec3 uColor1;
+        uniform vec3 uColor2;
+        varying vec2 vUv;
+
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        float noise(vec2 p) {
+          vec2 i = floor(p); vec2 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(hash(i), hash(i + vec2(1,0)), f.x), mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), f.x), f.y);
+        }
+
+        void main() {
+          vec2 uv = vUv;
+          float n = noise(uv * vec2(4.0, 1.0) + uTime * 0.15 + uOffset);
+          float n2 = noise(uv * vec2(2.0, 0.5) - uTime * 0.1 + uOffset);
+          
+          float band = smoothstep(0.2, 0.5, uv.y) * smoothstep(0.8, 0.5, uv.y);
+          vec3 color = mix(uColor1, uColor2, n);
+          color += vec3(0.2, 0.0, 0.5) * n2; // Tinte púrpura
+          
+          float alpha = band * n * 0.3;
+          gl_FragColor = vec4(color, alpha);
+        }
+      `
+    });
+    const aurora = new THREE.Mesh(auroraGeo, auroraMat);
+    aurora.position.set(0, 30 + i * 5, -60 - i * 15);
+    aurora.rotation.x = -0.2;
+    group.add(aurora);
+    updates.push((t) => { auroraMat.uniforms.uTime.value = t; });
+  }
+
+  // ── FUEGOS ARTIFICIALES CÓSMICOS (Super Novas con física) ──
+  class CosmicFirework {
+    constructor() {
+      this.origin = new THREE.Vector3(
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 20 + 15,
+        (Math.random() - 0.5) * 40 - 35
+      );
+      this.count = 150;
+      this.pos = new Float32Array(this.count * 3);
+      this.vel = [];
+      this.life = 1.0;
+
+      const colors = ['#ff4080', '#ffd700', '#40ccff', '#ff8040', '#80ff40', '#ff00ff'];
+      this.color = colors[Math.floor(Math.random() * colors.length)];
+
+      for (let i = 0; i < this.count; i++) {
+        this.pos[i * 3] = this.origin.x;
+        this.pos[i * 3 + 1] = this.origin.y;
+        this.pos[i * 3 + 2] = this.origin.z;
+        
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        const speed = 0.1 + Math.random() * 0.4;
+        this.vel.push({
+          x: Math.sin(phi) * Math.cos(theta) * speed,
+          y: Math.sin(phi) * Math.sin(theta) * speed,
+          z: Math.cos(phi) * speed
+        });
+      }
+
+      this.geo = new THREE.BufferGeometry();
+      this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
+      
+      this.mat = new THREE.PointsMaterial({
+        size: 0.5,
+        color: this.color,
+        transparent: true,
+        opacity: 1,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        sizeAttenuation: true
+      });
+
+      this.mesh = new THREE.Points(this.geo, this.mat);
+      group.add(this.mesh);
+      dynamicObjects.push(this);
+      
+      // Destello de luz en el centro de la explosión
+      this.light = new THREE.PointLight(this.color, 8, 40);
+      this.light.position.copy(this.origin);
+      group.add(this.light);
+    }
+
+    update() {
+      this.life -= 0.008;
+      if (this.life <= 0) {
+        this.dispose();
+        return false;
+      }
+
+      const arr = this.geo.attributes.position.array;
+      for (let i = 0; i < this.count; i++) {
+        arr[i * 3] += this.vel[i].x;
+        arr[i * 3 + 1] += this.vel[i].y - 0.003; // Gravedad
+        arr[i * 3 + 2] += this.vel[i].z;
+        // Rozamiento
+        this.vel[i].x *= 0.985;
+        this.vel[i].y *= 0.985;
+        this.vel[i].z *= 0.985;
+      }
+      this.geo.attributes.position.needsUpdate = true;
+      this.mat.opacity = this.life;
+      this.mat.size = 0.5 * this.life; // Se encogen al morir
+      
+      this.light.intensity = this.life * 5;
+
+      return true;
+    }
+
+    dispose() {
+      group.remove(this.mesh);
+      group.remove(this.light);
+      this.geo.dispose();
+      this.mat.dispose();
+      const idx = dynamicObjects.indexOf(this);
+      if (idx > -1) dynamicObjects.splice(idx, 1);
+    }
+  }
+
+  // Lanzar fuegos artificiales periódicamente
+  const fireworkInterval = setInterval(() => {
+    new CosmicFirework();
+    audio.playChime(300 + Math.random() * 600);
+  }, 1000);
+
+  updates.push(() => {
+    for (let i = dynamicObjects.length - 1; i >= 0; i--) {
+      dynamicObjects[i].update();
+    }
+  });
+
+  // ── CÁMARA CINEMATOGRÁFICA ──
+  const camBase = { x: 0, y: 5, z: 45, lookY: 0 };
+  // Dolly in
+  gsap.to(camBase, { z: 28, duration: 15, ease: 'power1.out' });
+  // Crane up/down
+  gsap.to(camBase, { y: 12, duration: 12, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  gsap.to(camBase, { lookY: 2, duration: 12, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+  return {
+    group, updates,
+    cameraUpdate: () => {
+      const t = clock.getElapsedTime();
+      camera.position.set(
+        camBase.x + Math.sin(t * 0.1) * 6 + mouseX * 4,
+        camBase.y + mouseY * 3,
+        camBase.z + Math.cos(t * 0.1) * 6
+      );
+      camera.lookAt(0, camBase.lookY, -20);
+    },
+    destroy: () => {
+      clearInterval(fireworkInterval);
+      dynamicObjects.forEach(obj => {
+        group.remove(obj.mesh);
+        group.remove(obj.light);
+        obj.geo.dispose();
+        obj.mat.dispose();
+      });
+      dynamicObjects.length = 0;
+      
+      scene.fog = new THREE.FogExp2('#000000', 0.008); // Restaurar niebla por defecto
+      group.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (obj.material.map) obj.material.map.dispose();
+          obj.material.dispose();
+        }
+      });
+    }
+  };
+}
+// ═══════════════════════════════════════════
+// ESCENA 7: AMOR ETERNO (FINAL)
+// ═══════════════════════════════════════════
+function createScene7() {
+  const group = new THREE.Group();
+  const updates = [];
+
+  // ── ATMÓSFERA FINAL (Espacio profundo romántico) ──
+  scene.fog = new THREE.FogExp2('#05010a', 0.008);
+
+  // ── ILUMINACIÓN EMOCIONAL ──
+  const ambient = new THREE.AmbientLight('#2a1a2a', 0.5);
+  group.add(ambient);
+
+  const coreLight = new THREE.PointLight('#ff2080', 4, 100);
+  coreLight.position.set(0, 0, 0);
+  group.add(coreLight);
+
+  const backLight = new THREE.PointLight('#6020ff', 2, 80);
+  backLight.position.set(0, 10, -20);
+  group.add(backLight);
+
+  const warmFill = new THREE.PointLight('#ffd700', 1.5, 60);
+  warmFill.position.set(10, -5, 10);
+  group.add(warmFill);
+
+  // ── FONDO CÓSMICO (Nebulosa profunda) ──
+  const nebulaGeo = new THREE.PlaneGeometry(300, 300);
+  const nebulaMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform float uTime;
+      varying vec2 vUv;
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) {
+        vec2 i = floor(p); vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);
+      }
+      void main() {
+        vec2 uv = vUv - 0.5;
+        float dist = length(uv);
+        float n = noise(uv * 3.0 + uTime * 0.02);
+        float n2 = noise(uv * 5.0 - uTime * 0.03);
+        vec3 color = mix(vec3(0.1, 0.0, 0.2), vec3(0.3, 0.0, 0.1), n);
+        color += vec3(0.1, 0.05, 0.2) * n2;
+        float alpha = smoothstep(0.5, 0.0, dist) * n * 0.4;
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const nebula = new THREE.Mesh(nebulaGeo, nebulaMat);
+  nebula.position.z = -60;
+  group.add(nebula);
+  updates.push((t) => { nebulaMat.uniforms.uTime.value = t; });
+
+  const bgStars = createParticles(25000, { spread: 250, size: 0.2, color: '#ffffff', opacity: 0.7 });
+  group.add(bgStars);
+  updates.push((t) => { bgStars.material.uniforms.uTime.value = t; });
+
+  // ── ESTRUCTURA DEL CORAZÓN (Subgrupo para latido sincronizado) ──
+  const heartGroup = new THREE.Group();
+  group.add(heartGroup);
+
+  // 1. Núcleo luminoso del corazón
+  const coreGeo = new THREE.IcosahedronGeometry(4, 4);
+  const coreMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uOpacity: { value: 0 },
+      uColor1: { value: new THREE.Color('#ff1050') },
+      uColor2: { value: new THREE.Color('#ff80aa') }
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uOpacity;
+      uniform vec3 uColor1;
+      uniform vec3 uColor2;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      void main() {
+        float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
+        vec3 color = mix(uColor1, uColor2, fresnel);
+        float pulse = 0.8 + 0.2 * sin(uTime * 2.0);
+        float alpha = fresnel * uOpacity * pulse;
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  });
+  const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+  coreMesh.scale.set(2, 2, 1.5); // Escalar para que se ajuste al centro del corazón paramétrico
+  heartGroup.add(coreMesh);
+  gsap.to(coreMat.uniforms.uOpacity, { value: 0.8, duration: 3, delay: 1 });
+
+  // 2. Partículas del corazón (8000 puntos)
+  const heartCount = 8000;
+  const heartPos = new Float32Array(heartCount * 3);
+  const heartColors = new Float32Array(heartCount * 3);
+  const heartRand = new Float32Array(heartCount);
+  const heartSizes = new Float32Array(heartCount);
+
+  for (let i = 0; i < heartCount; i++) {
+    const t = Math.random() * Math.PI * 2;
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    const spread = 0.85 + Math.random() * 0.3; // Un poco más denso
+    heartPos[i * 3] = x * 0.5 * spread + (Math.random() - 0.5) * 1.2;
+    heartPos[i * 3 + 1] = y * 0.5 * spread + (Math.random() - 0.5) * 1.2;
+    heartPos[i * 3 + 2] = (Math.random() - 0.5) * 4; // Más profundidad 3D
+
+    // Gradiente de colores (del rojo profundo al rosa brillante)
+    const mixFactor = Math.random();
+    heartColors[i * 3] = 0.8 + mixFactor * 0.2;
+    heartColors[i * 3 + 1] = 0.1 + mixFactor * 0.4;
+    heartColors[i * 3 + 2] = 0.2 + mixFactor * 0.5;
+    heartRand[i] = Math.random();
+    heartSizes[i] = 0.3 + Math.random() * 0.7;
+  }
+
+  const heartGeo = new THREE.BufferGeometry();
+  heartGeo.setAttribute('position', new THREE.BufferAttribute(heartPos, 3));
+  heartGeo.setAttribute('aColor', new THREE.BufferAttribute(heartColors, 3));
+  heartGeo.setAttribute('aRandom', new THREE.BufferAttribute(heartRand, 1));
+  heartGeo.setAttribute('aSize', new THREE.BufferAttribute(heartSizes, 1));
+
+  const heartMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: { value: 0.6 },
+      uOpacity: { value: 0 },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+    },
+    vertexShader: `
+      attribute float aRandom;
+      attribute float aSize;
+      attribute vec3 aColor;
+      uniform float uTime;
+      uniform float uSize;
+      uniform float uPixelRatio;
+      varying float vAlpha;
+      varying vec3 vColor;
+      void main() {
+        vColor = aColor;
+        vec3 pos = position;
+        pos.x += sin(uTime * 0.5 + aRandom * 6.28) * 0.15;
+        pos.y += cos(uTime * 0.3 + aRandom * 6.28) * 0.15;
+        vAlpha = 0.5 + 0.5 * aRandom;
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = uSize * aSize * uPixelRatio * (100.0 / -mv.z);
+        gl_PointSize = max(gl_PointSize, 1.0);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform float uOpacity;
+      varying float vAlpha;
+      varying vec3 vColor;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float core = smoothstep(0.5, 0.0, d);
+        float glow = smoothstep(0.5, 0.2, d);
+        float a = (core * 1.0 + glow * 0.5) * uOpacity * vAlpha;
+        gl_FragColor = vec4(vColor, a);
+      }
+    `
+  });
+
+  const heartParticles = new THREE.Points(heartGeo, heartMat);
+  heartGroup.add(heartParticles);
+  gsap.to(heartMat.uniforms.uOpacity, { value: 1, duration: 3, delay: 1 });
+
+  // 3. CONVERGENCIA: Elementos orbitando el corazón
+  const orbitGroup = new THREE.Group();
+  heartGroup.add(orbitGroup);
+  
+  // Fotografías orbitando
+  const photoSeeds = ['kely1', 'homero2', 'love3', 'destiny4', 'sunset5', 'memory6', 'heart7', 'stars8'];
+  photoSeeds.forEach((seed, i) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = `https://picsum.photos/seed/${seed}/256/256.jpg`;
+    const tex = new THREE.Texture(img);
+    img.onload = () => { tex.needsUpdate = true; };
+    
+    const frame = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.5, 2.5),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.9, side: THREE.DoubleSide })
+    );
+    const angle = (i / photoSeeds.length) * Math.PI * 2;
+    const r = 18;
+    frame.position.set(Math.cos(angle) * r, (Math.random()-0.5)*8, Math.sin(angle) * r);
+    frame.lookAt(0, frame.position.y, 0);
+    orbitGroup.add(frame);
+  });
+
+  // Cartas de amor orbitando
+  for(let i=0; i<10; i++) {
+    const env = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 1, 0.1),
+      new THREE.MeshStandardMaterial({ color: '#8b1a1a', emissive: '#ff0040', emissiveIntensity: 0.8, roughness: 0.6 })
+    );
+    const angle = (i / 10) * Math.PI * 2;
+    const r = 22;
+    env.position.set(Math.cos(angle) * r, (Math.random()-0.5)*10, Math.sin(angle) * r);
+    env.lookAt(0, env.position.y, 0);
+    orbitGroup.add(env);
+  }
+
+  // Pétalos y flores estelares
+  const cosmicPetals = createParticles(1500, { spread: 35, size: 0.4, color: '#ff80c0', opacity: 0.8 });
+  heartGroup.add(cosmicPetals);
+  updates.push((t) => { cosmicPetals.material.uniforms.uTime.value = t; });
+
+  updates.push((t) => {
+    orbitGroup.rotation.y = t * 0.1; // Órbita constante
+    orbitGroup.rotation.x = Math.sin(t * 0.05) * 0.1;
+  });
+
+  // ── LATIDO CINEMATOGRÁFICO (Lub-Dub) ──
+  const heartScale = { x: 1, y: 1, z: 1 };
+  const heartbeatTimeline = gsap.timeline({ repeat: -1, delay: 2, onRepeat: () => audio.playHeartbeat() });
+  
+  heartbeatTimeline
+    .to(heartScale, { x: 1.08, y: 1.08, z: 1.15, duration: 0.15, ease: 'power2.out' }) // Lub ( rápido)
+    .to(heartScale, { x: 1.0, y: 1.0, z: 1.0, duration: 0.6, ease: 'power2.inOut' })   // Relajación
+    .to(heartScale, { x: 1.04, y: 1.04, z: 1.06, duration: 0.1, ease: 'power2.out' })  // Dub (más suave)
+    .to(heartScale, { x: 1.0, y: 1.0, z: 1.0, duration: 0.8, ease: 'power2.inOut' });  // Relajación
+
+  updates.push(() => {
+    heartGroup.scale.set(heartScale.x, heartScale.y, heartScale.z);
+    coreLight.intensity = 3 + (heartScale.x - 1) * 30; // Flash de luz al latir
+  });
+
+  // ── TEXTO "HOMERO ❤ KELY" (Formación Estelar) ──
+  const nameText = textToPositions('HOMERO  ❤  KELY', 65, 2);
+  const nameCount = nameText.length / 3;
+  const nameStartPos = new Float32Array(nameCount * 3);
+  const nameRand = new Float32Array(nameCount);
+  const nameSizes = new Float32Array(nameCount);
+  
+  for (let i = 0; i < nameCount; i++) {
+    const t = Math.random() * Math.PI * 2;
+    nameStartPos[i * 3] = 16 * Math.pow(Math.sin(t), 3) * 0.5;
+    nameStartPos[i * 3 + 1] = (13 * Math.cos(t) - 5 * Math.cos(2 * t)) * 0.5;
+    nameStartPos[i * 3 + 2] = (Math.random() - 0.5) * 3;
+    nameRand[i] = Math.random();
+    nameSizes[i] = 0.3 + Math.random() * 0.5;
+  }
+
+  const nameGeo = new THREE.BufferGeometry();
+  nameGeo.setAttribute('position', new THREE.BufferAttribute(nameStartPos, 3));
+  nameGeo.setAttribute('aRandom', new THREE.BufferAttribute(nameRand, 1));
+  nameGeo.setAttribute('aSize', new THREE.BufferAttribute(nameSizes, 1));
+
+  const nameMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSize: { value: 0.6 },
+      uColor: { value: new THREE.Color('#ffd700') },
+      uOpacity: { value: 0 },
+      uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+    },
+    vertexShader: `
+      attribute float aRandom;
+      attribute float aSize;
+      uniform float uTime;
+      uniform float uSize;
+      uniform float uPixelRatio;
+      varying float vAlpha;
+      void main() {
+        vec3 pos = position;
+        pos.x += sin(uTime * 0.4 + aRandom * 6.28) * 0.1;
+        pos.y += cos(uTime * 0.3 + aRandom * 6.28) * 0.1;
+        vAlpha = 0.6 + 0.4 * sin(uTime * 1.5 + aRandom * 6.28);
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = uSize * aSize * uPixelRatio * (100.0 / -mv.z);
+        gl_PointSize = max(gl_PointSize, 1.0);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      varying float vAlpha;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float core = smoothstep(0.3, 0.0, d);
+        float glow = smoothstep(0.5, 0.1, d);
+        float a = (core + glow * 0.5) * uOpacity * vAlpha;
+        gl_FragColor = vec4(uColor, a);
+      }
+    `
+  });
+
+  const nameParticles = new THREE.Points(nameGeo, nameMat);
+  nameParticles.position.y = -5; // Posicionar debajo del corazón
+  group.add(nameParticles);
+
+  // Animación de convergencia del nombre
+  gsap.to(nameMat.uniforms.uOpacity, { value: 1, duration: 2, delay: 5 });
+  const nameProgress = { value: 0 };
+  gsap.to(nameProgress, {
+    value: 1, duration: 4, delay: 5, ease: 'power3.inOut',
+    onUpdate: () => {
+      const arr = nameGeo.attributes.position.array;
+      for (let i = 0; i < nameCount; i++) {
+        const idx = i * 3;
+        arr[idx] = arr[idx] + (nameText[idx] - arr[idx]) * 0.04;
+        arr[idx + 1] = arr[idx + 1] + (nameText[idx + 1] - 4 - arr[idx + 1]) * 0.04; // Offset Y
+        arr[idx + 2] = arr[idx + 2] + (nameText[idx + 2] - arr[idx + 2]) * 0.04;
+      }
+      nameGeo.attributes.position.needsUpdate = true;
+    },
+    onComplete: () => {
+      // Flash dorado cuando los nombres se forman
+      const nameFlash = new THREE.PointLight('#ffd700', 10, 50);
+      nameFlash.position.y = -5;
+      group.add(nameFlash);
+      gsap.to(nameFlash, { intensity: 0, duration: 3 });
+    }
+  });
+
+  updates.push((t) => {
+    heartMat.uniforms.uTime.value = t;
+    coreMat.uniforms.uTime.value = t;
+    nameMat.uniforms.uTime.value = t;
+  });
+
+  // ── GANCHO FINAL (Integración con UI) ──
+  // Disparar el texto final y el clímax visual
+  setTimeout(() => {
+    showFinalText();
+    // El universo responde al texto final
+    gsap.to(scene.fog, { density: 0.001, duration: 10 }); // Despejar la niebla
+    gsap.to(ambient.color, { r: 0.8, g: 0.6, b: 0.8, duration: 5 }); // Luz de amanecer
+    gsap.to(ambient, { intensity: 1.2, duration: 5 });
+  }, 12000);
+
+  // ── CÁMARA CINEMATOGRÁFICA (Revelación lenta) ──
+  const camBase = { x: 0, y: 5, z: 30, lookY: 0 };
+  gsap.to(camBase, { z: 45, duration: 20, ease: 'power1.out' }); // Dolly out lento para revelar
+  gsap.to(camBase, { y: 10, duration: 15, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  gsap.to(camBase, { lookY: -2, duration: 15, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+  return {
+    group, updates,
+    cameraUpdate: () => {
+      const t = clock.getElapsedTime();
+      camera.position.set(
+        Math.sin(t * 0.05) * 8 + mouseX * 3 + camBase.x,
+        camBase.y + mouseY * 3,
+        Math.cos(t * 0.05) * 8 + camBase.z
+      );
+      camera.lookAt(0, camBase.lookY, 0);
+    },
+    destroy: () => {
+      heartbeatTimeline.kill();
+      scene.fog = new THREE.FogExp2('#000000', 0.008);
+      group.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (obj.material.map) obj.material.map.dispose();
+          obj.material.dispose();
+        }
+      });
+    }
+  };
+}
+
+// ═══════════════════════════════════════════
+// TEXTO FINAL
+// ═══════════════════════════════════════════
+function showFinalText() {
+  const overlay = document.getElementById('final-overlay');
+  const container = document.getElementById('final-text');
+  overlay.classList.add('active');
+  container.innerHTML = ''; // Limpiar por si se llamara antes
+
+  const lines = [
+    { text: 'Gracias por existir.', style: 'normal' },
+    { text: 'Gracias por llegar a mi vida.', style: 'normal' },
+    { text: 'Gracias por ser mi historia favorita.', style: 'normal' },
+    { text: 'Feliz cumpleaños, mi amor.', style: 'highlight' },
+    { text: 'Y recuerda...', style: 'normal' },
+    { text: 'Mi lugar favorito siempre será donde estés tú.', style: 'grand' }
+  ];
+
+  // --- MEJORA 1: Efecto de Escritura Cinematográfico ---
+  lines.forEach((line, i) => {
+    const p = document.createElement('p');
+    p.className = line.style === 'highlight' ? 'line-highlight' : (line.style === 'grand' ? 'line-grand' : 'line-normal');
+    p.style.opacity = '1'; // El contenedor es visible, las letras se revelan
+    
+    // Envolver cada carácter en un span para control individual
+    const chars = line.text.split('').map(char => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
+      span.style.opacity = '0';
+      span.style.filter = 'blur(8px)';
+      span.style.display = 'inline-block';
+      span.style.transition = 'all 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
+      return span;
+    });
+
+    chars.forEach(char => p.appendChild(char));
+    container.appendChild(p);
+
+    // Animación escalonada de revelado (Blur In)
+    const baseDelay = i * 2.2 + 0.5; // Tiempo entre líneas
+    chars.forEach((char, j) => {
+      gsap.to(char, {
+        opacity: 1, 
+        filter: 'blur(0px)',
+        delay: baseDelay + j * 0.03, // Efecto máquina de escribir suave
+        duration: 0.8,
+        ease: 'power2.out',
+        onStart: () => {
+          // Sonido sutil de tinta para cada letra
+          if (j % 2 === 0) audio.playChime(800 + Math.random() * 200);
+        }
+      });
+    });
+  });
+
+  // --- MEJORA 2: Firma con Revelado Mágico y Efecto de Partículas ---
+  const signatureDelay = lines.length * 2.2 + 2;
+  
+  setTimeout(() => {
+    const signContainer = document.createElement('div');
+    signContainer.className = 'signature-container';
+    signContainer.style.opacity = '0';
+    
+    const sign = document.createElement('p');
+    sign.className = 'sign';
+    sign.textContent = 'Kely ❤';
+    
+    const heartSymbol = document.createElement('span');
+    heartSymbol.className = 'floating-heart';
+    heartSymbol.textContent = '❤';
+    
+    signContainer.appendChild(sign);
+    container.appendChild(signContainer);
+
+    // Revelado de la firma con GSAP
+    gsap.to(signContainer, { 
+      opacity: 1, 
+      duration: 3, 
+      ease: 'power2.inOut',
+      onStart: () => {
+        audio.playChime(523.25); // Do
+        setTimeout(() => audio.playChime(659.25), 200); // Mi
+        setTimeout(() => audio.playChime(783.99), 400); // Sol
+      }
+    });
+
+    // --- MEJORA 3: Coordinación Visual con la Escena 7 (Latido Final) ---
+    // Aumentar la intensidad del bloom y la luz ambiental al aparecer la firma
+    gsap.to(bloomPass, { strength: 2.5, duration: 4, ease: 'power2.inOut' });
+    
+    // Disparar un latido fuerte visual sincronizado
+    if (typeof heartScale !== 'undefined') {
+      gsap.to(heartScale, { 
+        x: 1.15, y: 1.15, z: 1.2, duration: 0.2, ease: 'power2.out', 
+        yoyo: true, repeat: 2,
+        onComplete: () => {
+          gsap.to(heartScale, { x: 1.0, y: 1.0, z: 1.0, duration: 1, ease: 'power2.inOut' });
+        }
+      });
+    }
+  }, signatureDelay * 1000);
+
+  // --- MEJORA 4: Estilos CSS Inyectados para el overlay ---
+  const styleId = 'final-text-styles';
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      #final-overlay {
+        background: radial-gradient(circle at center, rgba(10, 5, 15, 0.6) 0%, rgba(0, 0, 0, 0.95) 100%);
+        backdrop-filter: blur(5px);
+        transition: background 2s ease;
+      }
+      #final-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+      }
+      #final-text p {
+        margin: 0;
+        font-family: 'Cormorant Garamond', serif;
+        letter-spacing: 0.08em;
+        text-shadow: 0 0 20px rgba(255, 150, 180, 0.4);
+      }
+      .line-normal {
+        font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+        font-weight: 300;
+        color: #ffffff;
+      }
+      .line-highlight {
+        font-size: clamp(1.5rem, 3vw, 2.2rem);
+        font-weight: 600;
+        color: #ffccdd;
+        text-shadow: 0 0 30px rgba(255, 100, 150, 0.8);
+        margin: 1rem 0;
+      }
+      .line-grand {
+        font-size: clamp(1.4rem, 2.8vw, 2rem);
+        font-weight: 400;
+        font-style: italic;
+        color: #ffd1dc;
+        text-shadow: 0 0 25px rgba(255, 100, 180, 0.6);
+        margin-top: 1rem;
+      }
+      .signature-container {
+        margin-top: 3rem;
+        position: relative;
+      }
+      .sign {
+        font-size: clamp(2rem, 4vw, 3rem) !important;
+        font-weight: 700 !important;
+        color: #ff80ab !important;
+        font-family: 'Cormorant Garamond', serif;
+        letter-spacing: 0.15em;
+        text-shadow: 0 0 40px rgba(255, 50, 100, 0.9);
+        animation: pulseSign 3s infinite ease-in-out;
+      }
+      @keyframes pulseSign {
+        0%, 100% { text-shadow: 0 0 40px rgba(255, 50, 100, 0.9); transform: scale(1); }
+        50% { text-shadow: 0 0 60px rgba(255, 50, 100, 1), 0 0 100px rgba(255, 100, 180, 0.5); transform: scale(1.05); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+// ═══════════════════════════════════════════
+// GESTOR DE ESCENAS
+// ═══════════════════════════════════════════
+const sceneConfigs = [
+  { create: createScene1, title: 'El Nacimiento de una Estrella', subtitle: '09 / 07 / 2000', mood: 'space', autoAdvance: 14000, chime: 220 },
+  { create: createScene2, title: 'El Libro del Destino', subtitle: 'HOMERO', mood: 'warm', autoAdvance: 14000, chime: 330 },
+  { create: createScene3, title: 'La Memoria del Corazon', subtitle: 'Una ciudad de recuerdos', mood: 'warm', autoAdvance: 12000, chime: 440 },
+  { create: createScene4, title: 'El Jardin del Tiempo', subtitle: 'Cada petalo, un recuerdo', mood: 'garden', autoAdvance: 12000, chime: 554 },
+  { create: createScene5, title: 'Las Cartas de Kely', subtitle: 'Toca las cartas para abrirlas', mood: 'love', autoAdvance: 22000, chime: 659 },
+  { create: createScene6, title: 'Feliz Cumpleanos', subtitle: 'HOMERO', mood: 'epic', autoAdvance: 14000, chime: 880 },
+  { create: createScene7, title: 'Amor Eterno', subtitle: '', mood: 'love', autoAdvance: 0, chime: 1046 }
+];
+
+let currentScene = null;
+let autoAdvanceTimer = null;
+let transitionTimeline = null;
+
+async function switchToScene(index) {
+  if (index >= sceneConfigs.length) return;
+
+  canAdvance = false;
+  clearTimeout(autoAdvanceTimer);
+
+  const transEl = document.getElementById('transition');
+  const textEl = document.getElementById('scene-text');
+  const titleEl = document.getElementById('scene-title');
+  const subtitleEl = document.getElementById('scene-subtitle');
+  const indicatorEl = document.getElementById('scene-indicator');
+  const hintEl = document.getElementById('advance-hint');
+
+  // ── FASE 1: CORTINILLA DE SALIDA (Cinemáticamente escalonada) ──
+  if (transitionTimeline) transitionTimeline.kill();
+  transitionTimeline = gsap.timeline();
+  
+  transitionTimeline.to(transEl, { 
+    opacity: 1, 
+    duration: 1.2, 
+    ease: 'power3.inOut', 
+    onStart: () => transEl.classList.add('active') 
+  });
+
+  // Escalar el bloom durante la transición para un efecto de "flash blanco/negro"
+  transitionTimeline.to(bloomPass, { strength: 3.0, duration: 0.6, ease: 'power2.in' }, 0);
+  transitionTimeline.to(bloomPass, { strength: 1.5, duration: 0.8, ease: 'power2.out' }, 0.6);
+
+  // Desvanecer texto anterior
+  transitionTimeline.to(textEl, { opacity: 0, duration: 0.5 }, 0);
+
+  await transitionTimeline;
+
+  // ── FASE 2: INTERMEDIO (Pantalla negra, cambio de escena) ──
+  // Destruir escena anterior y limpiar memoria
+  if (currentScene) {
+    currentScene.destroy();
+    scene.remove(currentScene.group);
+  }
+
+  // Limpiar overlays persistentes
+  document.getElementById('letter-overlay').classList.remove('active');
+  document.getElementById('final-overlay').classList.remove('active');
+  document.getElementById('final-text').innerHTML = '';
+
+  // Resetear cámara a posición neutra para el fade in
+  camera.position.set(0, 0, 30);
+  camera.rotation.set(0, 0, 0);
+
+  // Pequeña pausa dramática en negro
+  await new Promise(r => setTimeout(r, 400));
+
+  // ── FASE 3: CONSTRUCCIÓN DE LA NUEVA ESCENA ──
+  const config = sceneConfigs[index];
+  
+  // Cambiar mood de audio (crossfade suave si el motor lo permite)
+  audio.setSceneMood(config.mood);
+  
+  // Crear nueva escena
+  currentScene = config.create();
+  scene.add(currentScene.group);
+
+  // Actualizar UI
+  const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+  indicatorEl.textContent = `${romanNumerals[index]} / VII`;
+  titleEl.textContent = config.title;
+  subtitleEl.textContent = config.subtitle;
+
+  // ── FASE 4: CORTINILLA DE ENTRADA Y REVELADO ──
+  if (transitionTimeline) transitionTimeline.kill();
+  transitionTimeline = gsap.timeline();
+
+  // Acuerdo de bloom para el revelado
+  transitionTimeline.to(bloomPass, { strength: 2.5, duration: 0.5, ease: 'power2.out' }, 0);
+  transitionTimeline.to(bloomPass, { strength: 1.5, duration: 1.5, ease: 'power2.inOut' }, 0.5);
+
+  // Fade in del overlay negro
+  transitionTimeline.to(transEl, { 
+    opacity: 0, 
+    duration: 1.5, 
+    ease: 'power2.inOut', 
+    onComplete: () => transEl.classList.remove('active') 
+  }, 0);
+
+  // Texto de escena apareciendo con efecto cinematográfico
+  const textTimeline = gsap.timeline({ delay: 1.5 });
+  
+  // Título
+  titleEl.style.opacity = '0';
+  titleEl.style.transform = 'translateY(20px)';
+  titleEl.style.filter = 'blur(10px)';
+  titleEl.style.transition = 'none';
+  textEl.classList.add('visible'); // Hacer visible el contenedor
+  
+  textTimeline.to(titleEl, { 
+    opacity: 1, y: 0, filter: 'blur(0px)', 
+    duration: 1.5, ease: 'power3.out' 
+  }, 0);
+
+  // Subtítulo
+  subtitleEl.style.opacity = '0';
+  subtitleEl.style.transform = 'translateY(15px)';
+  subtitleEl.style.filter = 'blur(8px)';
+  subtitleEl.style.transition = 'none';
+  
+  textTimeline.to(subtitleEl, { 
+    opacity: 0.8, y: 0, filter: 'blur(0px)', 
+    duration: 1.2, ease: 'power3.out' 
+  }, 0.4);
+
+  // Chime musical al entrar (Acorde celestial basado en la escena)
+  audio.playChime(config.chime);
+  setTimeout(() => audio.playChime(config.chime * 1.25), 150); // Quinta
+  setTimeout(() => audio.playChime(config.chime * 1.5), 300);  // Octava
+
+  // Sostener el texto por 3.5 segundos y luego desvanecer
+  textTimeline.to([titleEl, subtitleEl], { 
+    opacity: 0, y: -10, 
+    duration: 1.5, 
+    delay: 3, 
+    ease: 'power2.in',
+    onComplete: () => textEl.classList.remove('visible')
+  });
+
+  await transitionTimeline;
+
+  // Habilitar avance manual una vez revelada la escena
+  canAdvance = true;
+
+  // Hint visibility
+  hintEl.style.display = index < sceneConfigs.length - 1 ? 'block' : 'none';
+
+  // ── FASE 5: AUTO AVANCE ──
+  if (config.autoAdvance > 0) {
+    autoAdvanceTimer = setTimeout(() => {
+      if (canAdvance && index < sceneConfigs.length - 1) {
+        currentSceneIndex = index + 1;
+        switchToScene(currentSceneIndex);
+      }
+    }, config.autoAdvance);
+  }
+}
+// ═══════════════════════════════════════════
+// INICIALIZACIÓN
+// ═══════════════════════════════════════════
+function init() {
+  // ── ESCENA BASE ──
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2('#000000', 0.008);
+
+  // ── CÁMARA CINEMATOGRÁFICA ──
+  camera = new THREE.PerspectiveCamera(60, W() / H(), 0.1, 1500);
+  camera.position.set(0, 0, 30);
+
+  // ── RENDERER OPTIMIZADO ──
+  renderer = new THREE.WebGLRenderer({ 
+    antialias: true, 
+    alpha: false, 
+    powerPreference: "high-performance",
+    stencil: false 
+  });
+  renderer.setSize(W(), H());
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  document.body.prepend(renderer.domElement);
+
+  // ── POST-PROCESAMIENTO: Bloom Cinematográfico ──
+  composer = new EffectComposer(renderer);
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(W(), H()),
+    1.2,
+    0.6,
+    0.7
+  );
+  composer.addPass(bloomPass);
+
+  // ── RELOJ ──
+  clock = new THREE.Clock();
+
+  // ── EVENTOS DE INTERACCIÓN ──
+  window.addEventListener('mousemove', (e) => {
+    targetMouseX = (e.clientX / W() - 0.5) * 2;
+    targetMouseY = (e.clientY / H() - 0.5) * 2;
+  });
+
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      targetMouseX = (e.touches[0].clientX / W() - 0.5) * 2;
+      targetMouseY = (e.touches[0].clientY / H() - 0.5) * 2;
+    }
+  }, { passive: true });
+
+  // Resize handler
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      camera.aspect = W() / H();
+      camera.updateProjectionMatrix();
+      renderer.setSize(W(), H());
+      composer.setSize(W(), H());
+      bloomPass.resolution.set(W(), H());
+    }, 100);
+  });
+
+  // ── NAVEGACIÓN DE ESCENAS ──
+  function handleAdvance() {
+    if (!canAdvance) return;
+    if (document.getElementById('letter-overlay').classList.contains('active')) return;
+    if (document.getElementById('final-overlay').classList.contains('active')) return;
+
+    if (currentSceneIndex < sceneConfigs.length - 1) {
+      canAdvance = false;
+      currentSceneIndex++;
+      switchToScene(currentSceneIndex);
+    }
+  }
+
+  window.addEventListener('click', handleAdvance);
+  window.addEventListener('touchend', (e) => {
+    if (e.target.closest('#letter-overlay') || e.target.closest('#final-overlay') || e.target.closest('#loader')) return;
+    handleAdvance();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      e.preventDefault();
+      handleAdvance();
+    }
+    if (e.code === 'Escape') {
+      if (document.getElementById('letter-overlay').classList.contains('active')) {
+        document.getElementById('letter-overlay').classList.remove('active');
+      }
+    }
+  });
+
+  document.getElementById('letter-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('letter-overlay').classList.remove('active');
+  });
+
+  // ── LOADER CINEMATOGRÁFICO ──
+  const loader = document.getElementById('loader');
+  
+  function startExperience() {
+    if (audioStarted) return;
+    audioStarted = true;
+    
+    gsap.to(loader, { 
+      opacity: 0, 
+      scale: 1.1, 
+      duration: 1.5, 
+      ease: 'power2.inOut',
+      onComplete: () => {
+        loader.classList.add('hidden');
+        loader.style.pointerEvents = 'none';
+      }
+    });
+    
+    audio.init();
+    
+    setTimeout(() => {
+      switchToScene(0);
+    }, 1800);
+  }
+
+  loader.addEventListener('click', startExperience);
+  loader.addEventListener('touchend', startExperience);
+
+  // ── INICIAR LOOP ──
+  animate();
+}
+// ═══════════════════════════════════════════
+// LOOP DE ANIMACIÓN
+// ═══════════════════════════════════════════
+
+// Inicializar la variable si no existe aún en el scope global, sin re-declararla
+if (typeof isPageVisible === 'undefined') {
+  window.isPageVisible = true;
+}
+
+// Pausar animaciones si la pestaña no está visible (ahorro de recursos)
+document.addEventListener('visibilitychange', () => {
+  isPageVisible = document.visibilityState === 'visible';
+  if (isPageVisible) {
+    clock.start(); // Reanudar el reloj para evitar saltos de tiempo
+  } else {
+    clock.stop();
+  }
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  // No renderizar si la pestaña está en segundo plano
+  if (!isPageVisible) return;
+
+  const rawDelta = clock.getDelta();
+  const elapsed = clock.getElapsedTime();
+  
+  // Evitar saltos de tiempo enormes si la pestaña se congeló o hubo un lag
+  const delta = Math.min(rawDelta, 0.1); 
+
+  // ── EASING GLOBAL DE INTERACCIÓN (Mouse/Touch) ──
+  // Suavizado de cámara integrado en el loop de renderizado
+  if (typeof targetMouseX !== 'undefined') {
+    mouseX += (targetMouseX - mouseX) * 0.05; // Easing suave
+    mouseY += (targetMouseY - mouseY) * 0.05;
+  }
+
+  // ── ACTUALIZACIÓN DE LA ESCENA ACTUAL ──
+  if (currentScene) {
+    // 1. Física y actualizaciones lógicas
+    currentScene.updates.forEach(fn => fn(elapsed, delta));
+
+    // 2. Actualización de cámara cinematográfica
+    if (currentScene.cameraUpdate) {
+      currentScene.cameraUpdate(elapsed, delta);
+    }
+  }
+
+  // ── POST-PROCESAMIENTO Y RENDERIZADO ──
+  try {
+    composer.render(delta);
+  } catch (e) {
+    // Fallback de seguridad si el contexto WebGL se pierde
+    console.error("Error de renderizado WebGL, reintentando...", e);
+    renderer.render(scene, camera);
+  }
+}
+// ═══════════════════════════════════════════
+// ARRANCAR
+// ═══════════════════════════════════════════
+init();
+
+</script>
+</body>
+</html>
