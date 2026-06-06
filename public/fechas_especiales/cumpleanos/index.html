@@ -312,7 +312,7 @@
     // ═══════════════════════════════════════════
     let scene, camera, renderer, composer, bloomPass, clock;
     let mouseX = 0, mouseY = 0;
-    let targetMouseX = 0, targetMouseY = 0; // <-- AÑADIR ESTO
+    let targetMouseX = 0, targetMouseY = 0;
     let currentSceneIndex = 0;
     let sceneGroup = new THREE.Group();
     let sceneAnimations = [];
@@ -349,12 +349,9 @@
 
     const audio = new AudioEngine();
 
-    // Primer clic del usuario
     document.addEventListener('click', () => {
       audio.init();
     }, { once: true });
-
-    //utlidad convertir texto a posiciones para partículas
 
     function textToPositions(text, fontSize = 120, density = 2) {
       const canvas = document.createElement('canvas');
@@ -562,7 +559,7 @@
       updates.push((t) => { midStars.material.uniforms.uTime.value = t; });
 
       // Capa 3: Estrellas cercanas, cálidas, grandes
-      const nearStars = createParticles(5000, { spread: 150, size: 0.6, color: '#ffeedd', opacity: 1.0 });
+      const nearStars = createParticles(10000, { spread: 150, size: 0.6, color: '#ffeedd', opacity: 1.0 });
       nearStars.name = 'nearStars';
       group.add(nearStars);
       updates.push((t) => { nearStars.material.uniforms.uTime.value = t; });
