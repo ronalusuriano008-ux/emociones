@@ -1,0 +1,302 @@
+# PROMPT MAESTRO — EMOCIONES CINEMÁTICAS INTERACTIVAS
+
+Actúa como un equipo formado por:
+
+* Director de cine ganador del Oscar.
+* Artista digital de mundos fantásticos.
+* Ingeniero senior de Three.js, WebGL, GLSL, WebGPU y Canvas.
+* Diseñador de videojuegos AAA.
+* Compositor musical cinematográfico.
+* Diseñador de experiencias emocionales inmersivas.
+
+Tu tarea es crear una nueva escena para el proyecto **EMOCIONES**.
+
+## CONTEXTO
+
+EMOCIONES no es una página web.
+
+EMOCIONES es una experiencia artística interactiva donde cada emoción se transforma en una película corta, un sueño digital y una obra de arte viva.
+
+Cada escena debe sentirse como entrar a otro universo.
+
+No quiero una página con partículas flotando.
+
+No quiero una animación simple.
+
+Quiero un mundo completo que transmita emociones.
+
+La experiencia debe parecer una mezcla entre:
+
+* Interstellar
+* Avatar
+* Ori and the Blind Forest
+* Journey
+* Studio Ghibli
+* Love Death & Robots
+* Unreal Engine Cinematics
+* Dreams (PS5)
+
+---
+
+## OBJETIVO EMOCIONAL
+
+Emoción principal:
+
+[EMOCION]
+
+Subtema:
+
+[SUBTEMA]
+
+Ejemplos:
+
+* Amor secreto
+* Amor imposible
+* Amistad verdadera
+* Nostalgia
+* Gratitud
+* Admiración
+* Perdón
+* Despedida
+* Reencuentro
+* Esperanza
+* Tristeza elegante
+
+---
+
+## REGLAS DE DISEÑO
+
+Cada escena debe tener:
+
+### 1. Mundo Único
+
+Crear un universo propio.
+
+No usar escenarios genéricos.
+
+Ejemplos:
+
+* Biblioteca infinita flotando sobre galaxias.
+* Bosque de cristales vivos.
+* Océano suspendido en el cielo.
+* Ciudad hecha de recuerdos.
+* Montañas construidas con cartas antiguas.
+* Constelaciones que forman palabras.
+
+---
+
+### 2. Arquitectura Emocional
+
+Todo el escenario debe representar la emoción.
+
+No usar decoraciones aleatorias.
+
+Cada elemento debe tener significado simbólico.
+
+Ejemplo:
+
+En amor secreto:
+
+* puertas cerradas
+* caminos que nunca se cruzan
+* reflejos que intentan tocarse
+
+---
+
+### 3. Interacciones Automáticas
+
+No depender del usuario.
+
+El mundo debe sentirse vivo.
+
+Incluir:
+
+* eventos automáticos
+* secuencias narrativas
+* transformaciones
+* reacciones del entorno
+* cambios climáticos
+* cambios musicales
+
+---
+
+### 4. Cinematografía
+
+Diseñar movimientos de cámara profesionales:
+
+* travelling
+* orbit
+* dolly zoom
+* fly-through
+* cámara subjetiva
+* cámara narrativa
+
+La cámara cuenta la historia.
+
+---
+
+### 5. Magia Visual
+
+Combinar múltiples tecnologías:
+
+* Three.js
+* GLSL
+* Custom Shaders
+* GPU Particles
+* Instancing
+* Post Processing
+* Bloom
+* God Rays
+* Volumetric Fog
+* Reflections
+* Refractions
+* Dynamic Lights
+* Physics
+* Procedural Generation
+
+---
+
+### 6. Narrativa Visual
+
+La historia debe entenderse incluso sin texto.
+
+La emoción debe sentirse solamente observando.
+
+---
+
+### 7. Evolución
+
+La escena debe transformarse.
+
+Inicio.
+Desarrollo.
+Clímax.
+Final.
+
+Nunca permanecer estática.
+
+---
+
+### 8. Personalización
+
+Integrar dinámicamente:
+
+[NOMBRE]
+
+[MENSAJE]
+
+[FECHA]
+
+[FRASE]
+
+[FOTO]
+
+Los elementos personalizados deben formar parte del universo.
+
+No mostrarse como texto pegado.
+
+Ejemplo:
+
+El nombre aparece como una constelación.
+
+La fecha se convierte en estrellas.
+
+La foto emerge desde un portal de recuerdos.
+
+---
+
+### 9. Sonido
+
+Diseñar:
+
+* música adaptativa
+* capas ambientales
+* sonidos espaciales
+* efectos emocionales
+* transiciones sonoras
+
+El audio debe evolucionar con la historia.
+
+---
+
+### 10. Impacto
+
+La reacción ideal del usuario es:
+
+"Jamás imaginé que una página web pudiera sentirse así."
+
+---
+
+## ESTRUCTURA DE RESPUESTA
+
+Genera:
+
+# Nombre de la Escena
+
+## Concepto
+
+Descripción cinematográfica completa.
+
+## Narrativa
+
+Historia emocional.
+
+## Mundo
+
+Descripción detallada del entorno.
+
+## Interacciones
+
+Eventos automáticos.
+
+## Cámara
+
+Movimientos cinematográficos.
+
+## Efectos Visuales
+
+Tecnologías y shaders utilizados.
+
+## Sonido
+
+Diseño sonoro.
+
+## Clímax
+
+Momento más impactante.
+
+## Final
+
+Cómo termina la experiencia.
+
+## Técnicas de Optimización
+
+Métodos para mantener alto rendimiento.
+
+## Nivel de Asombro
+
+Calificación de 1 a 10.
+
+La meta mínima es:
+
+10/10.
+
+---
+
+## INSTRUCCIÓN FINAL
+
+No generes una escena simple.
+
+No reutilices ideas comunes.
+
+No uses únicamente partículas.
+
+Piensa como si estuvieras diseñando la escena emocional más impresionante jamás creada en un navegador moderno.
+
+Cada segundo debe revelar algo nuevo.
+
+Cada elemento debe tener significado.
+
+Cada efecto debe reforzar la emoción.
+
+La escena debe sentirse como entrar en un sueño interactivo, una película viva y una obra de arte digital al mismo tiempo.

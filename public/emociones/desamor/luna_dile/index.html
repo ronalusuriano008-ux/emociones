@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Luna, dime si aún me piensa...</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--text:#F0E6D3;--deep:#0A0A1A;--gold:#C4A35A;--rose:#E8475F;--moon:#F5E6CA;--font:'Cormorant Garamond',serif}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:var(--font)}
+#app{position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden}
+@media(min-aspect-ratio:9/16){#app{width:calc(100vh*9/16);left:50%;transform:translateX(-50%)}}
+#cinema{width:100%;height:100%;display:block}
+#overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;display:flex;flex-direction:column;justify-content:center;align-items:center}
+#transition{position:absolute;top:0;left:0;width:100%;height:100%;background:#000;opacity:1;z-index:20;pointer-events:none}
+#vignette{position:absolute;top:0;left:0;width:100%;height:100%;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%)}
+.text-line{position:absolute;width:85%;text-align:center;color:var(--text);font-family:var(--font);opacity:0;pointer-events:none;text-shadow:0 0 30px rgba(196,163,90,0.3),0 2px 10px rgba(0,0,0,0.8);line-height:1.3;letter-spacing:0.04em}
+.text-title{font-size:clamp(1.6rem,5vw,2.8rem);font-weight:300;font-style:italic}
+.text-subtitle{font-size:clamp(1.1rem,3.5vw,1.8rem);font-weight:300;font-style:italic}
+.text-body{font-size:clamp(0.95rem,2.8vw,1.4rem);font-weight:300;font-style:italic}
+.text-name{font-size:clamp(1.8rem,6vw,3.2rem);font-weight:600;color:var(--gold);text-shadow:0 0 40px rgba(196,163,90,0.5),0 2px 10px rgba(0,0,0,0.8)}
+.text-city{font-size:clamp(0.8rem,2.2vw,1.1rem);font-weight:300;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,230,211,0.6)}
+.text-question{font-size:clamp(0.9rem,2.6vw,1.3rem);font-weight:300;font-style:italic;color:rgba(240,230,211,0.85)}
+.text-letter{font-size:clamp(0.85rem,2.4vw,1.2rem);font-weight:300;font-style:italic;color:rgba(212,165,116,0.9)}
+.text-final{font-size:clamp(1rem,3vw,1.5rem);font-weight:300;font-style:italic;color:rgba(240,230,211,0.7)}
+@keyframes breathe{0%,100%{opacity:0.6}50%{opacity:1}}
+.touch-hint{position:absolute;bottom:8%;left:50%;transform:translateX(-50%);color:rgba(240,230,211,0.25);font-size:0.75rem;font-family:var(--font);letter-spacing:0.2em;text-transform:uppercase;animation:breathe 3s ease-in-out infinite;z-index:15;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="cinema"></canvas>
+  <div id="overlay"></div>
+  <div id="transition"></div>
+  <div id="vignette"></div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+
+// ═══════════════════════════════════════════
+// CONFIGURACIÓN GLOBAL
+// ═══════════════════════════════════════════
+const CONFIG = {
+  title: "Luna, dime si aún me piensa...",
+  receiver: "Elena",
+  sender: "Alguien que la recuerda",
+  nickname: "Mi vida",
+  cityOrigin: "Ciudad de México",
+  cityDestination: "Buenos Aires",
+  music: '../../../assets/audio/vuelve.mp3',
+  photos: [],
+  letters: [
+    "Nunca te dije que cada canción me hablaba de ti.",
+    "Guardé cada mensaje como quien guarda luz.",
+    "Quise escribirte mil veces y mil veces el silencio ganó."
+  ],
+  colors: {
+    deep: 0x0A0A1A, primary: 0xC4A35A, accent: 0xE8475F,
+    moon: 0xF5E6CA, star: 0xFFF8E7, warmGlow: 0xD4A574,
+    coldGlow: 0x7BA4C4, nebula1: 0x2D1B4E, nebula2: 0x1A3A4E,
+    rain: 0x8BA4B8, text: 0xF0E6D3,
+    nebulaViolet: 0x6A0DAD,
+    nebulaTurquoise: 0x00CED1,
+    nebulaMagenta: 0xE0115F,
+    nebulaGold: 0xFFD700
+  },
+  finalMessage: "Siempre en mi cielo",
+  questions: [
+    "¿Todavía me recuerda?",
+    "¿Aún escucha nuestra canción?",
+    "¿Piensa en mí algunas noches?",
+    "¿Le salta el corazón con mi nombre?",
+    "¿Busca mi sombra en alguna habitación?",
+    "¿Siente esta misma distancia?"
+  ],
+  sceneDuration: 10000,
+  transitionDuration: 1800,
+  effectsIntensity: 1.0,
+  bloom: { strength: 0.8, radius: 0.3, threshold: 0.55 } // Nitidez mejorada
+};
+
+// ═══════════════════════════════════════════
+// SHADERS
+// ═══════════════════════════════════════════
+
+const GODRAYS_SHADER = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uLightPos: { value: new THREE.Vector2(0.5, 0.5) },
+    uIntensity: { value: 0.4 },
+    uDecay: { value: 0.96 }
+  },
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform vec2 uLightPos;
+    uniform float uIntensity;
+    uniform float uDecay;
+    varying vec2 vUv;
+    void main(){
+      vec2 texCoord = vUv;
+      vec2 deltaTexCoord = (texCoord - uLightPos) * (1.0 / 60.0);
+      float illuminationDecay = 1.0;
+      vec4 color = texture2D(tDiffuse, texCoord);
+      for(int i = 0; i < 60; i++){
+        texCoord -= deltaTexCoord;
+        vec4 texSample = texture2D(tDiffuse, texCoord);
+        texSample.rgb *= uIntensity;
+        color += texSample * illuminationDecay;
+        illuminationDecay *= uDecay;
+      }
+      gl_FragColor = texture2D(tDiffuse, vUv) + (color * 0.015);
+    }`
+};
+
+// NUEVO: SHADER DE NITIDEZ CINEMATOGRÁFICA
+const SHARPEN_SHADER = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uResolution: { value: new THREE.Vector2(1/1920, 1/1080) }
+  },
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform vec2 uResolution;
+    varying vec2 vUv;
+    void main() {
+        vec4 c = texture2D(tDiffuse, vUv) * 5.0;
+        c -= texture2D(tDiffuse, vUv + vec2(uResolution.x, 0.0));
+        c -= texture2D(tDiffuse, vUv - vec2(uResolution.x, 0.0));
+        c -= texture2D(tDiffuse, vUv + vec2(0.0, uResolution.y));
+        c -= texture2D(tDiffuse, vUv - vec2(0.0, uResolution.y));
+        gl_FragColor = c;
+    }`
+};
+
+const NOISE_GLSL = `
+float hash3(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+float noise3(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);
+return mix(mix(mix(hash3(i),hash3(i+vec3(1,0,0)),f.x),mix(hash3(i+vec3(0,1,0)),hash3(i+vec3(1,1,0)),f.x),f.y),
+mix(mix(hash3(i+vec3(0,0,1)),hash3(i+vec3(1,0,1)),f.x),mix(hash3(i+vec3(0,1,1)),hash3(i+vec3(1,1,1)),f.x),f.y),f.z);}
+float fbm(vec3 p){float f=0.;f+=.5*noise3(p);p*=2.01;f+=.25*noise3(p);p*=2.02;f+=.125*noise3(p);p*=2.03;f+=.0625*noise3(p);return f/.9375;}
+`;
+
+const NEBULA_FRAG = `
+uniform float uTime;
+uniform vec3 uNebColor;
+uniform float uSeed;
+varying vec2 vUv;
+ ${NOISE_GLSL}
+void main(){
+  vec2 uv=vUv-0.5;
+  float d=length(uv);
+  float n=fbm(vec3(uv*2.5,uSeed+uTime*0.03));
+  float n2=fbm(vec3(uv*4.+1.,uSeed*2.+uTime*0.02));
+  float alpha=smoothstep(0.5,0.0,d)*n*0.35;
+  alpha+=smoothstep(0.3,0.0,d)*n2*0.15;
+  alpha*=smoothstep(0.5,0.15,d);
+  gl_FragColor=vec4(uNebColor,alpha*0.6);
+}`;
+
+const RAIN_VERT = `
+attribute float aSpeed;
+attribute float aOffset;
+uniform float uTime;
+varying float vAlpha;
+void main(){
+  vec3 pos=position;
+  float t=mod(uTime*aSpeed+aOffset,1.);
+  pos.y-=t*40.;
+  pos.y+=20.;
+  vAlpha=1.-t;
+  vec4 mv=modelViewMatrix*vec4(pos,1.);
+  gl_PointSize=1.5*(100./max(-mv.z,1.));
+  gl_Position=projectionMatrix*mv;
+}`;
+
+const RAIN_FRAG = `
+varying float vAlpha;
+void main(){
+  float d=length(gl_PointCoord-0.5);
+  if(d>0.5)discard;
+  gl_FragColor=vec4(0.54,0.64,0.72,vAlpha*0.3);
+}`;
+
+const FRAGMENT_VERT = `
+attribute float aSize;
+attribute float aPhase;
+attribute vec3 aFragColor;
+uniform float uTime;
+uniform float uDissolve;
+varying float vAlpha;
+varying vec3 vCol;
+void main(){
+  vec3 pos=position;
+  float t=uTime*0.3+aPhase;
+  pos.x+=sin(t)*0.3;
+  pos.y+=cos(t*0.7)*0.2;
+  pos.z+=sin(t*0.5)*0.15;
+  pos*=1.+uDissolve*3.;
+  vAlpha=(1.-uDissolve)*(0.5+0.5*sin(t*2.));
+  vCol=aFragColor;
+  vec4 mv=modelViewMatrix*vec4(pos,1.);
+  gl_PointSize=aSize*(1.+uDissolve*0.5)*(150./max(-mv.z,1.));
+  gl_Position=projectionMatrix*mv;
+}`;
+
+const FRAGMENT_FRAG = `
+varying float vAlpha;
+varying vec3 vCol;
+void main(){
+  float d=length(gl_PointCoord-0.5);
+  if(d>0.5)discard;
+  float a=smoothstep(0.5,0.0,d)*vAlpha;
+  gl_FragColor=vec4(vCol,a);
+}`;
+
+const VIGNETTE_SHADER = {
+  uniforms: { tDiffuse:{value:null}, uIntensity:{value:0.4} },
+  vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader: `uniform sampler2D tDiffuse;uniform float uIntensity;varying vec2 vUv;
+  void main(){vec4 c=texture2D(tDiffuse,vUv);float d=distance(vUv,vec2(0.5));c.rgb*=1.-smoothstep(0.3,0.9,d)*uIntensity;gl_FragColor=c;}`
+};
+
+// ═══════════════════════════════════════════
+// UTILIDADES
+// ═══════════════════════════════════════════
+function createGlowTexture(size=256){
+  const c=document.createElement('canvas');c.width=c.height=size;
+  const ctx=c.getContext('2d');
+  const g=ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+  g.addColorStop(0,'rgba(255,248,231,0.6)');
+  g.addColorStop(0.3,'rgba(255,248,231,0.15)');
+  g.addColorStop(1,'rgba(255,248,231,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,size,size);
+  return new THREE.CanvasTexture(c);
+}
+
+function createNebulaTexture(size=512){
+  const c=document.createElement('canvas');c.width=c.height=size;
+  const ctx=c.getContext('2d');
+  const g=ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+  g.addColorStop(0,'rgba(255,255,255,0.4)');
+  g.addColorStop(0.5,'rgba(255,255,255,0.08)');
+  g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,size,size);
+  return new THREE.CanvasTexture(c);
+}
+
+function lerp(a,b,t){return a+(b-a)*t;}
+
+// ═══════════════════════════════════════════
+// SISTEMA DE TEXTO
+// ═══════════════════════════════════════════
+class TextSystem {
+  constructor(container){this.container=container;this.elements=[];}
+  show(text,style,topPct,delay,duration){
+    return new Promise(resolve=>{
+      const el=document.createElement('div');
+      el.className=`text-line ${style}`;
+      el.textContent=text;
+      el.style.top=`${topPct}%`;
+      this.container.appendChild(el);
+      this.elements.push(el);
+      gsap.fromTo(el,{opacity:0,y:20},{opacity:1,y:0,duration:1.5,delay:delay/1000,ease:'power2.out',
+        onComplete:()=>{
+          gsap.to(el,{opacity:0,y:-10,duration:1.2,delay:Math.max(0,(duration-1500)/1000),ease:'power2.in',onComplete:()=>{
+            el.remove();const i=this.elements.indexOf(el);if(i>-1)this.elements.splice(i,1);resolve();
+          }});
+        }
+      });
+    });
+  }
+  clearAll(){
+    this.elements.forEach(el=>{gsap.killTweensOf(el);el.remove();});
+    this.elements=[];
+  }
+}
+
+// ═══════════════════════════════════════════
+// SISTEMA DE ESTRELLAS DENSO AAA
+// ═══════════════════════════════════════════
+class StarFieldAAA {
+  constructor(count=6000, spread=120){
+    this.group=new THREE.Group();
+    this.matrices = [];
+    this._createLayer(count, spread, 0.6, 0);
+    this._createLayer(Math.floor(count/2), spread * 0.6, 1.5, 1);
+  }
+
+  _createLayer(count, spread, sizeMultiplier, layerIndex){
+    const geo=new THREE.BufferGeometry();
+    const pos=new Float32Array(count*3);
+    const sizes=new Float32Array(count);
+    const phases=new Float32Array(count);
+    const cols=new Float32Array(count*3);
+    
+    const starColors = [
+      new THREE.Color(0xFFF8E7), new THREE.Color(0xFFE4B5),
+      new THREE.Color(0x87CEEB), new THREE.Color(0xFF6347),
+      new THREE.Color(CONFIG.colors.warmGlow)
+    ];
+
+    for(let i=0;i<count;i++){
+      const theta=Math.random()*Math.PI*2;
+      const phi=Math.acos(2*Math.random()-1);
+      const r=spread*(0.4+Math.random()*0.6);
+      pos[i*3]=r*Math.sin(phi)*Math.cos(theta);
+      pos[i*3+1]=r*Math.sin(phi)*Math.sin(theta);
+      pos[i*3+2]=r*Math.cos(phi) - (layerIndex * 20);
+      sizes[i]=Math.max(0.2, (0.8+Math.random()*2.5) * sizeMultiplier);
+      phases[i]=Math.random()*Math.PI*2;
+      const c = starColors[Math.floor(Math.random()*starColors.length)];
+      cols[i*3]=c.r; cols[i*3+1]=c.g; cols[i*3+2]=c.b;
+    }
+    
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
+    geo.setAttribute('aPhase',new THREE.BufferAttribute(phases,1));
+    geo.setAttribute('aStarColor',new THREE.BufferAttribute(cols,3));
+    
+    const mat=new THREE.ShaderMaterial({
+      vertexShader:`
+        attribute float aSize;
+        attribute float aPhase;
+        attribute vec3 aStarColor;
+        uniform float uTime;
+        uniform float uBrightness;
+        varying float vAlpha;
+        varying vec3 vCol;
+        void main(){
+          float twinkleSpeed = 0.3 + aPhase * 0.5;
+          vAlpha = (0.5 + 0.5 * sin(uTime * twinkleSpeed + aPhase * 6.28)) * uBrightness;
+          vCol = aStarColor;
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          gl_PointSize = aSize * (250.0 / max(-mv.z, 1.0));
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader:`
+        varying float vAlpha;
+        varying vec3 vCol;
+        void main(){
+          float d = length(gl_PointCoord - 0.5);
+          if(d > 0.5) discard;
+          float a = smoothstep(0.5, 0.0, d) * vAlpha;
+          gl_FragColor = vec4(vCol, a);
+        }`,
+      uniforms:{uTime:{value:0}, uBrightness:{value:1.0}},
+      transparent:true, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    
+    const points = new THREE.Points(geo, mat);
+    this.group.add(points);
+    this.matrices.push(mat);
+  }
+
+  update(time){ this.matrices.forEach(m => m.uniforms.uTime.value = time); }
+  setBrightness(v){ this.matrices.forEach(m => m.uniforms.uBrightness.value = v); }
+
+  dispose(){
+    this.group.traverse(c => {
+      if(c.geometry) c.geometry.dispose();
+      if(c.material) c.material.dispose();
+    });
+  }
+}
+
+const StarField = StarFieldAAA;
+
+// ═══════════════════════════════════════════
+// LUNA AAA CON DISPLACEMENT Y NORMAL MAPS
+// ═══════════════════════════════════════════
+class MoonAAA {
+  constructor(radius=5, segments=128){
+    this.group=new THREE.Group();
+    this.radius=radius;
+    
+    const size = 2048;
+    this._colorTex = this._generateTexture(size, 'color');
+    this._normalTex = this._generateTexture(size, 'normal');
+    this._dispTex = this._generateTexture(size, 'displacement');
+    
+    const geo=new THREE.SphereGeometry(Math.max(0.1,radius), segments, segments);
+    this.mat=new THREE.MeshStandardMaterial({
+      map: this._colorTex,
+      normalMap: this._normalTex,
+      normalScale: new THREE.Vector2(1.5, 1.5),
+      displacementMap: this._dispTex,
+      displacementScale: 0.6,
+      roughness: 0.95,
+      metalness: 0.0,
+      color: new THREE.Color(CONFIG.colors.moon)
+    });
+    
+    this.mesh=new THREE.Mesh(geo,this.mat);
+    this.group.add(this.mesh);
+    
+    const glowTex=createGlowTexture();
+    const spriteMat=new THREE.SpriteMaterial({
+      map:glowTex,transparent:true,opacity:0.4,
+      blending:THREE.AdditiveBlending,color:new THREE.Color(0xFFF8E7)
+    });
+    this.halo=new THREE.Sprite(spriteMat);
+    this.halo.scale.set(radius*6,radius*6,1);
+    this.group.add(this.halo);
+  }
+
+  _generateTexture(size, type) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+
+    // Ruido de alta calidad para evitar banding
+    const hash = (x, y) => {
+        let h = x * 374761393 + y * 668265263;
+        h = (h ^ (h >> 13)) * 1274126177;
+        return (h ^ (h >> 16)) / 4294967296 + 0.5;
+    };
+    const smoothNoise = (x, y) => {
+        const ix = Math.floor(x), iy = Math.floor(y);
+        const fx = x - ix, fy = y - iy;
+        const sx = fx * fx * (3.0 - 2.0 * fx), sy = fy * fy * (3.0 - 2.0 * fy);
+        const n00 = hash(ix, iy), n10 = hash(ix + 1, iy);
+        const n01 = hash(ix, iy + 1), n11 = hash(ix + 1, iy + 1);
+        const nx0 = n00 * (1 - sx) + n10 * sx;
+        const nx1 = n01 * (1 - sx) + n11 * sx;
+        return nx0 * (1 - sy) + nx1 * sy;
+    };
+    const fbm = (x, y) => {
+        let v = 0.0, a = 0.5;
+        for (let i = 0; i < 6; i++) {
+            v += a * smoothNoise(x, y);
+            x *= 2.0; y *= 2.0; a *= 0.5;
+        }
+        return v;
+    };
+
+    for(let y=0; y<size; y++) {
+        for(let x=0; x<size; x++) {
+            const idx = (y * size + x) * 4;
+            const nx = x/size*10; const ny = y/size*10;
+            let val = fbm(nx + 2.3, ny + 4.6);
+            
+            if(type === 'color') {
+                const mare = val < 0.45 ? 0.6 : 1.0;
+                data[idx] = 200 * mare;
+                data[idx+1] = 190 * mare;
+                data[idx+2] = 170 * mare;
+            } else if(type === 'normal') {
+                const dx = fbm(nx + 0.01, ny) - val;
+                const dy = fbm(nx, ny + 0.01) - val;
+                data[idx] = (0.5 + dx * 30) * 255;
+                data[idx+1] = (0.5 + dy * 30) * 255;
+                data[idx+2] = 255;
+            } else { // displacement
+                let crater = 0;
+                for(let c=0; c<25; c++) {
+                    const cx = hash(c, c*2) * 10;
+                    const cy = hash(c*3, c) * 10;
+                    const dist = Math.sqrt((nx-cx)**2 + (ny-cy)**2);
+                    const r = 0.2 + hash(c, 0) * 1.5;
+                    if(dist < r) crater += (1.0 - dist/r) * 1.2;
+                }
+                const finalVal = (val * 0.6 - crater * 0.4 + 0.5) * 255;
+                data[idx] = finalVal; data[idx+1] = finalVal; data[idx+2] = finalVal;
+            }
+            data[idx+3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+  }
+
+  update(time){
+    this.mesh.rotation.y = time * 0.005; // Rotación más lenta y cinematográfica
+    this.halo.material.opacity = 0.35 + Math.sin(time*0.3)*0.05;
+  }
+  
+  setPosition(x,y,z){this.group.position.set(x,y,z);}
+  setScale(s){this.group.scale.setScalar(s);}
+
+  dispose(){
+    this.mesh.geometry.dispose(); this.mat.dispose();
+    this._colorTex.dispose(); this._normalTex.dispose(); this._dispTex.dispose();
+    this.halo.material.map.dispose(); this.halo.material.dispose();
+  }
+}
+
+const Moon = MoonAAA;
+
+// ═══════════════════════════════════════════
+// SISTEMA DE NEBULOSA
+// ═══════════════════════════════════════════
+class NebulaCloud {
+  constructor(pos,color,seed=0,scale=20){
+    const tex=createNebulaTexture();
+    const mat=new THREE.ShaderMaterial({
+      vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+      fragmentShader:NEBULA_FRAG,
+      uniforms:{uTime:{value:0},uNebColor:{value:new THREE.Color(color)},uSeed:{value:seed}},
+      transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide
+    });
+    this.mat=mat;
+    const geo=new THREE.PlaneGeometry(Math.max(1,scale),Math.max(1,scale));
+    this.mesh=new THREE.Mesh(geo,mat);
+    this.mesh.position.copy(pos);
+    this.mesh.lookAt(0,0,0);
+  }
+  update(time){this.mat.uniforms.uTime.value=time;}
+  dispose(){this.mesh.geometry.dispose();this.mat.dispose();}
+}
+
+// ═══════════════════════════════════════════
+// MOTOR CINEMATOGRÁFICO
+// ═══════════════════════════════════════════
+class CinematicEngine {
+  constructor(){
+    this.scenes=[];this.currentIndex=-1;
+    this.renderer=null;this.composer=null;
+    this.scene=null;this.camera=null;
+    this.clock=new THREE.Clock();this.running=false;this.playing=false;
+    this.textSystem=null;this.transitionEl=null;
+    this.globalGroup=null;
+  }
+
+  init(){
+    const canvas=document.getElementById('cinema');
+    const w=canvas.clientWidth,h=canvas.clientHeight;
+    const dpr=Math.min(window.devicePixelRatio,2);
+
+    this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+    this.renderer.setPixelRatio(dpr);
+    this.renderer.setSize(w,h,false);
+    this.renderer.toneMapping=THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure=1.1; // Exposición aumentada para más definición
+
+    this.scene=new THREE.Scene();
+    this.scene.background=new THREE.Color(CONFIG.colors.deep);
+    this.scene.fog=new THREE.FogExp2(CONFIG.colors.deep,0.008);
+
+    this.camera=new THREE.PerspectiveCamera(50,w/h,0.1,200);
+    this.camera.position.set(0,0,45);
+
+    const renderPass=new RenderPass(this.scene,this.camera);
+    const bloomPass=new UnrealBloomPass(
+      new THREE.Vector2(w,h),CONFIG.bloom.strength,CONFIG.bloom.radius,CONFIG.bloom.threshold
+    );
+    this.godRaysPass=new ShaderPass(GODRAYS_SHADER);
+    this.sharpenPass=new ShaderPass(SHARPEN_SHADER); // NUEVO
+    this.vignettePass=new ShaderPass(VIGNETTE_SHADER);
+    
+    // Actualizar resolución para el shader de nitidez
+    this.sharpenPass.uniforms.uResolution.value.set(1/(w*dpr), 1/(h*dpr));
+
+    this.composer=new EffectComposer(this.renderer);
+    this.composer.addPass(renderPass);
+    this.composer.addPass(bloomPass);
+    this.composer.addPass(this.godRaysPass);
+    this.composer.addPass(this.sharpenPass); // NUEVO
+    this.composer.addPass(this.vignettePass);
+
+    this.textSystem=new TextSystem(document.getElementById('overlay'));
+    this.transitionEl=document.getElementById('transition');
+    this.globalGroup=new THREE.Group();
+    this.scene.add(this.globalGroup);
+
+    window.addEventListener('resize',()=>this.onResize());
+    canvas.addEventListener('pointerdown',(e)=>this.createTouchRipple(e.clientX,e.clientY));
+
+    this.running=true;
+    this.animate();
+  }
+
+  createTouchRipple(x,y){
+    const ripple=document.createElement('div');
+    ripple.style.cssText=`position:fixed;left:${x}px;top:${y}px;width:0;height:0;
+      border-radius:50%;background:radial-gradient(circle,rgba(196,163,90,0.15),transparent);
+      transform:translate(-50%,-50%);pointer-events:none;z-index:12;`;
+    document.getElementById('app').appendChild(ripple);
+    gsap.to(ripple,{width:200,height:200,opacity:0,duration:1.5,ease:'power2.out',onComplete:()=>ripple.remove()});
+  }
+
+  onResize(){
+    const w=this.renderer.domElement.clientWidth,h=this.renderer.domElement.clientHeight;
+    this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w,h,false);this.composer.setSize(w,h);
+    const dpr = this.renderer.getPixelRatio();
+    this.sharpenPass.uniforms.uResolution.value.set(1/(w*dpr), 1/(h*dpr));
+  }
+
+  addScene(scene){this.scenes.push(scene);}
+
+  async play(){
+    this.playing=true;
+    for(let i=0;i<this.scenes.length&&this.playing;i++){
+      this.currentIndex=i;
+      const sc=this.scenes[i];
+      sc.create(this);
+      this.scene.updateMatrixWorld(true); 
+      await this.fadeIn();
+      sc.enter(this);
+      await this.waitScene(sc);
+      sc.exit(this);
+      await this.fadeOut();
+      sc.destroy(this);
+    }
+    this.playing=false;
+  }
+
+  waitScene(sc){
+    return new Promise(r=>{
+      const dur=sc.duration||CONFIG.sceneDuration;
+      setTimeout(r,dur);
+    });
+  }
+
+  fadeIn(){
+    return new Promise(r=>{
+      gsap.to(this.transitionEl,{opacity:0,duration:CONFIG.transitionDuration/1000,ease:'power2.inOut',onComplete:r});
+    });
+  }
+
+  fadeOut(){
+    return new Promise(r=>{
+      gsap.to(this.transitionEl,{opacity:1,duration:CONFIG.transitionDuration/1000,ease:'power2.inOut',onComplete:r});
+    });
+  }
+
+  animate(){
+    if(!this.running)return;
+    requestAnimationFrame(()=>this.animate());
+    const delta=this.clock.getDelta();
+    const time=this.clock.getElapsedTime();
+    if(this.currentIndex>=0&&this.currentIndex<this.scenes.length){
+      this.scenes[this.currentIndex].update(time,delta,this);
+    }
+    this.composer.render();
+  }
+
+  stop(){this.running=false;this.playing=false;}
+}
+
+// ═══════════════════════════════════════════
+// ESCENA 1 - LA PREGUNTA
+// ═══════════════════════════════════════════
+const Scene1 = {
+  duration: 20000, 
+  _group: null, _stars: null, _moon: null, _nebulae: [], _lights: [],
+  _moonTargetPos: new THREE.Vector3(2, 4, -30),
+  
+  create(engine) {
+    this._group = new THREE.Group();
+    engine.globalGroup.add(this._group);
+
+    this._stars = new StarFieldAAA(12000, 140);
+    this._group.add(this._stars.group);
+
+    this._moon = new MoonAAA(5, 128);
+    this._moon.setPosition(this._moonTargetPos.x, this._moonTargetPos.y, this._moonTargetPos.z);
+    this._group.add(this._moon.group);
+
+    const ambientLight = new THREE.AmbientLight(0x111122, 0.2);
+    const mainLight = new THREE.DirectionalLight(0xFFF8E7, 3.0);
+    mainLight.position.set(20, 15, 10);
+    const fillLight = new THREE.DirectionalLight(0x4169E1, 0.8);
+    fillLight.position.set(-15, -5, -10);
+    this._lights = [ambientLight, mainLight, fillLight];
+    this._lights.forEach(l => this._group.add(l));
+
+    const nebConfigs = [
+      { pos: new THREE.Vector3(-30, 15, -90), color: CONFIG.colors.nebulaViolet, s: 0, sc: 70 },
+      { pos: new THREE.Vector3(35, -15, -80), color: CONFIG.colors.nebulaTurquoise, s: 4, sc: 60 },
+      { pos: new THREE.Vector3(-10, 25, -70), color: CONFIG.colors.nebulaMagenta, s: 8, sc: 50 },
+      { pos: new THREE.Vector3(20, -25, -100), color: CONFIG.colors.nebulaGold, s: 12, sc: 80 },
+      { pos: new THREE.Vector3(-5, -10, -40), color: CONFIG.colors.nebula1, s: 16, sc: 30 }
+    ];
+    nebConfigs.forEach(nc => {
+      const neb = new NebulaCloud(nc.pos, nc.color, nc.s, nc.sc);
+      this._nebulae.push(neb); this._group.add(neb.mesh);
+    });
+
+    engine.camera.position.set(0, 2, 50);
+    engine.camera.lookAt(this._moonTargetPos);
+  },
+
+  enter(engine) {
+    const moonScreenPos = this._moon.group.position.clone().project(engine.camera);
+    engine.godRaysPass.uniforms.uLightPos.value.set((moonScreenPos.x + 1) / 2, (moonScreenPos.y + 1) / 2);
+    gsap.to(engine.godRaysPass.uniforms.uIntensity, {value: 0.6, duration: 3});
+
+    this._textPromise = Promise.all([
+      engine.textSystem.show('Luna...', 'text-title', 36, 2500, 4500),
+      engine.textSystem.show('Dime si aún me piensa.', 'text-subtitle', 48, 6000, 6000)
+    ]);
+  },
+
+  update(time, delta, engine) {
+    this._stars.update(time);
+    this._moon.update(time);
+    this._nebulae.forEach(n => n.update(time));
+
+    const targetZ = 28; 
+    const orbitX = Math.sin(time * 0.1) * 2;
+    const orbitY = Math.cos(time * 0.08) * 0.5 + 2;
+    
+    engine.camera.position.z = lerp(engine.camera.position.z, targetZ, delta * 0.08);
+    engine.camera.position.x = lerp(engine.camera.position.x, orbitX, delta * 0.5);
+    engine.camera.position.y = lerp(engine.camera.position.y, orbitY, delta * 0.5);
+
+    const handheldIntensity = 0.04;
+    engine.camera.position.x += Math.sin(time * 1.8) * handheldIntensity;
+    engine.camera.position.y += Math.cos(time * 1.4) * handheldIntensity;
+    engine.camera.rotation.z = Math.sin(time * 0.7) * 0.002;
+
+    engine.camera.lookAt(this._moonTargetPos);
+    
+    const moonScreenPos = this._moon.group.position.clone().project(engine.camera);
+    engine.godRaysPass.uniforms.uLightPos.value.set((moonScreenPos.x + 1) / 2, (moonScreenPos.y + 1) / 2);
+  },
+
+  exit(engine) { 
+    engine.textSystem.clearAll(); 
+    gsap.to(engine.godRaysPass.uniforms.uIntensity, {value: 0, duration: 1.5});
+  },
+
+  destroy(engine) {
+    if (this._group) {
+      this._stars.dispose(); this._moon.dispose();
+      this._nebulae.forEach(n => n.dispose());
+      engine.globalGroup.remove(this._group);
+    }
+    this._group = null; this._nebulae = []; this._lights = [];
+  }
+};
+
+// ═══════════════════════════════════════════
+// ESCENA 2 - LOS DOS CIELOS
+// ═══════════════════════════════════════════
+const Scene2 = {
+  duration:16000,
+  _group:null,_stars:null,_moonL:null,_moonR:null,_rain:null,_cityLeft:[],_cityRight:[], _lights:[],
+  create(engine){
+    this._group=new THREE.Group();
+    engine.globalGroup.add(this._group);
+    this._stars=new StarField(2000,60);
+    this._group.add(this._stars.group);
+
+    this._moonL=new Moon(1.2);
+    this._moonL.setPosition(-4,5,-20);
+    this._group.add(this._moonL.group);
+    this._moonR=new Moon(1.2);
+    this._moonR.setPosition(4,5,-20);
+    this._group.add(this._moonR.group);
+
+    // Luces necesarias para MeshStandardMaterial
+    const ambient = new THREE.AmbientLight(0x111122, 0.2);
+    const dir = new THREE.DirectionalLight(0xFFF8E7, 2.5);
+    dir.position.set(10, 10, 10);
+    this._lights = [ambient, dir];
+    this._lights.forEach(l => this._group.add(l));
+
+    this._buildCitySilhouettes(engine);
+    this._buildRain(engine);
+
+    engine.camera.position.set(0,0,20);
+    engine.camera.lookAt(0,0,0);
+  },
+
+  _buildCitySilhouettes(engine){
+    const buildLayer=(xOffset,layers,baseColor)=>{
+      const group=[];
+      for(let l=0;l<layers;l++){
+        const buildings=[];
+        const count=8+l*3;
+        for(let i=0;i<count;i++){
+          const w=0.3+Math.random()*0.6;
+          const h=0.8+Math.random()*(3-l*0.8);
+          const geo=new THREE.PlaneGeometry(w,h);
+          const shade=0.02+l*0.015;
+          const mat=new THREE.MeshBasicMaterial({color:new THREE.Color(shade,shade,shade+0.01),side:THREE.DoubleSide});
+          const mesh=new THREE.Mesh(geo,mat);
+          mesh.position.set(xOffset-4+i*(8/count)+Math.random()*0.2,h/2-2-l*0.5,-5-l*3);
+          buildings.push(mesh);this._group.add(mesh);
+          if(Math.random()>0.5){
+            const wGeo=new THREE.PlaneGeometry(0.06,0.08);
+            const wMat=new THREE.MeshBasicMaterial({color:new THREE.Color(CONFIG.colors.warmGlow),transparent:true,opacity:0.4+Math.random()*0.5});
+            const wMesh=new THREE.Mesh(wGeo,wMat);
+            wMesh.position.set(mesh.position.x+(Math.random()-0.5)*w*0.5,mesh.position.y+Math.random()*h*0.4-h*0.1,mesh.position.z+0.01);
+            buildings.push(wMesh);this._group.add(wMesh);
+          }
+        }
+        group.push(buildings);
+      }
+      return group;
+    };
+    this._cityLeft=buildLayer(-4,3,0x050508);
+    this._cityRight=buildLayer(4,3,0x050508);
+    const lineGeo=new THREE.PlaneGeometry(0.005,30);
+    const lineMat=new THREE.MeshBasicMaterial({color:CONFIG.colors.primary,transparent:true,opacity:0.15});
+    const line=new THREE.Mesh(lineGeo,lineMat);
+    line.position.set(0,0,-2);this._group.add(line);
+  },
+
+  _buildRain(engine){
+    const count=1500;
+    const geo=new THREE.BufferGeometry();
+    const pos=new Float32Array(count*3);
+    const speed=new Float32Array(count);
+    const offset=new Float32Array(count);
+    for(let i=0;i<count;i++){
+      pos[i*3]=(Math.random()-0.5)*30;
+      pos[i*3+1]=Math.random()*30-5;
+      pos[i*3+2]=(Math.random()-0.5)*20-5;
+      speed[i]=0.3+Math.random()*0.7;
+      offset[i]=Math.random();
+    }
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('aSpeed',new THREE.BufferAttribute(speed,1));
+    geo.setAttribute('aOffset',new THREE.BufferAttribute(offset,1));
+    this._rainMat=new THREE.ShaderMaterial({
+      vertexShader:RAIN_VERT,fragmentShader:RAIN_FRAG,
+      uniforms:{uTime:{value:0}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+    });
+    this._rain=new THREE.Points(geo,this._rainMat);
+    this._group.add(this._rain);
+  },
+
+  enter(engine){
+    engine.textSystem.show(CONFIG.cityOrigin,'text-city',28,1000,9000);
+    engine.textSystem.show(CONFIG.cityDestination,'text-city',62,1000,9000);
+    engine.textSystem.show('Mismo cielo. Distintas vidas.','text-body',46,4000,8000);
+  },
+  update(time,delta,engine){
+    this._stars.update(time);
+    this._moonL.update(time);
+    this._moonR.update(time);
+    if(this._rainMat)this._rainMat.uniforms.uTime.value=time;
+    const sway=Math.sin(time*0.1)*0.3;
+    engine.camera.position.x=sway;
+    engine.camera.lookAt(0,0,-5);
+  },
+  exit(engine){engine.textSystem.clearAll();},
+  destroy(engine){
+    if(this._group){
+      this._stars.dispose();this._moonL.dispose();this._moonR.dispose();
+      if(this._rain){this._rain.geometry.dispose();this._rainMat.dispose();}
+      this._group.traverse(c=>{if(c.geometry)c.geometry.dispose();if(c.material){if(c.material.map)c.material.map.dispose();c.material.dispose();}});
+      engine.globalGroup.remove(this._group);
+    }
+    this._group=null;this._cityLeft=[];this._cityRight=[];this._lights=[];
+  }
+};
+
+// ═══════════════════════════════════════════
+// ESCENA 3 - LOS RECUERDOS
+// ═══════════════════════════════════════════
+const Scene3 = {
+  duration:15000,
+  _group:null,_stars:null,_frames:[],
+  create(engine){
+    this._group=new THREE.Group();
+    engine.globalGroup.add(this._group);
+    this._stars=new StarField(2500,70);
+    this._group.add(this._stars.group);
+    const frameCount=CONFIG.photos.length>0?CONFIG.photos.length:5;
+    for(let i=0;i<frameCount;i++){
+      const w=2+Math.random()*1.5;
+      const h=2.5+Math.random()*1.5;
+      const geo=new THREE.PlaneGeometry(w,h);
+      const mat=new THREE.MeshBasicMaterial({
+        color:new THREE.Color(CONFIG.colors.warmGlow),
+        transparent:true,opacity:0.08+Math.random()*0.12,
+        side:THREE.DoubleSide
+      });
+      const mesh=new THREE.Mesh(geo,mat);
+      const angle=(i/frameCount)*Math.PI*2;
+      const r=5+Math.random()*4;
+      mesh.position.set(Math.cos(angle)*r,(Math.random()-0.5)*6,Math.sin(angle)*r-10);
+      mesh.rotation.y=-angle+Math.PI/2;
+      mesh.rotation.x=(Math.random()-0.5)*0.3;
+      this._group.add(mesh);
+      const glowMat=new THREE.MeshBasicMaterial({
+        color:new THREE.Color(CONFIG.colors.primary),
+        transparent:true,opacity:0.04,side:THREE.DoubleSide
+      });
+      const glowMesh=new THREE.Mesh(new THREE.PlaneGeometry(w+0.3,h+0.3),glowMat);
+      glowMesh.position.copy(mesh.position);
+      glowMesh.rotation.copy(mesh.rotation);
+      this._group.add(glowMesh);
+      this._frames.push({mesh,glow:glowMesh,phase:Math.random()*Math.PI*2,baseY:mesh.position.y});
+    }
+    engine.camera.position.set(0,0,8);
+  },
+  enter(engine){
+    engine.textSystem.show('Las estrellas se convirtieron en recuerdos','text-body',32,1000,5000);
+    engine.textSystem.show('Y los recuerdos... respiran.','text-subtitle',44,4000,6000);
+  },
+  update(time,delta,engine){
+    this._stars.update(time);
+    this._frames.forEach(f=>{
+      const breathe=1+Math.sin(time*0.8+f.phase)*0.04;
+      f.mesh.scale.setScalar(breathe);
+      f.glow.scale.setScalar(breathe*1.05);
+      f.mesh.position.y=f.baseY+Math.sin(time*0.5+f.phase)*0.3;
+      f.glow.position.y=f.mesh.position.y;
+      f.mesh.material.opacity=0.08+Math.sin(time*0.6+f.phase)*0.06;
+    });
+    const camAngle=time*0.08;
+    engine.camera.position.x=Math.sin(camAngle)*10;
+    engine.camera.position.z=Math.cos(camAngle)*10;
+    engine.camera.lookAt(0,0,-8);
+  },
+  exit(engine){engine.textSystem.clearAll();},
+  destroy(engine){
+    if(this._group){
+      this._stars.dispose();
+      this._group.traverse(c=>{if(c.geometry)c.geometry.dispose();if(c.material)c.material.dispose();});
+      engine.globalGroup.remove(this._group);
+    }
+    this._group=null;this._frames=[];
+  }
+};
+
+// ═══════════════════════════════════════════
+// ESCENA 4 - LAS PREGUNTAS
+// ═══════════════════════════════════════════
+const Scene4 = {
+  duration:17000,
+  _group:null,_fragments:null,_fragMat:null,
+  create(engine){
+    this._group=new THREE.Group();
+    engine.globalGroup.add(this._group);
+    const count=800;
+    const geo=new THREE.BufferGeometry();
+    const pos=new Float32Array(count*3);
+    const sizes=new Float32Array(count);
+    const phases=new Float32Array(count);
+    const cols=new Float32Array(count*3);
+    const silver=new THREE.Color(CONFIG.colors.coldGlow);
+    const gold=new THREE.Color(CONFIG.colors.primary);
+    for(let i=0;i<count;i++){
+      pos[i*3]=(Math.random()-0.5)*30;
+      pos[i*3+1]=(Math.random()-0.5)*20;
+      pos[i*3+2]=(Math.random()-0.5)*20-10;
+      sizes[i]=Math.max(0.3,0.5+Math.random()*2.5);
+      phases[i]=Math.random()*Math.PI*2;
+      const c=Math.random()<0.3?gold:silver;
+      cols[i*3]=c.r;cols[i*3+1]=c.g;cols[i*3+2]=c.b;
+    }
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
+    geo.setAttribute('aPhase',new THREE.BufferAttribute(phases,1));
+    geo.setAttribute('aFragColor',new THREE.BufferAttribute(cols,3));
+    this._fragMat=new THREE.ShaderMaterial({
+      vertexShader:FRAGMENT_VERT,fragmentShader:FRAGMENT_FRAG,
+      uniforms:{uTime:{value:0},uDissolve:{value:0}},
+      transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+    });
+    this._fragments=new THREE.Points(geo,this._fragMat);
+    this._group.add(this._fragments);
+    engine.camera.position.set(0,0,15);
+  },
+  enter(engine){
+    const qs=CONFIG.questions;
+    qs.forEach((q,i)=>{
+      const delay=2000+i*2200;
+      const topPct=20+i*10;
+      engine.textSystem.show(q,'text-question',Math.min(topPct,70),delay,3500);
+    });
+  },
+  update(time,delta,engine){
+    this._fragMat.uniforms.uTime.value=time;
+    engine.camera.position.x=Math.sin(time*0.12)*3;
+    engine.camera.position.y=Math.cos(time*0.09)*2;
+    engine.camera.lookAt(0,0,-5);
+  },
+  exit(engine){engine.textSystem.clearAll();},
+  destroy(engine){
+    if(this._group){
+      this._fragments.geometry.dispose();this._fragMat.dispose();
+      engine.globalGroup.remove(this._group);
+    }
+    this._group=null;
+  }
+};
+
+// ═══════════════════════════════════════════
+// ESCENA 5 - LAS CARTAS
+// ═══════════════════════════════════════════
+const Scene5 = {
+  duration:17000,
+  _group:null,_stars:null,_letters:[],_dustParticles:null,_dustMat:null,_dissolveProgress:0,
+  create(engine){
+    this._group=new THREE.Group();
+    engine.globalGroup.add(this._group);
+    this._stars=new StarField(1500,60);
+    this._group.add(this._stars.group);
+    this._dissolveProgress=0;
+    const letters=CONFIG.letters;
+    letters.forEach((text,i)=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=512;canvas.height=256;
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='rgba(10,8,20,0.7)';
+      ctx.fillRect(0,0,512,256);
+      ctx.fillStyle='rgba(212,165,116,0.9)';
+      ctx.font='italic 22px Cormorant Garamond, serif';
+      ctx.textAlign='center';
+      const words=text.split(' ');
+      let line='',y=100;
+      words.forEach(w=>{
+        const test=line+w+' ';
+        if(ctx.measureText(test).width>440){ctx.fillText(line.trim(),256,y);line=w+' ';y+=30;}
+        else line=test;
+      });
+      ctx.fillText(line.trim(),256,y);
+
+      const tex=new THREE.CanvasTexture(canvas);
+      const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:0.9,side:THREE.DoubleSide});
+      const mesh=new THREE.Mesh(new THREE.PlaneGeometry(4,2),mat);
+      const angle=(i/letters.length)*Math.PI*0.8-Math.PI*0.4;
+      mesh.position.set(Math.sin(angle)*6,(i-1)*3,Math.cos(angle)*3-5);
+      mesh.rotation.y=angle*0.3;
+      mesh.rotation.z=(Math.random()-0.5)*0.1;
+      this._group.add(mesh);
+      this._letters.push({mesh,basePos:mesh.position.clone(),phase:Math.random()*Math.PI*2});
+    });
+    const dCount=600;
+    const dGeo=new THREE.BufferGeometry();
+    const dPos=new Float32Array(dCount*3);
+    const dSizes=new Float32Array(dCount);
+    const dPhases=new Float32Array(dCount);
+    const dCols=new Float32Array(dCount*3);
+    const starC=new THREE.Color(CONFIG.colors.star);
+    for(let i=0;i<dCount;i++){
+      dPos[i*3]=(Math.random()-0.5)*20;
+      dPos[i*3+1]=(Math.random()-0.5)*15;
+      dPos[i*3+2]=(Math.random()-0.5)*15-5;
+      dSizes[i]=Math.max(0.3,1+Math.random()*2);
+      dPhases[i]=Math.random()*Math.PI*2;
+      dCols[i*3]=starC.r;dCols[i*3+1]=starC.g;dCols[i*3+2]=starC.b;
+    }
+    dGeo.setAttribute('position',new THREE.BufferAttribute(dPos,3));
+    dGeo.setAttribute('aSize',new THREE.BufferAttribute(dSizes,1));
+    dGeo.setAttribute('aPhase',new THREE.BufferAttribute(dPhases,1));
+    dGeo.setAttribute('aFragColor',new THREE.BufferAttribute(dCols,3));
+    this._dustMat=new THREE.ShaderMaterial({
+      vertexShader:FRAGMENT_VERT,fragmentShader:FRAGMENT_FRAG,
+      uniforms:{uTime:{value:0},uDissolve:{value:0}},
+      transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+    });
+    this._dustParticles=new THREE.Points(dGeo,this._dustMat);
+    this._group.add(this._dustParticles);
+    engine.camera.position.set(0,0,10);
+  },
+  enter(engine){
+    engine.textSystem.show('Lo que nunca se dijo...','text-subtitle',35,1000,5000);
+    engine.textSystem.show('se convirtió en polvo de estrellas.','text-body',48,3500,6000);
+    gsap.to(this,{_dissolveProgress:1,duration:10,delay:4,ease:'power2.in'});
+  },
+  update(time,delta,engine){
+    this._stars.update(time);
+    this._dustMat.uniforms.uTime.value=time;
+    this._dustMat.uniforms.uDissolve.value=this._dissolveProgress;
+    this._letters.forEach(l=>{
+      l.mesh.position.y=l.basePos.y+Math.sin(time*0.5+l.phase)*0.4;
+      l.mesh.position.x=l.basePos.x+Math.sin(time*0.3+l.phase)*0.2;
+      l.mesh.rotation.z=Math.sin(time*0.2+l.phase)*0.05;
+      const fade=1-this._dissolveProgress;
+      l.mesh.material.opacity=Math.max(0,fade);
+      l.mesh.scale.setScalar(1+this._dissolveProgress*0.5);
+    });
+    engine.camera.position.x=Math.sin(time*0.1)*2;
+    engine.camera.lookAt(0,0,-5);
+  },
+  exit(engine){engine.textSystem.clearAll();},
+  destroy(engine){
+    if(this._group){
+      this._stars.dispose();
+      this._letters.forEach(l=>{l.mesh.geometry.dispose();l.mesh.material.map.dispose();l.mesh.material.dispose();});
+      this._dustParticles.geometry.dispose();this._dustMat.dispose();
+      engine.globalGroup.remove(this._group);
+    }
+    this._group=null;this._letters=[];this._dissolveProgress=0;
+  }
+};
+
+// ═══════════════════════════════════════════
+// ESCENA 6 - LUNA...
+// ═══════════════════════════════════════════
+const Scene6 = {
+  duration:22000,
+  _group:null,_stars:null,_moon:null,_lights:[],
+  create(engine){
+    this._group=new THREE.Group();
+    engine.globalGroup.add(this._group);
+    this._stars=new StarField(2000,70);
+    this._group.add(this._stars.group);
+    this._moon=new Moon(8);
+    this._moon.setPosition(0,0,-15);
+    this._group.add(this._moon.group);
+    
+    // Luces
+    const ambient = new THREE.AmbientLight(0x111122, 0.2);
+    const dir = new THREE.DirectionalLight(0xFFF8E7, 2.5);
+    dir.position.set(10, 10, 10);
+    this._lights = [ambient, dir];
+    this._lights.forEach(l => this._group.add(l));
+
+    engine.camera.position.set(0,0,10);
+  },
+  enter(engine){
+    const texts=[
+      {t:'Luna...',top:25,delay:1500,dur:4000},
+      {t:'Si alguna vez la ves...',top:36,delay:5000,dur:4000},
+      {t:'Dile que todavía la recuerdo.',top:46,delay:9000,dur:4500},
+      {t:'Dile que la distancia ganó.',top:56,delay:13500,dur:4500},
+      {t:'Pero nunca logró borrar lo que sentí.',top:66,delay:17500,dur:5000}
+    ];
+    texts.forEach(tx=>{
+      engine.textSystem.show(tx.t,'text-body',tx.top,tx.delay,tx.dur);
+    });
+  },
+  update(time,delta,engine){
+    this._stars.update(time);
+    this._moon.update(time);
+    const targetScale=1+Math.sin(time*0.2)*0.03;
+    this._moon.setScale(targetScale);
+    engine.camera.position.z=lerp(engine.camera.position.z,6,delta*0.05);
+    engine.camera.lookAt(0,0,-15);
+  },
+  exit(engine){engine.textSystem.clearAll();},
+  destroy(engine){
+    if(this._group){
+      this._stars.dispose();this._moon.dispose();
+      engine.globalGroup.remove(this._group);
+    }
+    this._group=null; this._lights=[];
+  }
+};
+
+// ═══════════════════════════════════════════
+// ESCENA 7 - EL SILENCIO
+// ═══════════════════════════════════════════
+const Scene7 = {
+  duration:22000,
+  _group:null,_stars:null,_moon:null,_starBrightness:1, _lights:[],
+  create(engine){
+    this._group=new THREE.Group();
+    engine.globalGroup.add(this._group);
+    this._stars=new StarField(2500,70);
+    this._group.add(this._stars.group);
+    this._moon=new Moon(6);
+    this._moon.setPosition(0,2,-20);
+    this._group.add(this._moon.group);
+    
+    // Luces
+    const ambient = new THREE.AmbientLight(0x111122, 0.2);
+    const dir = new THREE.DirectionalLight(0xFFF8E7, 2.5);
+    dir.position.set(10, 10, 10);
+    this._lights = [ambient, dir];
+    this._lights.forEach(l => this._group.add(l));
+
+    this._starBrightness=1;
+    engine.camera.position.set(0,0,15);
+  },
+  enter(engine){
+    engine.textSystem.show('A veces...','text-body',30,2000,4000);
+    engine.textSystem.show('No dejamos de querer.','text-subtitle',42,5000,5000);
+    engine.textSystem.show('Solo aprendemos a extrañar en silencio.','text-body',54,9000,6000);
+    engine.textSystem.show(CONFIG.receiver,'text-name',70,14500,7000);
+    engine.textSystem.show(CONFIG.finalMessage,'text-final',80,17000,8000);
+    gsap.to(this,{_starBrightness:0,duration:14,delay:4,ease:'power2.in'});
+    gsap.to(this._moon.group.position,{z:-60,y:5,duration:16,delay:2,ease:'power2.in'});
+    gsap.to(this._moon.halo.material,{opacity:0,duration:14,delay:3});
+    // Apagar la luz direccional lentamente
+    gsap.to(this._lights[1], {intensity: 0, duration: 14, delay: 4, ease:'power2.in'});
+  },
+  update(time,delta,engine){
+    this._stars.update(time);
+    this._moon.update(time);
+    this._stars.setBrightness(Math.max(0,this._starBrightness));
+    const bgLerp=Math.max(0,this._starBrightness)*0.04;
+    engine.scene.background.setRGB(bgLerp,bgLerp,bgLerp+0.005);
+    engine.camera.lookAt(0,0,-20);
+  },
+  exit(engine){engine.textSystem.clearAll();},
+  destroy(engine){
+    if(this._group){
+      this._stars.dispose();this._moon.dispose();
+      engine.globalGroup.remove(this._group);
+    }
+    this._group=null; this._lights=[];
+    engine.scene.background=new THREE.Color(CONFIG.colors.deep);
+  }
+};
+
+// ═══════════════════════════════════════════
+// REGISTRO DE ESCENAS
+// ═══════════════════════════════════════════
+const SCENES = [Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7];
+
+// ═══════════════════════════════════════════
+// FUNCIÓN DE ARRANQUE
+// ═══════════════════════════════════════════
+async function boot(){
+
+ let bgMusic = null;
+
+function initMusic() {
+
+  if (!CONFIG.music) return;
+
+  bgMusic = new Audio(CONFIG.music);
+  bgMusic.loop = true;
+  bgMusic.volume = 0.4;
+
+  document.addEventListener('pointerdown', async () => {
+
+    try {
+      await bgMusic.play();
+    } catch(err) {
+      console.error('Error reproduciendo audio:', err);
+    }
+
+  }, { once: true });
+}
+
+  const engine = new CinematicEngine();
+  engine.init(); 
+  SCENES.forEach(s => engine.addScene(s));
+
+  const overlay = document.getElementById('overlay');
+  const titleEl = document.createElement('div');
+  titleEl.className = 'text-line text-title';
+  titleEl.textContent = CONFIG.title;
+  titleEl.style.top = '45%';
+  titleEl.style.opacity = '0';
+  overlay.appendChild(titleEl);
+  
+  gsap.to(titleEl, {opacity: 1, duration: 2, delay: 0.5, ease: 'power2.out'});
+
+  const hintEl = document.createElement('div');
+  hintEl.className = 'touch-hint';
+  hintEl.textContent = 'toca para comenzar';
+  overlay.appendChild(hintEl);
+
+  await new Promise(resolve => {
+    const handler = () => {
+      document.removeEventListener('pointerdown', handler);
+      resolve();
+    };
+    document.addEventListener('pointerdown', handler);
+  });
+
+  gsap.to(titleEl, {opacity: 0, duration: 1.5, ease: 'power2.inOut', onComplete: () => titleEl.remove()});
+  gsap.to(hintEl, {opacity: 0, duration: 1, ease: 'power2.in', onComplete: () => hintEl.remove()});
+
+  await engine.play();
+
+  gsap.to(document.getElementById('transition'), {opacity: 1, duration: 3, ease: 'power2.inOut', delay: 1});
+  engine.stop();
+}
+
+boot().catch(err => console.error('Error cinematográfico:', err));
+</script>
+</body>
+</html>
