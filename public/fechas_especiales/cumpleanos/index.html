@@ -2773,7 +2773,7 @@
         }
       };
     }
-       // ═══════════════════════════════════════════
+    // ═══════════════════════════════════════════
     // ESCENA 5: LOS CORAZONES FLOTANTES
     // ═══════════════════════════════════════════
     function createScene5() {
@@ -2862,7 +2862,7 @@
       glowCanvas.width = 64; glowCanvas.height = 64;
       const glowCtx = glowCanvas.getContext('2d');
       const gradient = glowCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0, 'rgba(255, 215, 0, 1.0)'); 
+      gradient.addColorStop(0, 'rgba(255, 215, 0, 1.0)');
       gradient.addColorStop(0.2, 'rgba(255, 180, 0, 0.6)');
       gradient.addColorStop(0.5, 'rgba(255, 150, 0, 0.2)');
       gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
@@ -2872,12 +2872,12 @@
 
       // ── PALETA DE COLORES SUTILES Y CÁLIDOS ──
       const heartPalette = [
-        new THREE.Color('#ff4d6d'), 
-        new THREE.Color('#c9184a'), 
-        new THREE.Color('#5e60ce'), 
-        new THREE.Color('#f72585'), 
-        new THREE.Color('#9b5de5'), 
-        new THREE.Color('#7209b7')  
+        new THREE.Color('#ff4d6d'),
+        new THREE.Color('#c9184a'),
+        new THREE.Color('#5e60ce'),
+        new THREE.Color('#f72585'),
+        new THREE.Color('#9b5de5'),
+        new THREE.Color('#7209b7')
       ];
 
       // ── VÓRTICE DE CORAZONES ──
@@ -2889,10 +2889,10 @@
         'Eres mi hoy, mi manana y mi siempre',
         'Contigo descubri que el amor verdadero existe',
         'Cada dia a tu lado es la mejor aventura de mi vida',
-        'TE AMO' 
+        'TE AMO'
       ];
 
-      const envelopeGroups = []; 
+      const envelopeGroups = [];
       const totalEnvelopes = 80;
 
       for (let i = 0; i < totalEnvelopes; i++) {
@@ -2904,9 +2904,9 @@
 
         const envelopeMat = new THREE.MeshStandardMaterial({
           color: baseColor,
-          roughness: 0.2, 
+          roughness: 0.2,
           metalness: 0.6,
-          emissive: '#ffa500', 
+          emissive: '#ffa500',
           emissiveIntensity: isTeAmo ? 1.5 : 0.6,
           side: THREE.DoubleSide
         });
@@ -2916,7 +2916,7 @@
         for (let t = 0; t <= Math.PI * 2; t += 0.05) {
           const x = 16 * Math.pow(Math.sin(t), 3);
           const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-          if (first) { heartShape.moveTo(x, y); first = false; } 
+          if (first) { heartShape.moveTo(x, y); first = false; }
           else { heartShape.lineTo(x, y); }
         }
 
@@ -2933,7 +2933,7 @@
           map: glowTexture, color: '#ffd700', transparent: true, blending: THREE.AdditiveBlending, opacity: isTeAmo ? 1.2 : 0.7, depthWrite: false
         });
         const glowSprite = new THREE.Sprite(glowMat);
-        glowSprite.scale.set(3, 3, 1); 
+        glowSprite.scale.set(3, 3, 1);
         envGroup.add(glowSprite);
 
         if (isSpecialLetter) {
@@ -2948,7 +2948,7 @@
           envGroup.add(seal);
 
           if (isTeAmo) {
-            const lLight = new THREE.PointLight('#ffd700', 3, 8); 
+            const lLight = new THREE.PointLight('#ffd700', 3, 8);
             lLight.position.set(0, 0, 1);
             envGroup.add(lLight);
           }
@@ -3033,7 +3033,7 @@
       function showLetterUI(text, envelopeGroup) {
         const overlay = document.getElementById('letter-overlay');
         const content = document.getElementById('letter-content');
-        content.innerHTML = ''; 
+        content.innerHTML = '';
         overlay.classList.add('active');
 
         let charIdx = 0;
@@ -3162,8 +3162,8 @@
         envelopeGroups.forEach(env => {
           gsap.to(env.rotation, { x: 0, z: 0, duration: 2 });
           if (env.userData.isTeAmo) return;
-          gsap.to(env.children[0].material, { emissiveIntensity: 4, duration: 1.5 }); 
-          gsap.to(env.children[1].material, { opacity: 2.5, duration: 1.5 }); 
+          gsap.to(env.children[0].material, { emissiveIntensity: 4, duration: 1.5 });
+          gsap.to(env.children[1].material, { opacity: 2.5, duration: 1.5 });
         });
 
         setTimeout(() => {
@@ -3238,7 +3238,7 @@
         }, 1000);
 
         gsap.to(scene.fog, { density: 0.005, duration: 4 });
-        gsap.to(ambient.color, { r: 0.8, g: 0.6, b: 0.2, duration: 3 }); 
+        gsap.to(ambient.color, { r: 0.8, g: 0.6, b: 0.2, duration: 3 });
         gsap.to(ambient, { intensity: 2.5, duration: 3 });
 
         audio.playChime(440); setTimeout(() => audio.playChime(554), 150);
@@ -3256,7 +3256,7 @@
           env.rotation.y += 0.002;
           env.rotation.z = Math.sin(t * 0.5 + d.phase) * 0.1;
 
-          const aura = env.children[1]; 
+          const aura = env.children[1];
           if (aura) {
             aura.material.opacity = 0.6 + Math.sin(t * 2.0 + d.phase) * 0.2;
           }
@@ -3284,12 +3284,12 @@
           window.removeEventListener('pointermove', onPointerMove);
           window.removeEventListener('click', onClick);
           document.body.style.cursor = 'default';
-          
+
           // Limpiar UI de cumpleaños
           const bdayEl = document.getElementById('bday-overlay');
-          if(bdayEl) bdayEl.remove();
+          if (bdayEl) bdayEl.remove();
           const bdaySt = document.getElementById('bday-styles');
-          if(bdaySt) bdaySt.remove();
+          if (bdaySt) bdaySt.remove();
 
           scene.fog = new THREE.FogExp2('#000000', 0.008);
           group.traverse(obj => {
@@ -3302,7 +3302,7 @@
         }
       };
     }
-       // ═══════════════════════════════════════════
+    // ═══════════════════════════════════════════
     // ESCENA 6: FELIZ CUMPLEAÑOS
     // ═══════════════════════════════════════════
     function createScene6() {
@@ -3456,14 +3456,14 @@
       gsap.to(nebulae[2].uniforms.uHueShift, { value: 0.3, duration: 12, ease: 'none', repeat: -1 });
 
       // ── ESTRELLAS DE FONDO ──
-      const bgStars = createParticles(35000, { spread: 350, size: 0.2, color: '#ffffff', opacity: 0.9 });
+      const bgStars = createParticles(35000, { spread: 350, size: 0.1, color: '#ffffff', opacity: 0.9 });
       group.add(bgStars);
       updates.push((t) => { bgStars.material.uniforms.uTime.value = t; });
 
       // ── TEXTO FORMADO POR ESTRELLAS (Con brillo y morphing cinemático) ──
-     const line1 = textToPositions('FELIZ', 80, 2);
-const line2 = textToPositions('CUMPLEAÑOS', 60, 2);
-const line3 = textToPositions('RONNY', 90, 2);
+     const line1 = textToPositions('TE', 90, 2);
+     const line2 = textToPositions('AMO', 70, 2);
+     const line3 = textToPositions('MUCHO', 100, 2);
 
       function createCosmicText(positions, yOffset, color) {
         const count = positions.length / 3;
@@ -3480,8 +3480,7 @@ const line3 = textToPositions('RONNY', 90, 2);
           startPos[i * 3 + 2] = Math.cos(phi) * r - 20;
           randoms[i] = Math.random();
         }
-       
-
+        
         const geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(startPos, 3));
         geo.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
@@ -3490,10 +3489,10 @@ const line3 = textToPositions('RONNY', 90, 2);
           transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
           uniforms: {
             uTime: { value: 0 },
-            Size: { value: 1.3 },
+            uSize: { value: 0.9 },
             uColor: { value: new THREE.Color(color) },
             uOpacity: { value: 0 },
-            uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+            uPixelRatio: { value: Math.min(window.devicePixelRatio, 9) }//2
           },
           vertexShader: `
         attribute float aRandom;
@@ -3694,7 +3693,7 @@ const line3 = textToPositions('RONNY', 90, 2);
           this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
 
           this.mat = new THREE.PointsMaterial({
-            size: 0.5,
+            size: 1.0,
             color: this.color,
             transparent: true,
             opacity: 1,
